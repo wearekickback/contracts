@@ -39,7 +39,7 @@ module.exports = function(deployer) {
   deployer
     .then(() => {
       console.log([name, deposit,limitOfParticipants, coolingPeriod, encryption].join(','));
-      return deployer.deploy(Conference, name, deposit,limitOfParticipants, coolingPeriod, encryption);
+      return deployer.deploy(Conference, name, deposit,limitOfParticipants, coolingPeriod, encryption, owner);
     })
     .then(() => {
       if (deployer.network == 'development'){

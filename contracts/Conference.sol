@@ -3,7 +3,7 @@ pragma solidity 0.4.24;
 import './GroupAdmin.sol';
 import './zeppelin/lifecycle/Destructible.sol';
 
-contract Conference is Destructible, GroupAdmin {    
+contract Conference is Destructible, GroupAdmin {
     string public name;
     uint256 public deposit;
     uint public limitOfParticipants;
@@ -67,10 +67,10 @@ contract Conference is Destructible, GroupAdmin {
         string _encryption,
         address _owner
     ) public {
-        if (address(0) != _owner) {
+        if (_owner != address(0)) {
             owner = _owner;
         }
-        
+
         if (bytes(_name).length != 0){
             name = _name;
         } else {
