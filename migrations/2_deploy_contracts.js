@@ -18,7 +18,6 @@ if (yargs.argv.config) {
 module.exports = function(deployer) {
   const app_config = require('../app_config.js')[deployer.network];
   console.log('app_config', app_config)
-  let owner = web3.eth.accounts[0];
   if (deployer.network == 'test' || deployer.network == 'coverage') return 'no need to deploy contract';
   if (config.name){
     name = config.name;
@@ -32,9 +31,9 @@ module.exports = function(deployer) {
     encryption = fs.readFileSync(config.encryption, {encoding: 'ascii'});
   }
 
-  deployer
+  return deployer
     .then(() => {
       console.log([name, deposit,limitOfParticipants, coolingPeriod, encryption].join(','));
-      return deployer.deploy(Conference, name, deposit,limitOfParticipants, coolingPeriod, encryption);
+      return deployer.deploy(Conference, name, deposit,limitOfParticipants, coolingPeriod, encryption, '0');
     })
   };
