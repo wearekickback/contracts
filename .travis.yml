@@ -11,6 +11,7 @@ before_script:
   - ganache-cli --accounts 500 >ganache.log 2>&1 &
   - sleep 5
 script:
+  - yarn lint
   - yarn test
 after_script:
   - yarn coverage && cat coverage/lcov.info | coveralls
