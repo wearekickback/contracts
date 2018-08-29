@@ -27,6 +27,7 @@ contract('Encryption', function(accounts) {
       var message = "マコト";
       conference = await Conference.new('', 0, 0, 10, publicKey);
       var publicKeyFromContract = await conference.encryption.call();
+      var encrypted = crypto.publicEncrypt(publicKeyFromContract, new Buffer(message, 'utf-8'));
 
       console.log(getTransaction('create   ', conference.transactionHash));
       deposit = (await conference.deposit.call()).toNumber();
