@@ -25,11 +25,8 @@
   },
   "homepage": "https://github.com/noblocknoparty/blockparty-contracts#readme",
   "dependencies": {
-    "@ensdomains/ens": "^0.1.1",
     "axios": "^0.17.1",
     "babel-polyfill": "^6.23.0",
-    "eth-ens-namehash": "^2.0.8",
-    "ethereum-ens": "^0.7.4",
     "ethereum-input-data-decoder": "0.0.3",
     "etherscan-api": "^3.0.11",
     "moment": "^2.18.1",
