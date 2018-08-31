@@ -1,0 +1,30 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/node:8.11
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "package.json" }}
+      - run: yarn global add ganache-cli
+      - run: yarn
+      - save_cache:
+          key: v1-dependencies-{{ checksum "package.json" }}
+          paths:
+            - ~/.yarn-cache
+            - node_modules
+
+      - run: cp .deployment-sample.js .deployment.js
+      - run: ganache-cli --accounts 500 >ganache.log 2>&1 &
+      - run: sleep 5
+
+      - run: yarn lint
+      - run: yarn test
+      - run: yarn coverage && cat coverage/lcov.info | coveralls
+
+      - store_artifacts:
+          path: ./logs/*.log
+          destination: logs
