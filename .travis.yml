@@ -16,3 +16,8 @@ script:
 notifications:
   email:
     - dev-notifications@noblockno.party
+addons:
+  artifacts:
+    debug: true
+    paths:
+    - log/*.log
