@@ -1,9 +1,10 @@
 const { toWei, toHex, toBN } = require('web3-utils')
 const Conference = artifacts.require("Conference.sol");
-const Tempo = require('@digix/tempo');
-const { wait, waitUntilBlock } = require('@digix/tempo')(web3);
 
 const { getBalance, mulBN } = require('./utils')
+
+web3.currentProvider.sendAsync = web3.currentProvider.send
+const { wait, waitUntilBlock } = require('@digix/tempo')(web3);
 
 const twitterHandle = '@bighero6';
 const gas = 1000000;
@@ -460,7 +461,6 @@ contract('Conference', function(accounts) {
     })
 
     it('owner receives the remaining if cooling period is passed', async function(){
-      let tempo = await new Tempo(web3);
       conference = await Conference.new('', 0, 0, 1, '', '0x0')
       deposit = await conference.deposit()
 
@@ -470,7 +470,7 @@ contract('Conference', function(accounts) {
       await conference.ended().should.eventually.eq(true)
       await getBalance(conference.address).should.eventually.eq(deposit)
 
-      let previousBalance = getBalance(owner);
+      let previousBalance = await getBalance(owner);
       await wait(2, 1);
       await conference.clear({from:owner});
 
