@@ -35,3 +35,14 @@ chai.use(chaiAsPromised)
 chai.should()
 
 export const getBalance = async addr => toBN(await web3.eth.getBalance(addr))
+
+// mul + div by 1000 takes care of upto 3 decimal places (since toBN() doesn't support decimals)
+export const mulBN = (bn, factor) => bn.mul( toBN(factor * 1000) ).div( toBN(1000) )
+
+export const getEvents = async (result, eventName) => {
+  const events = result.logs.filter(({ event }) => event === eventName)
+
+  assert.isTrue(events.length > 0)
+
+  return events
+}
