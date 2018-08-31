@@ -19,7 +19,7 @@ jobs:
         - ~/.yarn-cache
         - ./node_modules
     - run: cp .deployment-sample.js .deployment.js
-    - run: ganache-cli --accounts 500 >ganache.log 2>&1 &
+    - run: ganache-cli --accounts 500 >logs/ganache.log 2>&1 &
     - run: sleep 5
     - run: yarn lint
     - run: yarn test
