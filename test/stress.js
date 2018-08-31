@@ -1,10 +1,12 @@
+import { toWei, fromWei } from 'web3-utils'
+
 const moment = require('moment');
 const fs = require('fs');
 const Conference = artifacts.require("Conference.sol");
 
 const Tempo = require('@digix/tempo');
 const { wait, waitUntilBlock } = require('@digix/tempo')(web3);
-const gasPrice = web3.toWei(1, 'gwei');
+const gasPrice = toWei('1', 'gwei');
 const usd = 468;
 let deposit, conference;
 let trx,trx2, gasUsed, gasUsed2, result, trxReceipt;
@@ -22,10 +24,10 @@ const getTransaction = function(type, transactionHash){
   result = {
     'type             ': type,
     'gasUsed       ': trxReceipt.gasUsed,
-    'gasPrice': web3.fromWei(trx.gasPrice.toNumber(),'gwei'),
+    'gasPrice': fromWei(trx.gasPrice.toNumber(),'gwei'),
     '1ETH*USD': usd,
-    'gasUsed*gasPrice(Ether)': web3.fromWei(gasUsed,'ether'),
-    'gasUsed*gasPrice(USD)': web3.fromWei(gasUsed,'ether') * usd,
+    'gasUsed*gasPrice(Ether)': fromWei(gasUsed,'ether'),
+    'gasUsed*gasPrice(USD)': fromWei(gasUsed,'ether') * usd,
   }
   return result;
 }
@@ -39,7 +41,7 @@ const reportTest = async function (participants, accounts){
   const transactions = [];
   const encrypted_codes = [];
   const owner = accounts[0];
-  conference = await Conference.new('Test', 0, participants, 0, '', '0', {gasPrice:gasPrice});
+  conference = await Conference.new('Test', '0', participants, '0', '', '0x0', {gasPrice:gasPrice});
   transactions.push(getTransaction('create   ', conference.transactionHash))
   deposit = (await conference.deposit.call()).toNumber();
 
