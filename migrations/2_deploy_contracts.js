@@ -33,11 +33,7 @@ module.exports = function(deployer) {
     encryption = fs.readFileSync(config.encryption, {encoding: 'ascii'});
   }
 
-  return deployer.deploy(Manager)
-    .then(managerContract => {
-      return deployer.deploy(Deployer)
-        .then(({ address }) => managerContract.setContract(sha3('deployer'), address))
-    })
+  return deployer.deploy(Deployer)
     .then(() => {
       console.log([name, deposit,limitOfParticipants, coolingPeriod, encryption].join(','));
       return deployer.deploy(Conference, name, deposit,limitOfParticipants, coolingPeriod, encryption, '0x0');
