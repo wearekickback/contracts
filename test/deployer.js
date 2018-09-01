@@ -17,6 +17,18 @@ contract('Deployer', accounts => {
     await deployer.send(1, { from: accounts[0] }).should.be.rejected
   })
 
+  it('has an owner', async () => {
+    await deployer.owner().should.eventually.eq(accounts[0])
+  })
+
+  it('is destructible', async () => {
+    const { address } = deployer
+
+    await deployer.destroy().should.be.fulfilled
+
+    await Deployer.at(address).should.be.rejected
+  })
+
   it('can deploy a Conference', async () => {
     const result = await deployer.deploy(
       'test',

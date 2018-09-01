@@ -1,11 +1,12 @@
 pragma solidity ^0.4.24;
 
+import './zeppelin/lifecycle/Destructible.sol';
 import './Conference.sol';
 
 /**
  * This is responsible for deploying a new Party.
  */
-contract Deployer {
+contract Deployer is Destructible {
     /**
      * Notify that a new party has been deployed.
      */
