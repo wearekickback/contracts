@@ -1,4 +1,3 @@
-const Manager = artifacts.require("./Manager.sol");
 const Deployer = artifacts.require("./Deployer.sol");
 const Conference = artifacts.require("./Conference.sol");
 const coolingPeriod = 1 * 60 * 60 * 24 * 7;
