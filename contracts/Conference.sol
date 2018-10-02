@@ -247,8 +247,8 @@ contract Conference is Destructible, GroupAdmin {
      * @param _addresses The list of participant's address.
      */
     function attend(address[] _addresses) external onlyAdmin onlyActive {
-        for( uint i = 0; i < _addresses.length; i++){
-          markAsAttended(_addresses[i]);
+        for (uint i = 0; i < _addresses.length; i++) {
+            markAsAttended(_addresses[i]);
         }
     }
 
@@ -257,10 +257,10 @@ contract Conference is Destructible, GroupAdmin {
      * @param _addr The participant's address.
      */
     function markAsAttended(address _addr) internal {
-      require(isRegistered(_addr), 'not registered to attend');
-      require(!isAttended(_addr), 'already marked as attended');
-      emit AttendEvent(_addr);
-      participants[_addr].attended = true;
-      attended++;
+        require(isRegistered(_addr), 'not registered to attend');
+        require(!isAttended(_addr), 'already marked as attended');
+        emit AttendEvent(_addr);
+        participants[_addr].attended = true;
+        attended++;
     }
 }
