@@ -28,7 +28,7 @@ contract Conference is Destructible, GroupAdmin {
         bool paid;
     }
 
-    event RegisterEvent(address addr, string participantName, string _encryption);
+    event RegisterEvent(address addr, string participantName, uint participantIndex, string _encryption);
     event AttendEvent(address addr);
     event FinalizeEvent(uint[] maps);
     event PaybackEvent(uint256 _payout);
@@ -109,8 +109,8 @@ contract Conference is Destructible, GroupAdmin {
      * @param _encrypted The encrypted participant name
      */
     function registerWithEncryption(string _participant, string _encrypted) external payable onlyActive{
-        registerInternal(_participant);
-        emit RegisterEvent(msg.sender, _participant, _encrypted);
+        uint index = registerInternal(_participant);
+        emit RegisterEvent(msg.sender, _participant, index, _encrypted);
     }
 
     /**
@@ -118,15 +118,15 @@ contract Conference is Destructible, GroupAdmin {
      * @param _participant The twitter address of the participant
      */
     function register(string _participant) external payable onlyActive{
-        registerInternal(_participant);
-        emit RegisterEvent(msg.sender, _participant, '');
+        uint index = registerInternal(_participant);
+        emit RegisterEvent(msg.sender, _participant, index, '');
     }
 
     /**
      * @dev The internal function to register participant
      * @param _participant The twitter address of the participant
      */
-    function registerInternal(string _participant) internal {
+    function registerInternal(string _participant) internal returns (uint) {
         require(msg.value == deposit, 'must send exact deposit amount');
         require(registered < limitOfParticipants, 'participant limit reached');
         require(!isRegistered(msg.sender), 'already registered');
@@ -134,6 +134,8 @@ contract Conference is Destructible, GroupAdmin {
         registered++;
         participantsIndex[registered] = msg.sender;
         participants[msg.sender] = Participant(registered, _participant, msg.sender, false, false);
+
+        return registered;
     }
 
     /**
