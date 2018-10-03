@@ -21,7 +21,7 @@ contract('Conference', function(accounts) {
   let conference, deposit;
 
   beforeEach(async function(){
-    conference = await Conference.new('', 0, 0, 0, '', '0x0');
+    conference = await Conference.new('', 0, 500, 0, '', '0x0');
     deposit = await conference.deposit();
   })
 
@@ -222,6 +222,123 @@ contract('Conference', function(accounts) {
 
       await conference.isAttended(non_owner).should.eventually.eq(true)
       await conference.attended().should.eventually.eq(1)
+    })
+  })
+
+  describe('finalize using attendee bitmap', function(){
+    let non_registered = accounts[4];
+    let admin = accounts[5];
+
+    beforeEach(async function(){
+      await conference.register(twitterHandle, {value:deposit, from:non_owner});
+      await conference.register(twitterHandle, {value:deposit, from:accounts[6]});
+      await conference.register(twitterHandle, {value:deposit, from:accounts[7]});
+      await conference.register(twitterHandle, {value:deposit, from:accounts[8]});
+    })
+
+    it('can be called by owner', async function(){
+      await conference.finalize([1], {from:owner});
+
+      await conference.isAttended(non_owner).should.eventually.eq(true)
+      await conference.attended().should.eventually.eq(1)
+    })
+
+    it('can be called by admin', async function(){
+      await conference.grant([admin], {from:owner});
+      await conference.finalize([1], {from:admin});
+
+      await conference.isAttended(non_owner).should.eventually.eq(true)
+      await conference.attended().should.eventually.eq(1)
+    })
+
+    it('cannot be called by non owner', async function(){
+      await conference.finalize([1], {from:non_owner}).should.be.rejected;
+
+      await conference.isAttended(non_owner).should.eventually.eq(false)
+      await conference.attended().should.eventually.eq(0)
+
+      const participant = await conference.participants(non_owner);
+
+      assert.equal(getParticipantDetail(participant, 'attended'), false);
+    })
+
+    it('isAttended is false if attended function for the account is not called', async function(){
+      await conference.isAttended(owner).should.eventually.eq(false)
+    })
+
+    it('cannot be attended twice', async function(){
+      await conference.finalize([1], {from:owner});
+      await conference.finalize([1], {from:owner}).should.be.rejected;
+
+      await conference.isAttended(non_owner).should.eventually.eq(true)
+      await conference.attended().should.eventually.eq(1)
+    })
+
+    it('marks party as ended and enables payout', async function() {
+      await conference.finalize([1], {from:owner});
+
+      await conference.ended().should.eventually.eq(true)
+      await conference.payoutAmount().should.eventually.eq(await conference.payout())
+    })
+
+    it('correctly updates attendee records', async function() {
+      // all attended except accounts[6]
+      // 1 0 1 1
+      // reverse order since we go from right to left in bit parsing:
+      // [ 13 (1101) ]
+
+      await conference.finalize([13], {from:owner});
+
+      await conference.isAttended(non_owner).should.eventually.eq(true)
+      await conference.isAttended(accounts[6]).should.eventually.eq(false)
+      await conference.isAttended(accounts[7]).should.eventually.eq(true)
+      await conference.isAttended(accounts[8]).should.eventually.eq(true)
+      await conference.attended().should.eventually.eq(3)
+    })
+  })
+
+  describe('finalize large party using attendee bitmaps', function(){
+    beforeEach(async () => {
+      for (let i = 0; i < 300; ++i) {
+        await conference.register(`p${i}`, {value:deposit, from:accounts[10 + i]});
+      }
+    })
+
+    it('requires enough bitmaps to succeed', async () => {
+      await conference.finalize([1], {from:owner}).should.be.rejected;
+    })
+
+    it('correctly updates attendee records', async function(){
+      // none attended except p1, p2 and p256, p257, p298 and p299
+      // 0 1 1 ... 1 1 ... 1 1
+      // reverse order since we go from right to left in bit parsing:
+      // [ 6 (110), ... ]
+
+      const maps = [
+        toBN(0).bincn(1).bincn(2),
+        toBN(0).bincn(0).bincn(1).bincn(298 % 256).bincn(299 % 256),
+      ]
+
+      console.log('Bitmaps', maps.map(bn => bn.toString(2)))
+
+      await conference.finalize(maps.map(bn => bn.toString(16)), {from:owner});
+
+      // thorough check to see who has been marked attended vs not attended
+      const attended = [ 1, 2, 256, 257, 298, 299 ]
+      for (let i = 0; i < 300; ++i) {
+        try {
+          if (attended.includes(i)) {
+            await conference.isAttended(accounts[10 + i]).should.eventually.eq(true)
+          } else {
+            await conference.isAttended(accounts[10 + i]).should.eventually.eq(false)
+          }
+        } catch (err) {
+          console.error(`Failed for p${i} - ${accounts[10 + i]}`)
+          throw err
+        }
+      }
+
+      await conference.attended().should.eventually.eq(6)
     })
   })
 

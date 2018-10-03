@@ -198,7 +198,7 @@ contract Conference is Destructible, GroupAdmin {
     /**
      * @dev Ends the event by owner
      */
-    function payback() external onlyOwner onlyActive{
+    function payback() public onlyOwner onlyActive{
         payoutAmount = payout();
         ended = true;
         endedAt = now;
@@ -250,6 +250,25 @@ contract Conference is Destructible, GroupAdmin {
         for (uint i = 0; i < _addresses.length; i++) {
             markAsAttended(_addresses[i]);
         }
+    }
+
+    function finalize(uint[] _maps) external onlyAdmin onlyActive {
+        require(_maps.length * 256 >= registered, 'Not enough bitmaps provided');
+
+        for (uint mapIndex = 0; mapIndex < _maps.length; mapIndex++) {
+            uint map = _maps[mapIndex];
+            uint start = mapIndex * 256;
+            uint end = start + 256;
+            for (uint i = start; i < end && i < registered; i++) {
+                bool didAttend = 0 < (map & (2 ** (i - start)));
+                if (didAttend) {
+                    markAsAttended(participantsIndex[i + 1]);
+                }
+            }
+        }
+
+        // ready for payouts!
+        payback();
     }
 
     /**
