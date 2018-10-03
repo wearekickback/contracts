@@ -21,7 +21,7 @@ contract('Conference', function(accounts) {
   let conference, deposit;
 
   beforeEach(async function(){
-    conference = await Conference.new('', 0, 500, 0, '', '0x0');
+    conference = await Conference.new('', 0, 0, 0, '', '0x0');
     deposit = await conference.deposit();
   })
 
@@ -299,6 +299,8 @@ contract('Conference', function(accounts) {
 
   describe('finalize large party using attendee bitmaps', function(){
     beforeEach(async () => {
+      conference = await Conference.new('', 0, 500, 0, '', '0x0');
+
       for (let i = 0; i < 300; ++i) {
         await conference.register(`p${i}`, {value:deposit, from:accounts[10 + i]});
       }
