@@ -243,12 +243,9 @@ contract('Conference', function(accounts) {
       await conference.attended().should.eventually.eq(1)
     })
 
-    it('can be called by admin', async function(){
+    it('cannot be called by admin', async function(){
       await conference.grant([admin], {from:owner});
-      await conference.finalize([1], {from:admin});
-
-      await conference.isAttended(non_owner).should.eventually.eq(true)
-      await conference.attended().should.eventually.eq(1)
+      await conference.finalize([1], {from:admin}).should.be.rejected;
     })
 
     it('cannot be called by non owner', async function(){
