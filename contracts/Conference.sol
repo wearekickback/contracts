@@ -176,11 +176,11 @@ contract Conference is Destructible, GroupAdmin {
      */
     function isAttended(address _addr) public view returns (bool){
         if (!isRegistered(_addr)) {
-          return false;
+            return false;
         }
 
         if (participants[_addr].attended) {
-          return true;
+            return true;
         }
 
         // now check the attendance maps
@@ -212,8 +212,8 @@ contract Conference is Destructible, GroupAdmin {
             }
             return sum;
         } else {
-          // old way!
-          return attended;
+            // old way!
+            return attended;
         }
     }
 
