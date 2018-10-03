@@ -252,6 +252,10 @@ contract Conference is Destructible, GroupAdmin {
         }
     }
 
+    /**
+     * @dev Mark participants as attended and enable payouts. The attendance cannot be undone.
+     * @param _maps The attendance status of participants represented by bits of uint256 values.
+     */
     function finalize(uint[] _maps) external onlyAdmin onlyActive {
         require(_maps.length * 256 >= registered, 'Not enough bitmaps provided');
 
