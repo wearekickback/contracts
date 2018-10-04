@@ -77,7 +77,14 @@ yarn test
 To deploy a new party onto the local test network:
 
 ```shell
+yarn deploy:local
 yarn seed:party
+```
+
+or run this command that runs both the deploy:local and seed:party with some defaults
+
+```shell
+yarn setup:local
 ```
 
 This command has a number of options which allow you additionally simulate the
