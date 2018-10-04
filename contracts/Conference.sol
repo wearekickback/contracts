@@ -181,11 +181,7 @@ contract Conference is Destructible, GroupAdmin {
             return false;
         }
 
-        if (participants[_addr].attended) {
-            return true;
-        }
-
-        // now check the attendance maps
+        // check the attendance maps
         if (0 < attendanceMaps.length) {
             Participant storage p = participants[_addr];
             uint pIndex = p.participantIndex - 1;
@@ -193,7 +189,7 @@ contract Conference is Destructible, GroupAdmin {
             return (0 < (map & (2 ** (pIndex % 256))));
         }
 
-        return false;
+        return participants[_addr].attended;
     }
 
 
