@@ -189,13 +189,21 @@ contract Conference is Destructible, GroupAdmin {
         if (0 < attendanceMaps.length) {
             Participant storage p = participants[_addr];
             uint pIndex = p.participantIndex - 1;
-            uint map = attendanceMaps[pIndex / 256];
+            uint map = attendanceMaps[uint(pIndex / 256)];
             return (0 < (map & (2 ** (pIndex % 256))));
         }
 
         return false;
     }
 
+
+    function getIndexes(address _addr) public view returns (uint, uint, uint, uint){
+        Participant storage p = participants[_addr];
+        uint pIndex = p.participantIndex - 1;
+        uint map = attendanceMaps[uint(pIndex / 256)];
+        uint index = pIndex % 256;
+        return (uint(pIndex / 256), index, 2 ** (pIndex % 256), map);
+    }
 
     /**
      * @dev Returns total no. of attendees.
@@ -212,7 +220,8 @@ contract Conference is Destructible, GroupAdmin {
                     sum++;
                 }
             }
-            return sum;
+            // since maps can contain more bits than there are registrants, we cap the value!
+            return sum < registered ? sum : registered;
         } else {
             // old way!
             return attended;

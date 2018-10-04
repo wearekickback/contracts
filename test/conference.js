@@ -11,6 +11,13 @@ const gas = 1000000;
 const gasPrice = 1;
 const participantAttributes = ['participantIndex', 'participantName', 'addr', 'attended', 'paid'];
 
+const outputBitmaps = maps => {
+  console.log('Bitmaps: ');
+  Object.keys(maps).forEach(k => {
+    console.log(`   ${maps[k].toString(10)} => ${maps[k].toString(2)}`)
+  })
+}
+
 const getParticipantDetail = function(participant, detail){
   return participant[participantAttributes.indexOf(detail)];
 }
@@ -302,10 +309,12 @@ contract('Conference', function(accounts) {
   })
 
   describe('finalize large party using attendee bitmaps', function(){
+    const numRegistered = 300
+
     beforeEach(async () => {
       conference = await Conference.new('', 0, 500, 0, '', '0x0');
 
-      for (let i = 0; i < 300; ++i) {
+      for (let i = 0; i < numRegistered; ++i) {
         await conference.register(`p${i}`, {value:deposit, from:accounts[10 + i]});
       }
     })
@@ -318,7 +327,7 @@ contract('Conference', function(accounts) {
       await conference.finalize([1, 1, 1], {from:owner}).should.be.rejected;
     })
 
-    it('correctly updates attendee records', async function(){
+    it('correctly updates attendee records - p1, p2, p256, p257, p298, p299', async function(){
       // none attended except p1, p2 and p256, p257, p298 and p299
       // 0 1 1 ... 1 1 ... 1 1
       // reverse order since we go from right to left in bit parsing:
@@ -329,13 +338,13 @@ contract('Conference', function(accounts) {
         toBN(0).bincn(0).bincn(1).bincn(298 % 256).bincn(299 % 256),
       ]
 
-      console.log('Bitmaps', maps.map(bn => bn.toString(2)))
+      outputBitmaps(maps)
 
-      await conference.finalize(maps.map(bn => bn.toString(16)), {from:owner});
+      await conference.finalize(maps, {from:owner});
 
       // thorough check to see who has been marked attended vs not attended
       const attended = [ 1, 2, 256, 257, 298, 299 ]
-      for (let i = 0; i < 300; ++i) {
+      for (let i = 0; i < numRegistered; ++i) {
         try {
           if (attended.includes(i)) {
             await conference.isAttended(accounts[10 + i]).should.eventually.eq(true)
@@ -349,6 +358,131 @@ contract('Conference', function(accounts) {
       }
 
       await conference.totalAttended().should.eventually.eq(6)
+    })
+
+    it('correctly updates attendee records - p256', async function(){
+      // only p256 attended
+
+      const maps = [ toBN(0), toBN(0).bincn(0) ]
+
+      outputBitmaps(maps)
+
+      await conference.finalize(maps, {from:owner});
+
+      // thorough check to see who has been marked attended vs not attended
+      const attended = [ 256 ]
+      for (let i = 0; i < numRegistered; ++i) {
+        try {
+          if (attended.includes(i)) {
+            await conference.isAttended(accounts[10 + i]).should.eventually.eq(true)
+          } else {
+            await conference.isAttended(accounts[10 + i]).should.eventually.eq(false)
+          }
+        } catch (err) {
+          console.error(`Failed for p${i} - ${accounts[10 + i]}`)
+          throw err
+        }
+      }
+
+      await conference.totalAttended().should.eventually.eq(1)
+    })
+
+    it('correctly updates attendee records - p255', async function(){
+      // only p255 attended
+      const maps = [ toBN(0).bincn(255), toBN(0) ]
+
+      outputBitmaps(maps)
+
+      await conference.finalize(maps, {from:owner});
+
+      // thorough check to see who has been marked attended vs not attended
+      const attended = [ 255 ]
+      for (let i = 0; i < numRegistered; ++i) {
+        try {
+          if (attended.includes(i)) {
+            await conference.isAttended(accounts[10 + i]).should.eventually.eq(true)
+          } else {
+            await conference.isAttended(accounts[10 + i]).should.eventually.eq(false)
+          }
+        } catch (err) {
+          console.error(`Failed for p${i} - ${accounts[10 + i]}`)
+          throw err
+        }
+      }
+
+      await conference.totalAttended().should.eventually.eq(1)
+    })
+
+    it('correctly updates attendee records - p255, p257', async function(){
+      // only p255, p257 attended
+      const maps = [ toBN(0).bincn(255), toBN(0).bincn(1) ]
+
+      outputBitmaps(maps)
+
+      await conference.finalize(maps, {from:owner});
+
+      // thorough check to see who has been marked attended vs not attended
+      const attended = [ 255, 257 ]
+      for (let i = 0; i < numRegistered; ++i) {
+        try {
+          if (attended.includes(i)) {
+            await conference.isAttended(accounts[10 + i]).should.eventually.eq(true)
+          } else {
+            await conference.isAttended(accounts[10 + i]).should.eventually.eq(false)
+          }
+        } catch (err) {
+          console.error(`Failed for p${i} - ${accounts[10 + i]}`)
+          throw err
+        }
+      }
+
+      await conference.totalAttended().should.eventually.eq(2)
+    })
+
+    it('correctly updates attendee records - none attended', async function(){
+      // none attended
+      const maps = [ toBN(0), toBN(0) ]
+
+      outputBitmaps(maps)
+
+      await conference.finalize(maps, {from:owner});
+
+      // thorough check to see who has been marked attended vs not attended
+      for (let i = 0; i < numRegistered; ++i) {
+        try {
+          await conference.isAttended(accounts[10 + i]).should.eventually.eq(false)
+        } catch (err) {
+          console.error(`Failed for p${i} - ${accounts[10 + i]}`)
+          throw err
+        }
+      }
+
+      await conference.totalAttended().should.eventually.eq(0)
+    })
+
+    it('correctly updates attendee records - all attended', async function(){
+      // all attended
+      let n = toBN(0)
+      for (let i = 0; i < 256; i++) {
+        n = n.bincn(i)
+      }
+      const maps = [ n, n ]
+
+      outputBitmaps(maps)
+
+      await conference.finalize(maps, {from:owner});
+
+      // thorough check to see who has been marked attended vs not attended
+      for (let i = 0; i < numRegistered; ++i) {
+        try {
+          await conference.isAttended(accounts[10 + i]).should.eventually.eq(true)
+        } catch (err) {
+          console.error(`Failed for p${i} - ${accounts[10 + i]}`)
+          throw err
+        }
+      }
+
+      await conference.totalAttended().should.eventually.eq(numRegistered)
     })
   })
 
