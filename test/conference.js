@@ -11,13 +11,6 @@ const gas = 1000000;
 const gasPrice = 1;
 const participantAttributes = ['participantIndex', 'participantName', 'addr', 'attended', 'paid'];
 
-const outputBitmaps = maps => {
-  console.log('Bitmaps: ');
-  Object.keys(maps).forEach(k => {
-    console.log(`   ${maps[k].toString(10)} => ${maps[k].toString(2)}`)
-  })
-}
-
 const getParticipantDetail = function(participant, detail){
   return participant[participantAttributes.indexOf(detail)];
 }

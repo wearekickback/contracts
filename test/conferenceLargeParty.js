@@ -1,7 +1,7 @@
 const { toWei, toHex, toBN } = require('web3-utils')
 const Conference = artifacts.require("Conference.sol");
 
-const { getBalance, mulBN } = require('./utils')
+const { getBalance, mulBN, outputBNs } = require('./utils')
 
 web3.currentProvider.sendAsync = web3.currentProvider.send
 const { wait, waitUntilBlock } = require('@digix/tempo')(web3);
@@ -10,13 +10,6 @@ const twitterHandle = '@bighero6';
 const gas = 1000000;
 const gasPrice = 1;
 const participantAttributes = ['participantIndex', 'participantName', 'addr', 'attended', 'paid'];
-
-const outputBitmaps = maps => {
-  console.log('Bitmaps: ');
-  Object.keys(maps).forEach(k => {
-    console.log(`   ${maps[k].toString(10)} => ${maps[k].toString(2)}`)
-  })
-}
 
 const getParticipantDetail = function(participant, detail){
   return participant[participantAttributes.indexOf(detail)];
@@ -62,7 +55,7 @@ contract('Conference - large party', function(accounts) {
         toBN(0).bincn(0).bincn(1).bincn(298 % 256).bincn(299 % 256),
       ]
 
-      outputBitmaps(maps)
+      outputBNs(maps)
 
       await conference.finalize(maps, {from:owner});
 
@@ -82,6 +75,11 @@ contract('Conference - large party', function(accounts) {
       }
 
       await conference.totalAttended().should.eventually.eq(6)
+
+      const payout = await conference.payout()
+      const expectedPayout = deposit.mul(toBN(numRegistered)).div(toBN(6))
+      payout.should.eq(expectedPayout)
+      await conference.payoutAmount().should.eventually.eq(payout)
     })
 
     it('correctly updates attendee records - p256', async function(){
@@ -89,7 +87,7 @@ contract('Conference - large party', function(accounts) {
 
       const maps = [ toBN(0), toBN(0).bincn(0) ]
 
-      outputBitmaps(maps)
+      outputBNs(maps)
 
       await conference.finalize(maps, {from:owner});
 
@@ -109,13 +107,18 @@ contract('Conference - large party', function(accounts) {
       }
 
       await conference.totalAttended().should.eventually.eq(1)
+
+      const payout = await conference.payout()
+      const expectedPayout = deposit.mul(toBN(numRegistered))
+      payout.should.eq(expectedPayout)
+      await conference.payoutAmount().should.eventually.eq(payout)
     })
 
     it('correctly updates attendee records - p255', async function(){
       // only p255 attended
       const maps = [ toBN(0).bincn(255), toBN(0) ]
 
-      outputBitmaps(maps)
+      outputBNs(maps)
 
       await conference.finalize(maps, {from:owner});
 
@@ -135,13 +138,18 @@ contract('Conference - large party', function(accounts) {
       }
 
       await conference.totalAttended().should.eventually.eq(1)
+
+      const payout = await conference.payout()
+      const expectedPayout = deposit.mul(toBN(numRegistered))
+      payout.should.eq(expectedPayout)
+      await conference.payoutAmount().should.eventually.eq(payout)
     })
 
     it('correctly updates attendee records - p255, p257', async function(){
       // only p255, p257 attended
       const maps = [ toBN(0).bincn(255), toBN(0).bincn(1) ]
 
-      outputBitmaps(maps)
+      outputBNs(maps)
 
       await conference.finalize(maps, {from:owner});
 
@@ -161,13 +169,18 @@ contract('Conference - large party', function(accounts) {
       }
 
       await conference.totalAttended().should.eventually.eq(2)
+
+      const payout = await conference.payout()
+      const expectedPayout = deposit.mul(toBN(numRegistered)).div(toBN(2))
+      payout.should.eq(expectedPayout)
+      await conference.payoutAmount().should.eventually.eq(payout)
     })
 
     it('correctly updates attendee records - none attended', async function(){
       // none attended
       const maps = [ toBN(0), toBN(0) ]
 
-      outputBitmaps(maps)
+      outputBNs(maps)
 
       await conference.finalize(maps, {from:owner});
 
@@ -182,6 +195,11 @@ contract('Conference - large party', function(accounts) {
       }
 
       await conference.totalAttended().should.eventually.eq(0)
+
+      const payout = await conference.payout()
+      const expectedPayout = toBN(0)
+      payout.should.eq(expectedPayout)
+      await conference.payoutAmount().should.eventually.eq(payout)
     })
 
     it('correctly updates attendee records - all attended', async function(){
@@ -192,7 +210,7 @@ contract('Conference - large party', function(accounts) {
       }
       const maps = [ n, n ]
 
-      outputBitmaps(maps)
+      outputBNs(maps)
 
       await conference.finalize(maps, {from:owner});
 
@@ -207,6 +225,11 @@ contract('Conference - large party', function(accounts) {
       }
 
       await conference.totalAttended().should.eventually.eq(numRegistered)
+
+      const payout = await conference.payout()
+      const expectedPayout = deposit
+      payout.should.eq(expectedPayout)
+      await conference.payoutAmount().should.eventually.eq(payout)
     })
   })
 })
