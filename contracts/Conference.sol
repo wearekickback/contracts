@@ -7,7 +7,6 @@ contract Conference is GroupAdmin {
     uint256 public deposit;
     uint public limitOfParticipants;
     uint public registered;
-    uint public attended;
     bool public ended;
     bool public cancelled;
     uint public endedAt;
@@ -23,12 +22,10 @@ contract Conference is GroupAdmin {
         uint participantIndex;
         string participantName;
         address addr;
-        bool attended;
         bool paid;
     }
 
     event RegisterEvent(address addr, string participantName, uint participantIndex, string _encryption);
-    event AttendEvent(address addr);
     event FinalizeEvent(uint[] maps);
     event PaybackEvent(uint256 _payout);
     event WithdrawEvent(address addr, uint256 _payout);
@@ -132,7 +129,7 @@ contract Conference is GroupAdmin {
 
         registered++;
         participantsIndex[registered] = msg.sender;
-        participants[msg.sender] = Participant(registered, _participant, msg.sender, false, false);
+        participants[msg.sender] = Participant(registered, _participant, msg.sender, false);
 
         return registered;
     }
@@ -179,16 +176,16 @@ contract Conference is GroupAdmin {
         if (!isRegistered(_addr)) {
             return false;
         }
-
         // check the attendance maps
-        if (0 < attendanceMaps.length) {
+        else if (0 < attendanceMaps.length) {
             Participant storage p = participants[_addr];
             uint pIndex = p.participantIndex - 1;
             uint map = attendanceMaps[uint(pIndex / 256)];
             return (0 < (map & (2 ** (pIndex % 256))));
         }
-
-        return participants[_addr].attended;
+        else {
+          return false;
+        }
     }
 
 
@@ -210,8 +207,7 @@ contract Conference is GroupAdmin {
             // since maps can contain more bits than there are registrants, we cap the value!
             return sum < registered ? sum : registered;
         } else {
-            // old way!
-            return attended;
+            return 0;
         }
     }
 
@@ -282,21 +278,6 @@ contract Conference is GroupAdmin {
      */
     function changeName(string _name) external onlyOwner noOneRegistered{
         name = _name;
-    }
-
-    /**
-     * @dev Mark participants as attended. The attendance cannot be undone.
-     * @param _addresses The list of participant's address.
-     */
-    function attend(address[] _addresses) external onlyAdmin onlyActive {
-        for (uint i = 0; i < _addresses.length; i++) {
-            address addr = _addresses[i];
-            require(isRegistered(addr), 'not registered to attend');
-            require(!isAttended(addr), 'already marked as attended');
-            emit AttendEvent(addr);
-            participants[addr].attended = true;
-            attended++;
-        }
     }
 
     /**

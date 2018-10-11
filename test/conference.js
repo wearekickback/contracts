@@ -9,7 +9,7 @@ const { wait, waitUntilBlock } = require('@digix/tempo')(web3);
 const twitterHandle = '@bighero6';
 const gas = 1000000;
 const gasPrice = 1;
-const participantAttributes = ['participantIndex', 'participantName', 'addr', 'attended', 'paid'];
+const participantAttributes = ['participantIndex', 'participantName', 'addr', 'paid'];
 
 const getParticipantDetail = function(participant, detail){
   return participant[participantAttributes.indexOf(detail)];
@@ -105,7 +105,6 @@ contract('Conference', function(accounts) {
       await conference.deposit().should.eventually.eq(toWei('0.02', "ether"))
       await conference.limitOfParticipants().should.eventually.eq(20)
       await conference.registered().should.eventually.eq(0)
-      await conference.attended().should.eventually.eq(0)
       await conference.totalBalance().should.eventually.eq(0)
     })
 
@@ -167,65 +166,6 @@ contract('Conference', function(accounts) {
 
       await conference.registered().should.eventually.eq(1)
       await conference.isRegistered(owner).should.eventually.eq(true)
-    })
-  })
-
-  describe('on attend', function(){
-    let non_registered = accounts[4];
-    let admin = accounts[5];
-
-    beforeEach(async function(){
-      await conference.register(twitterHandle, {value:deposit, from:non_owner});
-    })
-
-    it('can be called by owner', async function(){
-      await conference.attend([non_owner], {from:owner});
-
-      await conference.isAttended(non_owner).should.eventually.eq(true)
-      await conference.attended().should.eventually.eq(1)
-      await conference.totalAttended().should.eventually.eq(1)
-    })
-
-    it('can be called by admin', async function(){
-      await conference.grant([admin], {from:owner});
-      await conference.attend([non_owner], {from:admin});
-
-      await conference.isAttended(non_owner).should.eventually.eq(true)
-      await conference.attended().should.eventually.eq(1)
-    })
-
-    it('cannot be called by non owner', async function(){
-      await conference.attend([non_owner], {from:non_owner}).should.be.rejected;
-
-      await conference.isAttended(non_owner).should.eventually.eq(false)
-      await conference.attended().should.eventually.eq(0)
-      await conference.totalAttended().should.eventually.eq(0)
-
-      const participant = await conference.participants(non_owner);
-
-      assert.equal(getParticipantDetail(participant, 'attended'), false);
-    })
-
-    it('isAttended is false if attended function for the account is not called', async function(){
-      await conference.isAttended(owner).should.eventually.eq(false)
-    })
-
-    it('cannot be attended if the list includes non registered address', async function(){
-      await conference.attend([non_owner, non_registered], {from:owner}).should.be.rejected;
-
-      await conference.isAttended(non_owner).should.eventually.eq(false)
-      await conference.isAttended(non_registered).should.eventually.eq(false)
-      await conference.attended().should.eventually.eq(0)
-      await conference.totalAttended().should.eventually.eq(0)
-    })
-
-    it('cannot be attended twice', async function(){
-      await conference.attend([non_owner], {from:owner});
-      await conference.attend([non_owner], {from:owner}).should.be.rejected;
-
-      await conference.isAttended(non_owner).should.eventually.eq(true)
-      await conference.attended().should.eventually.eq(1)
-      await conference.totalAttended().should.eventually.eq(1)
     })
   })
 
@@ -299,11 +239,23 @@ contract('Conference', function(accounts) {
       await conference.isAttended(accounts[8]).should.eventually.eq(true)
       await conference.totalAttended().should.eventually.eq(3)
     })
+
+    it('only allows those who have attended to withdraw', async function() {
+      // all attended except accounts[6]
+      // 1 0 1 1
+      // reverse order since we go from right to left in bit parsing:
+      // [ 13 (1101) ]
+
+      await conference.finalize([13], {from:owner});
+
+      await conference.withdraw({ from: non_owner });
+      await conference.withdraw({ from: accounts[7] });
+      await conference.withdraw({ from: accounts[8] });
+      await conference.withdraw({ from: accounts[6] }).should.be.rejected;
+    })
   })
 
   describe('on empty event', function(){
-    let notAttended = accounts[3];
-
     it('nothing to withdraw if no one attend', async function(){
       await conference.payback({from:owner});
 
@@ -321,7 +273,6 @@ contract('Conference', function(accounts) {
     beforeEach(async function(){
       await conference.register(twitterHandle, {from:attended, value:deposit});
       await conference.register(twitterHandle, {from:notAttended, value:deposit});
-      await conference.attend([attended]);
     })
 
     it('can call if owner', async function(){
@@ -336,7 +287,7 @@ contract('Conference', function(accounts) {
       await conference.ended().should.eventually.eq(true)
     })
 
-    it('cannot withdraw if non owner calls', async function(){
+    it('rejects if non owner calls', async function(){
       await conference.payback({from:non_owner}).should.be.rejected;
       await conference.withdraw({from:attended}).should.be.rejected;
       // money is still left on contract
@@ -344,16 +295,8 @@ contract('Conference', function(accounts) {
       await conference.isPaid(attended).should.eventually.eq(false)
     })
 
-    it('cannot withdraw if you did not attend', async function(){
-      await conference.payback({from:owner});
-      await conference.withdraw({from:notAttended}).should.be.rejected;
-      // money is still left on contract
-      await getBalance(conference.address).should.eventually.eq( mulBN(deposit, 2) )
-      await conference.isPaid(notAttended).should.eventually.eq(false)
-    })
-
     it('can withdraw if you attend', async function(){
-      await conference.payback({from:owner});
+      await conference.finalize([1], { from: owner });
       previousBalance = await getBalance(attended);
 
       await getBalance(conference.address).should.eventually.eq( mulBN(deposit, 2) )
@@ -386,11 +329,7 @@ contract('Conference', function(accounts) {
     // This is faiing. Potentially bug;
     it('cannot attend any more', async function(){
       await conference.payback({from:owner});
-      currentAttended = await conference.attended();
-      await conference.attend([notAttended], {from:owner}).should.be.rejected;
-
-      await conference.attended().should.eventually.eq(currentAttended)
-      await conference.ended().should.eventually.eq(true)
+      await conference.payback({from:owner}).should.be.rejected;
     })
   })
 
@@ -403,7 +342,6 @@ contract('Conference', function(accounts) {
     beforeEach(async function(){
       await conference.register(twitterHandle, {from:attended, value:deposit});
       await conference.register(twitterHandle, {from:notAttended, value:deposit});
-      await conference.attend([attended]);
     })
 
     it('cannot cancel if non owner calls', async function(){
@@ -456,7 +394,7 @@ contract('Conference', function(accounts) {
     // - cannot payback any more
 
     it('cannot be canceled if the event is already ended', async function(){
-      await conference.payback();
+      await conference.finalize([1], { from: owner });
       await conference.cancel().should.be.rejected;
 
       await getBalance(conference.address).should.eventually.eq( mulBN(deposit, 2) )
