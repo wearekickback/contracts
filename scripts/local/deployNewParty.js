@@ -11,6 +11,7 @@ const { toBN, fromWei, toHex, toWei } = require('web3-utils')
 const faker = require('faker')
 
 const { Deployer, Conference } = require('../../')
+const deployedAddresses = require('../../deployedAddresses.json')
 const { networks } = require('../../truffle-config.js')
 
 async function waitTx (promise) {
@@ -24,6 +25,7 @@ async function waitTx (promise) {
 async function init() {
   program
     .usage('[options]')
+    .option('-i, --id <id>', 'Id of party (obtain from UI /create page)')
     .option('--ropsten', 'Use Ropsten instead of local development network')
     .option(
       '--admins <n>',
@@ -34,7 +36,6 @@ async function init() {
     .option('-t, --coolingPeriod [n]', 'How long the cooling period is in seconds', 60 * 60 * 24 * 7)
     .option('-d, --deposit [n]', 'Amount of ETH attendees must deposit', 0.02)
     .option('-f, --finalize <n>', 'Finalize the party with the given no. of attendees', parseInt)
-    .option('-n, --name [n]', 'Name of party', 'test')
     .option(
       '-p, --participants <n>',
       'Maximum number of participants',
@@ -52,7 +53,12 @@ async function init() {
     )
     .parse(process.argv)
 
-  const name = program.name
+  const id = program.id
+
+  if (!id) {
+    throw new Error('Id not given')
+  }
+
   const cancelled = !!program.cancelled
   const numAdmins = program.admins || 0
   const maxParticipants = program.participants || 2
@@ -68,7 +74,7 @@ async function init() {
 Config
 ------
 Network:                ${ropsten ? 'ropsten' : 'development'}
-Party name:             ${name}
+Party id:               ${id}
 Deposit level:          ${deposit.toFixed(3)} ETH
 Cooling Period:         ${coolingPeriod} seconds
 Extra admins:           ${numAdmins}
@@ -94,7 +100,10 @@ Payout withdrawals:     ${numWithdrawals}
 
   const networkId = await web3.eth.net.getId()
 
-  const { address: deployerAddress } = Deployer.networks[networkId] || {}
+  const { address: deployerAddress } = Deployer.networks[networkId] || deployedAddresses[networkId]
+  if (!deployerAddress) {
+    throw new Error('Unable to find address of Deployer contract on this network!')
+  }
 
   console.log(`Deployer: ${deployerAddress}`)
 
@@ -146,7 +155,7 @@ Deploying new party
 
   const tx = await waitTx(deployer.methods
     .deploy(
-      name,
+      id,
       deposit.toWei().toString(16),
       toHex(maxParticipants),
       toHex(coolingPeriod),
