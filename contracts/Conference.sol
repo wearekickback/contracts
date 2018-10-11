@@ -184,7 +184,7 @@ contract Conference is GroupAdmin {
             return (0 < (map & (2 ** (pIndex % 256))));
         }
         else {
-          return false;
+            return false;
         }
     }
 
