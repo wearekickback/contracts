@@ -12,7 +12,6 @@ contract Conference is GroupAdmin {
     uint public endedAt;
     uint public coolingPeriod;
     uint256 public payoutAmount;
-    string public encryption;
     uint[] public attendanceMaps;
 
     mapping (address => Participant) public participants;
@@ -25,9 +24,8 @@ contract Conference is GroupAdmin {
         bool paid;
     }
 
-    event RegisterEvent(address addr, string participantName, uint participantIndex, string _encryption);
-    event FinalizeEvent(uint[] maps);
-    event PaybackEvent(uint256 _payout);
+    event RegisterEvent(address addr, string participantName, uint participantIndex);
+    event FinalizeEvent(uint[] maps, uint256 _payout);
     event WithdrawEvent(address addr, uint256 _payout);
     event CancelEvent();
     event ClearEvent(address addr, uint256 leftOver);
@@ -55,7 +53,6 @@ contract Conference is GroupAdmin {
      * @param _deposit The amount each participant deposits. The default is set to 0.02 Ether. The amount cannot be changed once deployed.
      * @param _limitOfParticipants The number of participant. The default is set to 20. The number can be changed by the owner of the event.
      * @param _coolingPeriod The period participants should withdraw their deposit after the event ends. After the cooling period, the event owner can claim the remining deposits.
-     * @param _encryption A pubic key. The admin can use this public key to encrypt pariticipant username which is stored in event. The admin can later decrypt the name using his/her private key.
      * @param _owner Who the owner of this contract should be
      */
     constructor (
@@ -63,7 +60,6 @@ contract Conference is GroupAdmin {
         uint256 _deposit,
         uint _limitOfParticipants,
         uint _coolingPeriod,
-        string _encryption,
         address _owner
     ) public {
         if (_owner != address(0)) {
@@ -93,20 +89,6 @@ contract Conference is GroupAdmin {
         } else {
             coolingPeriod = 1 weeks;
         }
-
-        if (bytes(_encryption).length != 0) {
-            encryption = _encryption;
-        }
-    }
-
-    /**
-     * @dev Registers with twitter name and full user name (the user name is encrypted).
-     * @param _participant The twitter address of the participant
-     * @param _encrypted The encrypted participant name
-     */
-    function registerWithEncryption(string _participant, string _encrypted) external payable onlyActive{
-        uint index = registerInternal(_participant);
-        emit RegisterEvent(msg.sender, _participant, index, _encrypted);
     }
 
     /**
@@ -114,15 +96,6 @@ contract Conference is GroupAdmin {
      * @param _participant The twitter address of the participant
      */
     function register(string _participant) external payable onlyActive{
-        uint index = registerInternal(_participant);
-        emit RegisterEvent(msg.sender, _participant, index, '');
-    }
-
-    /**
-     * @dev The internal function to register participant
-     * @param _participant The twitter address of the participant
-     */
-    function registerInternal(string _participant) internal returns (uint) {
         require(msg.value == deposit, 'must send exact deposit amount');
         require(registered < limitOfParticipants, 'participant limit reached');
         require(!isRegistered(msg.sender), 'already registered');
@@ -131,8 +104,9 @@ contract Conference is GroupAdmin {
         participantsIndex[registered] = msg.sender;
         participants[msg.sender] = Participant(registered, _participant, msg.sender, false);
 
-        return registered;
+        emit RegisterEvent(msg.sender, _participant, registered);
     }
+
 
     /**
      * @dev Withdraws deposit after the event is over.
@@ -173,18 +147,15 @@ contract Conference is GroupAdmin {
      * @return True if the user is marked as attended by admin.
      */
     function isAttended(address _addr) public view returns (bool){
-        if (!isRegistered(_addr)) {
+        if (!isRegistered(_addr) || !ended) {
             return false;
         }
         // check the attendance maps
-        else if (0 < attendanceMaps.length) {
+        else {
             Participant storage p = participants[_addr];
             uint pIndex = p.participantIndex - 1;
             uint map = attendanceMaps[uint(pIndex / 256)];
             return (0 < (map & (2 ** (pIndex % 256))));
-        }
-        else {
-            return false;
         }
     }
 
@@ -193,22 +164,22 @@ contract Conference is GroupAdmin {
      * @dev Returns total no. of attendees.
      */
     function totalAttended() public view returns (uint) {
-        // if using maps then calculate based on them
-        if (0 < attendanceMaps.length) {
-            uint sum = 0;
-            for (uint i = 0; i < attendanceMaps.length; i++) {
-                uint map = attendanceMaps[i];
-                // brian kerninghan bit-counting method - O(log(n))
-                while (map != 0) {
-                    map &= (map - 1);
-                    sum++;
-                }
-            }
-            // since maps can contain more bits than there are registrants, we cap the value!
-            return sum < registered ? sum : registered;
-        } else {
-            return 0;
+        if (!ended) {
+          return 0;
         }
+
+        // if using maps then calculate based on them
+        uint sum = 0;
+        for (uint i = 0; i < attendanceMaps.length; i++) {
+            uint map = attendanceMaps[i];
+            // brian kerninghan bit-counting method - O(log(n))
+            while (map != 0) {
+                map &= (map - 1);
+                sum++;
+            }
+        }
+        // since maps can contain more bits than there are registrants, we cap the value!
+        return sum < registered ? sum : registered;
     }
 
 
@@ -232,16 +203,6 @@ contract Conference is GroupAdmin {
     }
 
     /* Admin only functions */
-
-    /**
-     * @dev Ends the event by owner
-     */
-    function payback() public onlyAdmin onlyActive{
-        payoutAmount = payout();
-        ended = true;
-        endedAt = now;
-        emit PaybackEvent(payoutAmount);
-    }
 
     /**
      * @dev Cancels the event by owner. When the event is canceled each participant can withdraw their deposit back.
@@ -288,7 +249,9 @@ contract Conference is GroupAdmin {
         uint totalBits = _maps.length * 256;
         require(totalBits >= registered && totalBits - registered < 256, 'incorrect no. of bitmaps provided');
         attendanceMaps = _maps;
-        emit FinalizeEvent(attendanceMaps);
-        payback();
+        ended = true;
+        endedAt = now;
+        payoutAmount = payout();
+        emit FinalizeEvent(attendanceMaps, payoutAmount);
     }
 }
