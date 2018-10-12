@@ -165,7 +165,7 @@ contract Conference is GroupAdmin {
      */
     function totalAttended() public view returns (uint) {
         if (!ended) {
-          return 0;
+            return 0;
         }
 
         // if using maps then calculate based on them
@@ -178,6 +178,7 @@ contract Conference is GroupAdmin {
                 sum++;
             }
         }
+        
         // since maps can contain more bits than there are registrants, we cap the value!
         return sum < registered ? sum : registered;
     }
