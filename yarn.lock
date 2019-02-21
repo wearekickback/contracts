@@ -672,6 +672,11 @@ anymatch@^2.0.0:
     micromatch "^3.1.4"
     normalize-path "^2.1.1"
 
+app-module-path@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/app-module-path/-/app-module-path-2.2.0.tgz#641aa55dfb7d6a6f0a8141c4b9c0aa50b6c24dd5"
+  integrity sha1-ZBqlXft9am8KgUHEucCqULbCTdU=
+
 aproba@^1.0.3:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/aproba/-/aproba-1.2.0.tgz#6802e6264efd18c790a1b0d517f0f2627bf2c94a"
@@ -5190,6 +5195,11 @@ require-from-string@^1.1.0:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/require-from-string/-/require-from-string-1.2.1.tgz#529c9ccef27380adfec9a2f965b649bbee636418"
 
+require-from-string@^2.0.0:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/require-from-string/-/require-from-string-2.0.2.tgz#89a7fdd938261267318eafe14f9c32e598c36909"
+  integrity sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw==
+
 require-main-filename@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/require-main-filename/-/require-main-filename-1.0.1.tgz#97f717b69d48784f5f526a6c5aa8ffdda055a4d1"
@@ -5379,6 +5389,11 @@ semaphore@>=1.0.1, semaphore@^1.0.3:
   version "5.5.1"
   resolved "https://registry.yarnpkg.com/semver/-/semver-5.5.1.tgz#7dfdd8814bdb7cabc7be0fb1d734cfb66c940477"
 
+semver@^5.5.0:
+  version "5.6.0"
+  resolved "https://registry.yarnpkg.com/semver/-/semver-5.6.0.tgz#7e74256fbaa49c75aa7c7a205cc22799cac80004"
+  integrity sha512-RS9R6R35NYgQn++fkDWaOmqGoj4Ek9gGs+DPxNUZKuwE183xjJroKvyo1IzVFeXvUrvmALy6FWD5xrdJT25gMg==
+
 semver@~5.4.1:
   version "5.4.1"
   resolved "https://registry.yarnpkg.com/semver/-/semver-5.4.1.tgz#e059c09d8571f0540823733433505d3a2f00b18e"
@@ -5563,7 +5578,19 @@ sol-merger@^0.1.2:
     fs-extra "^4.0.2"
     glob "^7.1.2"
 
-solc@0.4.24, solc@^0.4.2:
+solc@0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/solc/-/solc-0.5.0.tgz#2deb2ae992acac3afb909f85c38d00f01dcb335e"
+  integrity sha512-mdLHDl9WeYrN+FIKcMc9PlPfnA9DG9ur5QpCDKcv6VC4RINAsTF4EMuXMZMKoQTvZhtLyJIVH/BZ+KU830Z8Xg==
+  dependencies:
+    fs-extra "^0.30.0"
+    keccak "^1.0.2"
+    memorystream "^0.3.1"
+    require-from-string "^2.0.0"
+    semver "^5.5.0"
+    yargs "^11.0.0"
+
+solc@^0.4.2:
   version "0.4.24"
   resolved "https://registry.yarnpkg.com/solc/-/solc-0.4.24.tgz#354f14b269b38cbaa82a47d1ff151723502b954e"
   dependencies:
@@ -6081,13 +6108,15 @@ truffle-hdwallet-provider@^1.0.0-web3one.0:
     web3 "1.0.0-beta.33"
     web3-provider-engine "git+https://github.com/cgewecke/provider-engine.git#web3-one"
 
-truffle@^5.0.0-beta.0:
-  version "5.0.0-beta.0"
-  resolved "https://registry.yarnpkg.com/truffle/-/truffle-5.0.0-beta.0.tgz#8faba5ae7dd797f2747d243cabd4582072a00e5d"
+truffle@5.0.4:
+  version "5.0.4"
+  resolved "https://registry.yarnpkg.com/truffle/-/truffle-5.0.4.tgz#fc68cb6a6a35b46a7ca69eca7b64d161b491db3d"
+  integrity sha512-pZYFbU10Hb6PiTalJm+dB6s1qIZjE5qc0ux5fIgQ7Nj24zDrlYmOYruP3yhuqywwzr3PUHGPxr6hXuje0BFYoA==
   dependencies:
+    app-module-path "^2.2.0"
     mocha "^4.1.0"
     original-require "1.0.1"
-    solc "0.4.24"
+    solc "0.5.0"
 
 tunnel-agent@^0.6.0:
   version "0.6.0"
@@ -6732,6 +6761,13 @@ yargs-parser@^8.1.0:
   dependencies:
     camelcase "^4.1.0"
 
+yargs-parser@^9.0.2:
+  version "9.0.2"
+  resolved "https://registry.yarnpkg.com/yargs-parser/-/yargs-parser-9.0.2.tgz#9ccf6a43460fe4ed40a9bb68f48d43b8a68cc077"
+  integrity sha1-nM9qQ0YP5O1Aqbto9I1DuKaMwHc=
+  dependencies:
+    camelcase "^4.1.0"
+
 yargs@^10.0.3:
   version "10.1.2"
   resolved "https://registry.yarnpkg.com/yargs/-/yargs-10.1.2.tgz#454d074c2b16a51a43e2fb7807e4f9de69ccb5c5"
@@ -6748,6 +6784,24 @@ yargs@^10.0.3:
     which-module "^2.0.0"
     y18n "^3.2.1"
     yargs-parser "^8.1.0"
+
+yargs@^11.0.0:
+  version "11.1.0"
+  resolved "https://registry.yarnpkg.com/yargs/-/yargs-11.1.0.tgz#90b869934ed6e871115ea2ff58b03f4724ed2d77"
+  integrity sha512-NwW69J42EsCSanF8kyn5upxvjp5ds+t3+udGBeTbFnERA+lF541DDpMawzo4z6W/QrzNM18D+BPMiOBibnFV5A==
+  dependencies:
+    cliui "^4.0.0"
+    decamelize "^1.1.1"
+    find-up "^2.1.0"
+    get-caller-file "^1.0.1"
+    os-locale "^2.0.0"
+    require-directory "^2.1.1"
+    require-main-filename "^1.0.1"
+    set-blocking "^2.0.0"
+    string-width "^2.0.0"
+    which-module "^2.0.0"
+    y18n "^3.2.1"
+    yargs-parser "^9.0.2"
 
 yargs@^4.6.0, yargs@^4.7.1:
   version "4.8.1"
