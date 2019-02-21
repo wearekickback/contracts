@@ -18,7 +18,6 @@ if (yargs.argv.config) {
 }
 
 module.exports = function(deployer) {
-  // if (deployer.network == 'test' || deployer.network == 'coverage') return 'no need to deploy contract';
   if (config.name){
     name = config.name;
   }
