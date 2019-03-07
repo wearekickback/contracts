@@ -34,6 +34,9 @@ chai.use(chaiAsPromised)
 
 chai.should()
 
+export const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000'
+export const BYTES32_ZERO = '0x0000000000000000000000000000000000000000000000000000000000000000'
+
 export const getBalance = async addr => toBN(await web3.eth.getBalance(addr))
 
 // mul + div by 1000 takes care of upto 3 decimal places (since toBN() doesn't support decimals)
