@@ -1,13 +1,8 @@
-pragma solidity ^0.4.25;
+pragma solidity ^0.5.4;
 
 import "./rbac/RBACWithAdmin.sol";
-import "./UserPot.sol";
-
-interface EventInterface {
-  function hasEnded() external view returns (bool);
-  function getPayout(address _addr) external view returns (uint256);
-  function getDeposit(address _addr) external view returns (uint256);
-}
+import "./EventInterface.sol";
+import "./UserPotInterface.sol";
 
 contract Event is RBACWithAdmin, EventInterface {
   UserPotInterface userPot;

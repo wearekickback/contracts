@@ -1,4 +1,4 @@
-pragma solidity ^0.4.25;
+pragma solidity ^0.5.4;
 
 import "./RBAC.sol";
 
@@ -20,7 +20,7 @@ contract RBACWithAdmin is RBAC {
    */
   modifier onlyAdmin()
   {
-    checkRole(msg.sender, ROLE_ADMIN);
+    require(hasRole(msg.sender, ROLE_ADMIN));
     _;
   }
 

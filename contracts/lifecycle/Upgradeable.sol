@@ -1,6 +1,6 @@
-pragma solidity ^0.4.25;
+pragma solidity ^0.5.4;
 
-import "./ERC165.sol";
+import "./ERC165Interface.sol";
 
 contract Upgradeable is ERC165Interface {
   bytes4 interfaceId;
@@ -19,6 +19,8 @@ contract Upgradeable is ERC165Interface {
     return _interfaceId == interfaceId;
   }
 
-  // fallback needs to be payable in order to allow upgradeability
-  function () external payable;
+  // NOTE: we don't need to explicitly specify a payable fallback function
+  // since ETH received from a selfdestruct() is always accepted.
+  //
+  // (see https://solidity.readthedocs.io/en/v0.5.4/contracts.html#fallback-function)
 }

@@ -1,19 +1,13 @@
-pragma solidity ^0.4.25;
+pragma solidity ^0.5.4;
 
 import "./upgrade/Upgradeable.sol";
 import "./rbac/RBACWithAdmin.sol";
-import "./Storage.sol";
-import "./Event.sol";
+import "./StorageInterface.sol";
+import "./EventInterface.sol";
 import "./Upgradeable.sol";
+import "./UserPotInterface.sol";
 
-interface UserPotInterface {
-  function deposit(address _event, address _user, uint256 _deposit) external payable;
-  function withdraw() external;
-  function calculatePayout(address _user) external view returns (uint256);
-  function calculateDeposit(address _user) external view returns (uint256);
-}
-
-contract UserPot is Upgradeable, RBACWithAdmin, UserPotInterface, UpgradeableInterface {
+contract UserPot is Upgradeable, RBACWithAdmin, UserPotInterface {
   bytes32 public constant STORAGE_KEY_EVENTS = keccak256("events");
   bytes32 public constant STORAGE_KEY_LEFTOVER = keccak256("leftover");
 

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.25;
+pragma solidity ^0.5.4;
 
 import "./Roles.sol";
 
@@ -19,19 +19,6 @@ contract RBAC {
 
   event RoleAdded(address addr, bytes32 roleName);
   event RoleRemoved(address addr, bytes32 roleName);
-
-  /**
-   * @dev reverts if addr does not have role
-   * @param addr address
-   * @param roleName the name of the role
-   * // reverts
-   */
-  function checkRole(address addr, bytes32 roleName)
-    view
-    public
-  {
-    roles[roleName].check(addr);
-  }
 
   /**
    * @dev determine if addr has role
@@ -92,7 +79,7 @@ contract RBAC {
    * // reverts
    */
   modifier onlyRole(bytes32 roleName) {
-    checkRole(msg.sender, roleName);
+    require(hasRole(msg.sender, roleName));
     _;
   }
 
