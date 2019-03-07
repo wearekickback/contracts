@@ -22,7 +22,7 @@ contract Storage is RBACWithAdmin, StorageInterface {
 
   mapping(address => Data) data;
 
-  modifier isAuthorized (address _addr) {
+  modifier isAuthorized () {
     require(hasAnyRole(msg.sender, AUTHORIZED_ROLES));
     _;
   }
@@ -33,7 +33,7 @@ contract Storage is RBACWithAdmin, StorageInterface {
     return data[_addr].singleAddress[_key];
   }
 
-  function setAddress(address _addr, bytes32 _key, address _value) external isAuthorized(_addr) {
+  function setAddress(address _addr, bytes32 _key, address _value) external isAuthorized {
     data[_addr].singleAddress[_key] = _value;
   }
 
@@ -43,7 +43,7 @@ contract Storage is RBACWithAdmin, StorageInterface {
     return data[_addr].singleString[_key];
   }
 
-  function setString(address _addr, bytes32 _key, string calldata _value) external isAuthorized(_addr) {
+  function setString(address _addr, bytes32 _key, string calldata _value) external isAuthorized {
     data[_addr].singleString[_key] = _value;
   }
 
@@ -53,7 +53,7 @@ contract Storage is RBACWithAdmin, StorageInterface {
     return data[_addr].singleUint256[_key];
   }
 
-  function setUint(address _addr, bytes32 _key, uint256 _value) external isAuthorized(_addr) {
+  function setUint(address _addr, bytes32 _key, uint256 _value) external isAuthorized {
     data[_addr].singleUint256[_key] = _value;
   }
 
@@ -63,7 +63,7 @@ contract Storage is RBACWithAdmin, StorageInterface {
     return data[_addr].singleBool[_key];
   }
 
-  function setBool(address _addr, bytes32 _key, bool _value) external isAuthorized(_addr) {
+  function setBool(address _addr, bytes32 _key, bool _value) external isAuthorized {
     data[_addr].singleBool[_key] = _value;
   }
 
@@ -73,7 +73,7 @@ contract Storage is RBACWithAdmin, StorageInterface {
     return data[_addr].singleBytes32[_key];
   }
 
-  function setBytes32(address _addr, bytes32 _key, bytes32 _value) external isAuthorized(_addr) {
+  function setBytes32(address _addr, bytes32 _key, bytes32 _value) external isAuthorized {
     data[_addr].singleBytes32[_key] = _value;
   }
 
@@ -83,7 +83,7 @@ contract Storage is RBACWithAdmin, StorageInterface {
     return data[_addr].multipleAddress[_key];
   }
 
-  function setAddressList(address _addr, bytes32 _key, address[] calldata _value, uint256 _len) external isAuthorized(_addr) {
+  function setAddressList(address _addr, bytes32 _key, address[] calldata _value, uint256 _len) external isAuthorized {
     data[_addr].multipleAddress[_key] = _value;
     data[_addr].multipleAddress[_key].length = _len;
   }
@@ -94,7 +94,7 @@ contract Storage is RBACWithAdmin, StorageInterface {
     return data[_addr].multipleBytes32[_key];
   }
 
-  function setBytes32List(address _addr, bytes32 _key, bytes32[] calldata _value, uint256 _len) external isAuthorized(_addr) {
+  function setBytes32List(address _addr, bytes32 _key, bytes32[] calldata _value, uint256 _len) external isAuthorized {
     data[_addr].multipleBytes32[_key] = _value;
     data[_addr].multipleBytes32[_key].length = _len;
   }
@@ -105,7 +105,7 @@ contract Storage is RBACWithAdmin, StorageInterface {
     return data[_addr].multipleUint256[_key];
   }
 
-  function setUintList(address _addr, bytes32 _key, uint256[] calldata _value, uint256 _len) external isAuthorized(_addr) {
+  function setUintList(address _addr, bytes32 _key, uint256[] calldata _value, uint256 _len) external isAuthorized {
     data[_addr].multipleUint256[_key] = _value;
     data[_addr].multipleUint256[_key].length = _len;
   }
@@ -116,7 +116,7 @@ contract Storage is RBACWithAdmin, StorageInterface {
     return data[_addr].multipleBool[_key];
   }
 
-  function setBoolList(address _addr, bytes32 _key, bool[] calldata _value, uint256 _len) external isAuthorized(_addr) {
+  function setBoolList(address _addr, bytes32 _key, bool[] calldata _value, uint256 _len) external isAuthorized {
     data[_addr].multipleBool[_key] = _value;
     data[_addr].multipleBool[_key].length = _len;
   }

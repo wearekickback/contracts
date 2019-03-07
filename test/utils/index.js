@@ -1,14 +1,13 @@
+import _ from 'lodash'
 import { toBN } from 'web3-utils'
 import chai from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 
 chai.use((_chai, utils) => {
-  utils.addMethod(_chai.Assertion.prototype, 'eq', function (val) {
-    let result = utils.flag(this, 'object')
-
+  const sanitizeResultVal = (result, val) => {
     // if bignumber
-    if (result.toNumber) {
-      if (val.toNumber) {
+    if (_.get(result, 'toNumber')) {
+      if (_.get(val, 'toNumber')) {
         result = result.toString(16)
         val = val.toString(16)
       }
@@ -24,9 +23,36 @@ chai.use((_chai, utils) => {
       }
     }
 
-    return (utils.flag(this, 'negate'))
-      ? new _chai.Assertion(result).to.not.be.equal(val)
-      : new _chai.Assertion(result).to.be.equal(val)
+    return [ result, val ]
+  }
+
+  utils.addMethod(_chai.Assertion.prototype, 'eq', function (val) {
+    let result = utils.flag(this, 'object')
+
+    if (result instanceof Array && val instanceof Array) {
+      const newResult = []
+      const newVal = []
+
+      for (let i = 0; result.length > i || val.length > i; i += 1) {
+        const [r, v] = sanitizeResultVal(result[i], val[i])
+        newResult.push(r)
+        newVal.push(v)
+      }
+
+      const newResultStr = newResult.join(', ')
+      const newValStr = newVal.join(', ')
+
+      return (utils.flag(this, 'negate'))
+        ? new _chai.Assertion(newResultStr).to.not.be.equal(newValStr)
+        : new _chai.Assertion(newResultStr).to.be.equal(newValStr)
+
+    } else {
+      const [r, v] = sanitizeResultVal(result, val)
+
+      return (utils.flag(this, 'negate'))
+        ? new _chai.Assertion(r).to.not.be.equal(v)
+        : new _chai.Assertion(r).to.be.equal(v)
+    }
   })
 })
 
