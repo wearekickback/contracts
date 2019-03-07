@@ -1,10 +1,9 @@
 pragma solidity ^0.5.4;
 
-import "./upgrade/Upgradeable.sol";
-import "./rbac/RBACWithAdmin.sol";
+import "./lifecycle/Upgradeable.sol";
+import "./access/RBACWithAdmin.sol";
 import "./StorageInterface.sol";
 import "./EventInterface.sol";
-import "./Upgradeable.sol";
 import "./UserPotInterface.sol";
 
 contract UserPot is Upgradeable, RBACWithAdmin, UserPotInterface {
@@ -44,7 +43,7 @@ contract UserPot is Upgradeable, RBACWithAdmin, UserPotInterface {
    * @param _newBalance The user's new ETH leftover balance.
    */
   function _updateUserData(address _user, address _newEvent, uint256 _newBalance) internal {
-    address[] memory events = dataStore.getAddresses(_user, STORAGE_KEY_EVENTS);
+    address[] memory events = dataStore.getAddressList(_user, STORAGE_KEY_EVENTS);
 
     // can only really do fixed-size arrays in memory, so we limit to 10. But we should calculate the gas cost of
     // the various methods (especially this one) and then work out a reasonable limit based on that. That limit will
@@ -66,12 +65,12 @@ contract UserPot is Upgradeable, RBACWithAdmin, UserPotInterface {
       newEventsLen++;
     }
     dataStore.setUint(_user, STORAGE_KEY_LEFTOVER, _newBalance);
-    dataStore.setAddresses(_user, STORAGE_KEY_EVENTS, newEvents, newEventsLen);
+    dataStore.setAddressList(_user, STORAGE_KEY_EVENTS, newEvents, newEventsLen);
   }
 
   function calculatePayout(address _user) public view returns (uint256) {
     uint256 bal = dataStore.getUint(_user, STORAGE_KEY_LEFTOVER);
-    address[] memory events = dataStore.getAddresses(_user, STORAGE_KEY_EVENTS);
+    address[] memory events = dataStore.getAddressList(_user, STORAGE_KEY_EVENTS);
     for (uint256 i = 0; i < events.length; i += 1) {
         EventInterface e = EventInterface(events[i]);
         if (e.hasEnded()) {
@@ -83,11 +82,11 @@ contract UserPot is Upgradeable, RBACWithAdmin, UserPotInterface {
 
   function calculateDeposit(address _user) public view returns (uint256) {
     uint256 bal = 0;
-    address[] memory events = dataStore.getAddresses(_user, STORAGE_KEY_EVENTS);
+    address[] memory events = dataStore.getAddressList(_user, STORAGE_KEY_EVENTS);
     for (uint256 i = 0; i < events.length; i += 1) {
         EventInterface e = EventInterface(events[i]);
         if (!e.hasEnded()) {
-            bal += e.getDeposited(_user);
+            bal += e.getDeposit(_user);
         }
     }
     return bal;

@@ -36,7 +36,6 @@ contract Deployer is Destructible {
           _name,
           _deposit,
           _limitOfParticipants,
-          _coolingPeriod,
           msg.sender
         );
 

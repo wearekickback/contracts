@@ -1,6 +1,6 @@
 pragma solidity ^0.5.4;
 
-import "./rbac/RBACWithAdmin.sol";
+import "./access/RBACWithAdmin.sol";
 import "./EventInterface.sol";
 import "./UserPotInterface.sol";
 
@@ -9,24 +9,24 @@ contract Event is RBACWithAdmin, EventInterface {
 
   constructor (
     address _userPot,
-    string _name,
+    string memory _name,
     uint256 _deposit,
     uint256 _limitOfParticipants,
     address _owner
   ) public {
+    if (_owner != address(0)) {
+        addRole(_owner, ROLE_ADMIN);
+    }
+
     require (_userPot != address(0), 'empty userPot address');
 
     userPot = UserPotInterface(_userPot);
 
-    if (_owner != address(0)) {
-        addRole (owner, ROLE_ADMIN);
-    }
-
     // ... reset of code same as existing Conference constructor
   }
 
-  function register() external payable onlyActive{
-    require(registered < limitOfParticipants, 'participant limit reached');
+  function register() external payable {
+    /* require(registered < limitOfParticipants, 'participant limit reached');
     require(!isRegistered(msg.sender), 'already registered');
 
     // send to user pot
@@ -36,28 +36,25 @@ contract Event is RBACWithAdmin, EventInterface {
     participantsIndex[registered] = msg.sender;
     participants[msg.sender] = Participant(registered, msg.sender);
 
-    emit RegisterEvent(msg.sender, registered);
+    emit RegisterEvent(msg.sender, registered); */
   }
 
 
   function getPayout(address _user) external view returns (uint256) {
-    if (!ended || !isAttended(_user)) {
+    /* if (!ended || !isAttended(_user)) {
         return 0;
     }
-    return payoutAmount;
+    return payoutAmount; */
+    return 0;
   }
 
   function getDeposit(address _user) external view returns (uint256) {
-    return deposit;
+    /* return deposit; */
   }
 
   function hasEnded() external view returns (bool) {
-    return ended;
+    /* return ended; */
   }
 
   // .... rest of the code almost same as the existing Conference contract
-
-  function () external {
-      revert('no fallback function');
-  }
 }

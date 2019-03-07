@@ -11,5 +11,5 @@ interface ERC165Interface {
      * @dev Interface identification is specified in ERC-165. This function
      * uses less than 30,000 gas.
      */
-    function supportsInterface(bytes4 interfaceId) external pure returns (bool);
+    function supportsInterface(bytes4 interfaceId) external view returns (bool);
 }

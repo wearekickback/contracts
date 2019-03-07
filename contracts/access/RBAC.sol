@@ -34,7 +34,7 @@ contract RBAC {
     return roles[roleName].has(addr);
   }
 
-  function hasAnyRole(address addr, bytes32[] roleNames)
+  function hasAnyRole(address addr, bytes32[] memory roleNames)
     view
     public
     returns (bool)
@@ -87,7 +87,7 @@ contract RBAC {
    * @dev modifier to scope access to a set of roles (uses msg.sender as addr)
    * @param roleNames the names of the roles to scope access to
    */
-  modifier onlyRoles(bytes32[] roleNames) {
+  modifier onlyRoles(bytes32[] memory roleNames) {
     require(hasAnyRole(msg.sender, roleNames));
     _;
   }

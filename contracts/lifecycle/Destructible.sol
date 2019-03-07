@@ -1,6 +1,6 @@
 pragma solidity ^0.5.4;
 
-import "../rbac/RBACWithAdmin.sol";
+import "../access/RBACWithAdmin.sol";
 
 /**
  * @title Destructible
@@ -11,6 +11,6 @@ contract Destructible is RBACWithAdmin {
    * @dev Transfers the current balance to the owner and terminates the contract.
    */
   function destroy() onlyAdmin public {
-    selfdestruct(owner);
+    selfdestruct(msg.sender);
   }
 }
