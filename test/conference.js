@@ -106,6 +106,7 @@ contract('Conference', function(accounts) {
       await conference.register({from: accounts[1], value:deposit});
 
       await conference.registered().should.eventually.eq(2)
+
       const invalidTransaction = mulBN(deposit, 0.5)
       const beforeAccountBalance = await getBalance(accounts[2])
 
