@@ -65,6 +65,29 @@ contract('Conference', function(accounts) {
     })
   })
 
+  describe('on changeDeposit', function(){
+    let newDeposit;
+    beforeEach(async function(){
+      newDeposit = mulBN(deposit, 2)
+    })
+
+    it('owner can change the deposit', async function(){
+      await conference.changeDeposit(newDeposit, {from:owner});
+      await conference.deposit().should.eventually.eq(newDeposit)
+    })
+
+    it('non owner cannot change the deposit', async function(){
+      await conference.changeDeposit(newDeposit, {from:non_owner}).should.be.rejected;
+      await conference.deposit().should.not.eventually.eq(newDeposit)
+    })
+
+    it('cannot change the deposit once someone registered', async function(){
+      await conference.register({value:deposit});
+      await conference.changeDeposit(newDeposit, {from:owner}).should.be.rejected;
+      await conference.deposit().should.not.eventually.eq(newDeposit)
+    })
+  })
+
   describe('on setLimitOfParticipants', function(){
     it('does not allow to register more than the limit', async function(){
       await conference.setLimitOfParticipants(1)
@@ -83,7 +106,6 @@ contract('Conference', function(accounts) {
       await conference.register({from: accounts[1], value:deposit});
 
       await conference.registered().should.eventually.eq(2)
-
       const invalidTransaction = mulBN(deposit, 0.5)
       const beforeAccountBalance = await getBalance(accounts[2])
 
