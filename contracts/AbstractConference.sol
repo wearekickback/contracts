@@ -91,44 +91,35 @@ contract AbstractConference is Conference, GroupAdmin {
         }
     }
 
-    /**
-     * @dev Registers with twitter name.
-     * @param _participant The twitter address of the participant
-     */
-    function register(string _participant) external payable onlyActive {
-        registerInternal(_participant);
-        emit RegisterEvent(msg.sender, _participant, "");
-    }
 
     /**
-     * @dev The internal function to register participant
-     * @param _participant The twitter address of the participant
+     * @dev Register for the event
      */
-    function registerInternal(string _participant) internal {
+    function register() external payable onlyActive{
         doDeposit(msg.sender, deposit);
 
-        require(registered < limitOfParticipants);
-        require(!isRegistered(msg.sender));
+        require(registered < limitOfParticipants, 'participant limit reached');
+        require(!isRegistered(msg.sender), 'already registered');
 
         registered++;
         participantsIndex[registered] = msg.sender;
-        participants[msg.sender] = Participant(_participant, msg.sender, false, false);
+        participants[msg.sender] = Participant(registered, msg.sender, false);
+
+        emit RegisterEvent(msg.sender, registered);
     }
 
     /**
      * @dev Withdraws deposit after the event is over.
      */
     function withdraw() external onlyEnded {
-        require(payoutAmount > 0);
-        Participant participant = participants[msg.sender];
-        require(participant.addr == msg.sender);
-        require(cancelled || participant.attended);
-        require(participant.paid == false);
+        require(payoutAmount > 0, 'payout is 0');
+        Participant storage participant = participants[msg.sender];
+        require(participant.addr == msg.sender, 'forbidden access');
+        require(cancelled || isAttended(msg.sender), 'event still active or you did not attend');
+        require(participant.paid == false, 'already withdrawn');
 
         participant.paid = true;
-
         doWithdraw(msg.sender, payoutAmount);
-
         emit WithdrawEvent(msg.sender, payoutAmount);
     }
 
@@ -155,8 +146,17 @@ contract AbstractConference is Conference, GroupAdmin {
      * @param _addr The address of a participant.
      * @return True if the user is marked as attended by admin.
      */
-    function isAttended(address _addr) view public returns (bool){
-        return isRegistered(_addr) && participants[_addr].attended;
+    function isAttended(address _addr) public view returns (bool){
+        if (!isRegistered(_addr) || !ended) {
+            return false;
+        }
+        // check the attendance maps
+        else {
+            Participant storage p = participants[_addr];
+            uint256 pIndex = p.index - 1;
+            uint256 map = attendanceMaps[uint256(pIndex / 256)];
+            return (0 < (map & (2 ** (pIndex % 256))));
+        }
     }
 
     /**
@@ -164,30 +164,11 @@ contract AbstractConference is Conference, GroupAdmin {
      * @param _addr The address of a participant.
      * @return True if the attendee has withdrawn his/her deposit.
      */
-    function isPaid(address _addr) view public returns (bool){
+    function isPaid(address _addr) public view returns (bool){
         return isRegistered(_addr) && participants[_addr].paid;
     }
 
-    /**
-     * @dev Show the payout amount each participant can withdraw.
-     * @return The amount each participant can withdraw.
-     */
-    function payout() view public returns(uint256){
-        if (attended == 0) return 0;
-        return uint(totalBalance()) / uint(attended);
-    }
-
     /* Admin only functions */
-
-    /**
-     * @dev Ends the event by owner
-     */
-    function payback() external onlyOwner onlyActive{
-        payoutAmount = payout();
-        ended = true;
-        endedAt = now;
-        emit PaybackEvent(payoutAmount);
-    }
 
     /**
      * @dev Cancels the event by owner. When the event is canceled each participant can withdraw their deposit back.
@@ -197,15 +178,15 @@ contract AbstractConference is Conference, GroupAdmin {
         cancelled = true;
         ended = true;
         endedAt = now;
-        emit CancelEvent();
+        emit CancelEvent(endedAt);
     }
 
     /**
     * @dev The event owner transfer the outstanding deposits  if there are any unclaimed deposits after cooling period
     */
     function clear() external onlyOwner onlyEnded{
-        require(now > endedAt + coolingPeriod);
-        uint leftOver = totalBalance();
+        require(now > endedAt + coolingPeriod, 'still in cooling period');
+        uint256 leftOver = totalBalance();
         doWithdraw(owner, leftOver);
         emit ClearEvent(owner, leftOver);
     }
@@ -216,6 +197,8 @@ contract AbstractConference is Conference, GroupAdmin {
      */
     function setLimitOfParticipants(uint _limitOfParticipants) external onlyOwner onlyActive{
         limitOfParticipants = _limitOfParticipants;
+
+        emit UpdateParticipantLimit(limitOfParticipants);
     }
 
     /**
@@ -227,18 +210,33 @@ contract AbstractConference is Conference, GroupAdmin {
     }
 
     /**
-     * @dev Mark participants as attended. The attendance cannot be undone.
-     * @param _addresses The list of participant"s address.
+     * @dev Mark participants as attended and enable payouts. The attendance cannot be undone.
+     * @param _maps The attendance status of participants represented by uint256 values.
      */
-    function attend(address[] _addresses) external onlyAdmin onlyActive{
-        for( uint i = 0; i < _addresses.length; i++){
-            address _addr = _addresses[i];
-            require(isRegistered(_addr));
-            require(!isAttended(_addr));
-            emit AttendEvent(_addr);
-            participants[_addr].attended = true;
-            attended++;
+    function finalize(uint256[] calldata _maps) external onlyAdmin onlyActive {
+        uint256 totalBits = _maps.length * 256;
+        require(totalBits >= registered && totalBits - registered < 256, 'incorrect no. of bitmaps provided');
+        attendanceMaps = _maps;
+        ended = true;
+        endedAt = now;
+        uint256 _totalAttended = 0;
+        // calculate total attended
+        for (uint256 i = 0; i < attendanceMaps.length; i++) {
+            uint256 map = attendanceMaps[i];
+            // brian kerninghan bit-counting method - O(log(n))
+            while (map != 0) {
+                map &= (map - 1);
+                _totalAttended++;
+            }
         }
+        // since maps can contain more bits than there are registrants, we cap the value!
+        totalAttended = _totalAttended < registered ? _totalAttended : registered;
+
+        if (totalAttended > 0) {
+            payoutAmount = uint256(totalBalance()) / totalAttended;
+        }
+
+        emit FinalizeEvent(attendanceMaps, payoutAmount, endedAt);
     }
 
     function doWithdraw(address participant, uint amount) internal;

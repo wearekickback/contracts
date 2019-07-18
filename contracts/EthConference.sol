@@ -5,10 +5,10 @@ import "./AbstractConference.sol";
 contract EthConference is AbstractConference {
 
     function doWithdraw(address participant, uint amount) internal {
-        participant.transfer(amount);
+        participant.addr.transfer(amount);
     }
 
     function doDeposit(address, uint amount) internal {
-        require(msg.value == amount);
+        require(msg.value == amount, 'must send exact deposit amount');
     }
 }
