@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-require('babel-polyfill');
-const Conference = artifacts.require("EthConference.sol");
-const Tempo = require('@digix/tempo');
-=======
 const { toWei, toHex, toBN } = require('web3-utils')
 const EthVal = require('ethval')
 const Conference = artifacts.require("Conference.sol");
@@ -10,7 +5,6 @@ const Conference = artifacts.require("Conference.sol");
 const { getBalance, mulBN } = require('./utils')
 
 web3.currentProvider.sendAsync = web3.currentProvider.send
->>>>>>> master
 const { wait, waitUntilBlock } = require('@digix/tempo')(web3);
 
 const twitterHandle = '@bighero6';
