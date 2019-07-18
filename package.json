@@ -69,7 +69,9 @@
     "web3-utils": "^1.0.0-beta.36",
     "yargs": "^9.0.1"
   },
-  "dependencies": {},
+  "dependencies": {
+    "openzeppelin-solidity": "^2.3.0"
+  },
   "engines": {
     "node": ">=8.12.0"
   }

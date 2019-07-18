@@ -1,7 +1,7 @@
 pragma solidity ^0.5.4;
 
-import "./GroupAdmin.sol";
-import "./Conference.sol";
+import './GroupAdmin.sol';
+import './Conference.sol';
 
 contract AbstractConference is Conference, GroupAdmin {
     string public name;
@@ -18,7 +18,7 @@ contract AbstractConference is Conference, GroupAdmin {
     uint256[] public attendanceMaps;
 
     mapping (address => Participant) public participants;
-    mapping (uint => address) public participantsIndex;
+    mapping (uint256 => address) public participantsIndex;
 
     struct Participant {
         uint256 index;
@@ -49,10 +49,9 @@ contract AbstractConference is Conference, GroupAdmin {
      * @param _deposit The amount each participant deposits. The default is set to 0.02 Ether. The amount cannot be changed once deployed.
      * @param _limitOfParticipants The number of participant. The default is set to 20. The number can be changed by the owner of the event.
      * @param _coolingPeriod The period participants should withdraw their deposit after the event ends. After the cooling period, the event owner can claim the remining deposits.
-     * @param _encryption A pubic key. The admin can use this public key to encrypt pariticipant username which is stored in event. The admin can later decrypt the name using his/her private key.
      */
     constructor (
-        string _name,
+        string memory _name,
         uint256 _deposit,
         uint256 _limitOfParticipants,
         uint256 _coolingPeriod,
@@ -65,7 +64,7 @@ contract AbstractConference is Conference, GroupAdmin {
         if (bytes(_name).length != 0){
             name = _name;
         } else {
-            name = "Test";
+            name = 'Test';
         }
 
         if(_deposit != 0){
@@ -84,10 +83,6 @@ contract AbstractConference is Conference, GroupAdmin {
             coolingPeriod = _coolingPeriod;
         } else {
             coolingPeriod = 1 weeks;
-        }
-
-        if (bytes(_encryption).length != 0) {
-            encryption = _encryption;
         }
     }
 
@@ -195,7 +190,7 @@ contract AbstractConference is Conference, GroupAdmin {
      * @dev Change the capacity of the event. The owner can change it until event is over.
      * @param _limitOfParticipants the number of the capacity of the event.
      */
-    function setLimitOfParticipants(uint _limitOfParticipants) external onlyOwner onlyActive{
+    function setLimitOfParticipants(uint256 _limitOfParticipants) external onlyOwner onlyActive{
         limitOfParticipants = _limitOfParticipants;
 
         emit UpdateParticipantLimit(limitOfParticipants);
@@ -205,7 +200,7 @@ contract AbstractConference is Conference, GroupAdmin {
      * @dev Change the name of the event. The owner can change it as long as no one has registered yet.
      * @param _name the name of the event.
      */
-    function changeName(string _name) external onlyOwner noOneRegistered{
+    function changeName(string calldata _name) external onlyOwner noOneRegistered{
         name = _name;
     }
 
@@ -239,6 +234,6 @@ contract AbstractConference is Conference, GroupAdmin {
         emit FinalizeEvent(attendanceMaps, payoutAmount, endedAt);
     }
 
-    function doWithdraw(address participant, uint amount) internal;
-    function doDeposit(address participant, uint amount) internal;
+    function doWithdraw(address participant, uint256 amount) internal {}
+    function doDeposit(address participant, uint256 amount) internal {}
 }

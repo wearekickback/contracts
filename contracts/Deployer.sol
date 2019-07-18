@@ -1,7 +1,7 @@
 pragma solidity ^0.5.4;
 
 import './zeppelin/lifecycle/Destructible.sol';
-import './Conference.sol';
+import './EthConference.sol';
 
 /**
  * This is responsible for deploying a new Party.
@@ -28,7 +28,7 @@ contract Deployer is Destructible {
         uint _limitOfParticipants,
         uint _coolingPeriod
     ) external {
-        Conference c = new Conference(
+        Conference c = new EthConference(
             _name,
             _deposit,
             _limitOfParticipants,

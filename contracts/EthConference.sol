@@ -3,12 +3,23 @@ pragma solidity ^0.5.4;
 import "./AbstractConference.sol";
 
 contract EthConference is AbstractConference {
-
-    function doWithdraw(address participant, uint amount) internal {
-        participant.addr.transfer(amount);
+    constructor(
+        string memory _name,
+        uint256 _deposit,
+        uint256 _limitOfParticipants,
+        uint256 _coolingPeriod,
+        address payable _owner
+    )
+        AbstractConference(_name, _deposit, _limitOfParticipants, _coolingPeriod, _owner)
+        public
+    {
     }
 
-    function doDeposit(address, uint amount) internal {
+    function doWithdraw(address payable participant, uint256 amount) internal {
+        participant.transfer(amount);
+    }
+
+    function doDeposit(address, uint256 amount) internal {
         require(msg.value == amount, 'must send exact deposit amount');
     }
 }
