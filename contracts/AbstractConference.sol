@@ -1,45 +1,44 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.5.4;
 
 import "./GroupAdmin.sol";
 import "./Conference.sol";
-import "./zeppelin/lifecycle/Destructible.sol";
 
-contract AbstractConference is Conference, Destructible, GroupAdmin {
+contract AbstractConference is Conference, GroupAdmin {
     string public name;
     uint256 public deposit;
-    uint public limitOfParticipants;
-    uint public registered;
-    uint public attended;
+    uint256 public limitOfParticipants;
+    uint256 public registered;
     bool public ended;
     bool public cancelled;
-    uint public endedAt;
-    uint public coolingPeriod;
+    uint256 public endedAt;
+    uint256 public totalAttended;
+
+    uint256 public coolingPeriod;
     uint256 public payoutAmount;
-    string public encryption;
+    uint256[] public attendanceMaps;
 
     mapping (address => Participant) public participants;
     mapping (uint => address) public participantsIndex;
 
     struct Participant {
-        string participantName;
-        address addr;
-        bool attended;
+        uint256 index;
+        address payable addr;
         bool paid;
     }
 
     /* Modifiers */
     modifier onlyActive {
-        require(!ended);
+        require(!ended, 'already ended');
         _;
     }
 
     modifier noOneRegistered {
-        require(registered == 0);
+        require(registered == 0, 'people have already registered');
         _;
     }
 
     modifier onlyEnded {
-        require(ended);
+        require(ended, 'not yet ended');
         _;
     }
 
@@ -55,10 +54,14 @@ contract AbstractConference is Conference, Destructible, GroupAdmin {
     constructor (
         string _name,
         uint256 _deposit,
-        uint _limitOfParticipants,
-        uint _coolingPeriod,
-        string _encryption
+        uint256 _limitOfParticipants,
+        uint256 _coolingPeriod,
+        address payable _owner
     ) public {
+        if (_owner != address(0)) {
+            owner = _owner;
+        }
+
         if (bytes(_name).length != 0){
             name = _name;
         } else {
@@ -86,16 +89,6 @@ contract AbstractConference is Conference, Destructible, GroupAdmin {
         if (bytes(_encryption).length != 0) {
             encryption = _encryption;
         }
-    }
-
-    /**
-     * @dev Registers with twitter name and full user name (the user name is encrypted).
-     * @param _participant The twitter address of the participant
-     * @param _encrypted The encrypted participant name
-     */
-    function registerWithEncryption(string _participant, string _encrypted) external payable onlyActive{
-        registerInternal(_participant);
-        emit RegisterEvent(msg.sender, _participant, _encrypted);
     }
 
     /**

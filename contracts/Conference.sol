@@ -6,4 +6,5 @@ interface Conference {
     event WithdrawEvent(address addr, uint256 payout);
     event CancelEvent(uint256 endedAt);
     event ClearEvent(address addr, uint256 leftOver);
+    event UpdateParticipantLimit(uint256 limit);
 }
