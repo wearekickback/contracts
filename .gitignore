@@ -1,14 +1,14 @@
-build
-build*
 npm-debug.log
-package-lock.json
 node_modules
 yarn-error.log
 .DS_Store
 .vscode/*
 .node*
 archive/*
+build/
 coverage
 coverageEnv
 coverage.json
 tmp
+log/*.log
+.deployment.js

@@ -1,23 +1,23 @@
+const Deployer = artifacts.require("./Deployer.sol");
 const Conference = artifacts.require("./Conference.sol");
 const coolingPeriod = 1 * 60 * 60 * 24 * 7;
 // this is already required by truffle;
 const yargs = require('yargs');
 const crypto = require('crypto');
 const fs = require('fs');
-let encryption = '';
+const { sha3 }  = require('web3-utils')
+
 let config = {};
 let name = ''; // empty name falls back to the contract default
 let deposit = 0; // 0 falls back to the contract default
 let tld = 'eth';
 let limitOfParticipants = 0; // 0 falls back to the contract default
-// eg: truffle migrate --config '{"name":"CodeUp No..", "limitOfParticipants":15, "encryption":"./tmp/test_public.key"}'
+// eg: truffle migrate --config '{"name":"CodeUp No..", "limitOfParticipants":15}'
 if (yargs.argv.config) {
   config = JSON.parse(yargs.argv.config);
 }
 
 module.exports = function(deployer) {
-  const app_config = require('../app_config.js')[deployer.network];
-  console.log('app_config', app_config)
   if (deployer.network == 'test' || deployer.network == 'coverage') return 'no need to deploy contract';
   if (config.name){
     name = config.name;
@@ -27,13 +27,9 @@ module.exports = function(deployer) {
     limitOfParticipants = config.limitOfParticipants;
   }
 
-  if (config.encryption) {
-    encryption = fs.readFileSync(config.encryption, {encoding: 'ascii'});
-  }
-
-  return deployer
+  return deployer.deploy(Deployer)
     .then(() => {
-      console.log([name, deposit,limitOfParticipants, coolingPeriod, encryption].join(','));
-      return deployer.deploy(Conference, name, deposit,limitOfParticipants, coolingPeriod, encryption, '0');
+      console.log([name, deposit,limitOfParticipants, coolingPeriod].join(','));
+      return deployer.deploy(Conference, name, deposit,limitOfParticipants, coolingPeriod, '0x0000000000000000000000000000000000000000');
     })
   };

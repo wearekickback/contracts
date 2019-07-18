@@ -1,174 +1,167 @@
-[![Build Status](https://api.travis-ci.org/noblocknoparty/blockparty-contracts.svg?branch=master)](https://travis-ci.org/noblocknoparty/blockparty-contracts)
-[![Coverage Status](https://coveralls.io/repos/github/noblocknoparty/blockparty-contracts/badge.svg?branch=master)](https://coveralls.io/github/noblocknoparty/blockparty-contracts?branch=master)
+# Contracts
 
-<h2>What is this?</h2>
+[![Build Status](https://api.travis-ci.org/wearekickback/contracts.svg?branch=master)](https://travis-ci.org/wearekickback/contracts)
+[![Coverage Status](https://coveralls.io/repos/github/wearekickback/contracts/badge.svg?branch=master)](https://coveralls.io/github/wearekickback/contracts?branch=master)
 
-<h3>Demo</h3>
+This repo contains all the Kickback contracts. The `master` branch is the
+main branch, and contains the productions versions of the contracts.
 
-[![Demo Video](./blockparty.gif)](https://www.youtube.com/watch?v=Tlt7oflkGng)
+# Using the contracts
 
-<p>
-  Have you ever encountered free party or meetup and realised that half the people registered did not actually turn up?
-  BlockParty solves this problem by providing a simple incentive for people to register only if they mean it.
-</p>
-<h2>How does this work?</h2>
-<p>
-  Simple. You pay small deposit when you register. You lose your deposit if you do not turn up. You will get your deposit back + we split the deposit of whom did not turn up.
-  You go to party and may end up getting more money.
-</p>
-
-<h2>Targetted users</h2>
-<p>
-  The current users are mostly participants of Blockchain related events, such as conference pre/post dinner, meetups, and hackathons. The users are expected to own some Ether (a virtual currency, shorten for ETH), to pay the deposit of the event, as well as usage fee of its platform called [Ethereum](http://ethereum.org).
-</p>
-
-<div style:"text-align:center;">
-  <img width='80%' style:"display:inline-block;" src="http://blockparty.io.s3-website-eu-west-1.amazonaws.com/images/diagram.png"></img>
-</div>
-
-<h2>How to setup</h2>
-
-<h3>Option 1: access from mobile browser</h3>
-<p>This is the recommended way. The easier step by step guide is <a href='https://medium.com/@makoto_inoue/participating-blockparty-event-with-a-mobile-wallet-b6b9123246f7' >here</a></p>
-<ul>
-  <li>Step 1: Download <a href='http://status.im'>Status.im</a>,  <a href='https://www.cipherbrowser.com'>Cipher Browser</a> or <a href='https://trustwalletapp.com'>Trust Wallet</a> from App store/Google play</li>
-  <li>Step 2: Create an account on your wallet, and make sure you have some Ether.</li>
-  <li>Step 3: Type the event url on their built in browser </li>
-</ul>
-
-<h3>Option 2: access from desktop browser with <a href='https://metamask.io/'>Metamask</a> Chrome extension</h3>
-<p>This is the most popular way right now.</p>
-<ul>
-  <li>Step 1: Install <a href='https://metamask.io/'>Metamask</a> Chrome extension </li>
-  <li>Step 2: Create an account on your metamask, and make sure you have some Ether.</li>
-  <li>Step 3: Refresh the page </li>
-</ul>
-
-<h3>Option 3: access from normal browser connecting to local node</h3>
-<p>This has been the standard way to access Dapp prior to Ethereum Wallet (lower than v 0.7)</p>
-<ul>
-  <li>Step 1: Install <a href='https://github.com/ethereum/mist/releases'>Mist browser (v 0.8 or higher)</a>, and make sure you choose <em style={{fontWeight:'bold'}}>mainnet</em>. Here is <a href='https://www.youtube.com/watch?v=Y3JfLgjqNU4'>a quick video tutorial</a> </li>
-  <li>Step 2: Create an account on your wallet, and make sure you have some Ether.</li>
-  <li>Step 3: Stop Ethereum Wallet</li>
-  <li>Step 4: Start geth(Go Etheruem, command line tool) with the following options. (See the <a href='https://github.com/ethereum/go-ethereum/wiki/Building-Ethereum'>installation instructions</a> for each platform)</li>
-  <li>Step 5: Refresh this page </li>
-</ul>
-<blockquote style={{backgroundColor:'black', color:'white', padding:'1em'}}>
-  geth --unlock 0 --rpc  --rpcapi "eth,net,web3" --rpccorsdomain URL
-</blockquote>
-<p>
-  NOTE: <span style={{backgroundColor:'black', color:'white', padding:'0.3em'}} > --unlock 0</span> will unlock with one account. <span style={{backgroundColor:'black', color:'white', padding:'0.3em'}} > --unlock 0 1</span> will unlock with two accounts.
-</p>
-
-<h2>How to play?</h2>
-<p>
-  Type your twitter account, pick one of your address, then press 'RSVP'. It will take 10 to 30 seconds to get verified and you will receive notification.
-  Once registered, join the party! Your party host (the contract owner) will mark you as attend.
-  Once the host clicks `payout`, then you are entitled to `withdraw` your payout.
-</p>
-
-<h2>FAQ</h2>
-<h3>Can I cancel my registration?</h3>
-<p>No</p>
-<h3>What happens if I do not withdraw my payout?</h3>
-<p>
-  If you do not withdraw your payout within one week after the event is end, the host (contract owner) will clear the balance from the contract and the remaining blance goes back to the host, so do not keep them hanging
-</p>
-<h3>What happens if the event is canceled?</h3>
-<p>
-  In case the event is canceled, all registered people can withdraw their deposit.
-  Make sure that you register with correct twitter account so that the host can notify you.
-</p>
-<h3>What if there is a bug in the contract!</h3>
-<p>
-  If the bug is found before the contract is compromised, the host can kill the contract and all the deposit goes back to the host so he/she can manually return the deposit.
-  If the contract is compromised and the deposit is stolen, or his/her private key is lost/stolen, I am afraid that the host cannot compensate for you. Please assess the risk before you participate the event.
-</p>
-<h3>Can I host my own event using BlockParty?</h3>
-<p>
-  Please contact the <a href="http://twitter.com/makoto_inoue">author of this project</a> if you are interested.
-</p>
-
-<h2>Terms and conditions</h2>
-<p>
-  By downloading and deploying this software, you agree to our terms and conditions of use. We accept no responsibility whether in contract, tort or otherwise for any loss or damage arising out of or in connection with your use of our software and recommend that you ensure your devices are protected by using appropriate virus protection.
-</p>
-
-## Hacking guide
-
-If you are interested in contributing to blockparty, have a look into ["help wanted" tag on Github issues](https://github.com/noblocknoparty/blockparty-contracts/issues?q=is%3Aissue+is%3Aopen+label%3A%22help+wanted%22). They are relatively easy and does not require so much application specific knowledges.
-
-### Prerequisite
-
-- [geth](https://github.com/ethereum/go-ethereum/wiki/geth)
-- [nodejs](https://nodejs.org/en/)
-- [npm](https://www.npmjs.com/)
-- [webpack](https://webpack.github.io/)
-- [ganache-cli](https://github.com/trufflesuite/ganache-cli) = v6.0.3 (ganache-core: 2.0.2) for local use
-
-### Installation
-
-- Run `npm`
-
-### Running test
-
-- Run `ganache-cli -a 300` in one console
-- Generate test public/secret key
+To use these contracts in a Dapp first install our NPM org:
 
 ```
-cd tmp/
-openssl genrsa 2048 > test_private.key
-openssl rsa -pubout < test_private.key > test_public.key
+npm i @wearekickback/contracts
 ```
 
-- Run `npm run test`
+Then, using [truffle-contract](https://github.com/trufflesuite/truffle/tree/develop/packages/truffle-contract) you can import and use the
+`Deployer` contract definition and use it as such:
 
-### Running test coverage
+```js
+const promisify = require('es6-promisify')
+const TruffleContract = require('truffle-contract')
+const Web3 = require('web3')
+const { Deployer } = require('@wearekickback/contracts')
 
-```
-./node_modules/.bin/solidity-coverage
-```
+async init = () => {
+  const web3 = new Web3(/* Ropsten or Mainnet HTTP RPC endpoint */)
 
-### Running locally
+  const contract = TruffleContract(Deployer)
+  contract.setProvider(web3.currentProvider)
 
-- Run local node (geth, ganache test rpc, etc)
-- Run `./node_modules/.bin/truffle migrate --network development`
-- Run `npm run dev`
-- Open `http://localhost:8080`
+  const deployer = await contract.deployed()
 
-NOTE: If you have metamask, your account on ganache will not have ether to register. Either send it via terminal, or open the browser in the incognite mode, so you use default account on local node.
+  // deploy a new party (see Deployer.sol for parameter documentation)
+  await deployer.deploy('My event', 0, 0, 0)
 
-### Building asset files to deploy
+  const events = await promisify(deployer.contract.getPastEvents, deployer.contract)('NewParty')
 
-- Run `npm run build`
-- Upload the content of files under `build` directory
+  const { returnValues: { deployedAddress } } = events.pop()
 
-### Encryption (experimental)
-
-By passing public key file location to parameter of Conference during migration, it can allow user to register with their user name encrypted.
-
-### Configurable values (experimental)
-
-Event name is configurable as `name`
-
-eg: Encrypt participant name
-
-```
-./node_modules/.bin/truffle migrate --config '{"name":"CodeUp No..", "encryption":"./tmp/test_public.key"  }'
+  console.log(`New party contract deployed at: ${deployedAddress}`)
+}
 ```
 
-Changing number of participants
+## Dev guide
+
+Pre-requisites:
+
+- [Node 8.12+](https://nodejs.org/)
+- [Yarn](https://yarnpkg.com)
+
+**Setup Truffle config**
+
+Copy `.deployment-sample.js` to `.deployment.js` and edit the values
+accordingly.
+
+**Install dependencies and do basic setup**
 
 ```
-./node_modules/.bin/truffle migrate --config '{"name":"CodeUp No..", "limitOfParticipants":15}'
+yarn
+yarn setup
 ```
 
-## Deploying and running on real network
-
-For `ropsten` and `mainnet` it now deploys via Infura. Pass the extra to set deployment specific
+Setup parameters for Truffle config:
 
 ```
---network $NETWORK --mnemonic $SECRET
+cp .deployment-sample.js .deployment.js
 ```
 
-NOTE: `ropsten` and `mainnet` uses different gasPrice. Check `truffle.js` file and `scripts/util/set_gas.js` for the detail.
+**Run local chain**
+
+```
+npx ganache-cli --accounts 500
+```
+
+**Run tests**
+
+```
+yarn test
+```
+
+## Simulation
+
+To deploy a new party onto the local test network:
+
+```shell
+yarn seed:party -i test
+```
+
+This command has a number of options which allow you additionally simulate the
+full lifecycle of a party:
+
+```shell
+$ yarn seed:party --help
+
+Usage: deployNewParty [options]
+
+Options:
+
+  -i, --id <id>            Id of party (obtain from UI /create page)
+  --ropsten                Use Ropsten instead of local development network
+  --rinkeby                Use Rinkeby instead of local development network
+  --mainnet                Use Mainnet instead of local development network
+  --admins <n>             Number of additional party admins to have
+  -c, --cancelled          Whether to mark the party as cancelled
+  -t, --coolingPeriod [n]  How long the cooling period is in seconds (default: 604800)
+  -d, --deposit [n]        Amount of ETH attendees must deposit (default: 0.02)
+  -f, --finalize <n>       Finalize the party with the given no. of attendees
+  -p, --participants <n>   Maximum number of participants
+  -r, --register <n>       Number of participants to register
+  -w, --withdraw <n>       Number of attendees to withdraw payouts for
+  -h, --help               output usage information
+```
+
+So, for example, to create party with max. 100 participants, upto 50 actually
+registered, with 25 having actually attended, and 12 having withdrawn their
+payouts after the party has ended. With an added cooling period of 1 millisecond to allow your to test the clear functionality immediately.
+
+```shell
+yarn seed:party -i test -p 100  -r 50 -a 25 -w 12 -e -t 1
+```
+
+The script actually uses `truffle-config.js` to work out how to connect to the
+development network. If you want to seed a party on e.g. Ropsten then you can do by
+supplying the `--ropsten` flag:
+
+```shell
+yarn seed:party --ropsten -i test -p 100  -r 50 -a 25 -w 12 -e -t 1
+```
+
+_Note: For public network seeding to work you will need to have
+configured valid values in `.deployment.js` (see "Deployment to public networks" below)._
+
+## Tests
+
+```
+yarn coverage
+```
+
+## Deployment to public networks
+
+Edit `.deployment.js` and fill in the company mnemonic and Infura key (obtain from 1Password).
+
+Now run:
+
+- `yarn deploy:local` - for deploying to local, private chain, e.g. Ganache. This will also call
+  a script to update the `app` and `server` repo clones if you've checked them out as sibling folders.
+
+## NPM publishing
+
+Releases are done automatically via CI. Prior to doing a release, ensure the
+latest compiled contracts have been deployed to both test nets and the `mainnet`:
+
+```
+$ yarn deploy:ropsten
+$ yarn deploy:rinkeby
+$ yarn deploy:mainnet
+```
+
+_Note: ensure `.deployment.js` is accurately setup for the above to work_.
+
+Then create a new release:
+
+1. Increment the `version` in `package.json` as required, as part of a new or existing Pull Request.
+2. Once the approved PR has been merged, run `git tag <version>` (where `<version>` is same as in `package.json`) on the merge commit.
+3. Run `git push --tags`
+4. The CI server will now do a build and deploy to NPM.

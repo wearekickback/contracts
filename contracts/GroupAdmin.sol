@@ -1,6 +1,6 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.5.4;
 
-import "./zeppelin/ownership/Ownable.sol";
+import './zeppelin/ownership/Ownable.sol';
 
 /**
 * @title GroupAdmin
@@ -12,7 +12,7 @@ contract GroupAdmin is Ownable {
     address[] public admins;
 
     modifier onlyAdmin() {
-        require(isAdmin(msg.sender));
+        require(isAdmin(msg.sender), 'must be admin');
         _;
     }
 
@@ -20,7 +20,7 @@ contract GroupAdmin is Ownable {
     * @dev Grants admin right to given addresses.
     * @param newAdmins An array of addresses
     */
-    function grant(address[] newAdmins) public onlyOwner{
+    function grant(address[] memory newAdmins) public onlyOwner{
         for(uint i = 0; i < newAdmins.length; i++){
             admins.push(newAdmins[i]);
             emit AdminGranted(newAdmins[i]);
@@ -31,7 +31,7 @@ contract GroupAdmin is Ownable {
     * @dev Revoke admin right from given addresses.
     * @param oldAdmins An array of addresses
     */
-    function revoke(address[] oldAdmins) public onlyOwner{
+    function revoke(address[] memory oldAdmins) public onlyOwner{
         for(uint oldIdx = 0; oldIdx < oldAdmins.length; oldIdx++){
             for (uint idx = 0; idx < admins.length; idx++) {
                 if (admins[idx] == oldAdmins[oldIdx]) {
@@ -48,7 +48,7 @@ contract GroupAdmin is Ownable {
     * @dev Returns admin addresses
     * @return Admin addresses
     */
-    function getAdmins() view public returns(address[]){
+    function getAdmins() public view returns(address[] memory){
         // todo: include owner;
         return admins;
     }
@@ -57,7 +57,7 @@ contract GroupAdmin is Ownable {
     * @dev Returns number of admings.
     * @return Number of admings.
     */
-    function numOfAdmins() view public returns(uint){
+    function numOfAdmins() public view returns(uint){
         return admins.length;
     }
 
