@@ -241,4 +241,12 @@ contract AbstractConference is Conference, GroupAdmin {
     function doWithdraw(address payable participant, uint256 amount) internal {
         revert('doWithdraw must be impelmented int the child class');
     }
+
+    function tokenAddress() public view returns (address){
+        revert('tokenAddress must be impelmented int the child class');
+    }
+
+    function depositType() public view returns (string memory){
+        revert('depositType must be impelmented int the child class');
+    }
 }

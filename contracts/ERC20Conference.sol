@@ -1,7 +1,7 @@
 pragma solidity ^0.5.4;
 
 import './AbstractConference.sol';
-import 'openzeppelin-solidity/contracts/token/ERC20/ERC20.sol';
+import './ERC20.sol';
 
 contract ERC20Conference is AbstractConference {
 
@@ -13,12 +13,13 @@ contract ERC20Conference is AbstractConference {
         uint256 _limitOfParticipants,
         uint256 _coolingPeriod,
         address payable _owner,
-        ERC20 _token
+        address  _tokenAdderss
     )
         AbstractConference(_name, _deposit, _limitOfParticipants, _coolingPeriod, _owner)
         public
     {
-        token = _token;
+        require(_tokenAdderss != address(0), 'token address is not set');
+        token = ERC20(_tokenAdderss);
     }
 
     /**
@@ -37,4 +38,12 @@ contract ERC20Conference is AbstractConference {
         token.transferFrom(participant, address(this), amount);
     }
 
+
+    function depositType() public view returns (string memory){
+        return 'erc20';
+    }
+
+    function tokenAddress() public view returns (address){
+        return address(token);
+    }
 }
