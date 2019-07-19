@@ -70,6 +70,7 @@ contract AbstractConference is Conference, GroupAdmin {
         if(_deposit != 0){
             deposit = _deposit;
         }else{
+            // this needs to change.
             deposit = 0.02 ether;
         }
 
@@ -91,10 +92,9 @@ contract AbstractConference is Conference, GroupAdmin {
      * @dev Register for the event
      */
     function register() external payable onlyActive{
-        doDeposit(msg.sender, deposit);
-
         require(registered < limitOfParticipants, 'participant limit reached');
         require(!isRegistered(msg.sender), 'already registered');
+        doDeposit(msg.sender, deposit);
 
         registered++;
         participantsIndex[registered] = msg.sender;
@@ -124,7 +124,7 @@ contract AbstractConference is Conference, GroupAdmin {
      * @return The total balance of the contract.
      */
     function totalBalance() view public returns (uint256){
-        return address(this).balance;
+        revert('totalBalance must be impelmented int the child class');
     }
 
     /**

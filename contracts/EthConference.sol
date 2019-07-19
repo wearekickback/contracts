@@ -15,6 +15,15 @@ contract EthConference is AbstractConference {
     {
     }
 
+    /**
+     * @dev Returns total balance of the contract. This function can be deprecated when refactroing front end code.
+     * @return The total balance of the contract.
+     */
+    function totalBalance() view public returns (uint256){
+        return address(this).balance;
+    }
+
+
     function doWithdraw(address payable participant, uint256 amount) internal {
         participant.transfer(amount);
     }

@@ -21,7 +21,15 @@ contract ERC20Conference is AbstractConference {
         token = _token;
     }
 
-    function doWithdraw(address participant, uint256 amount) internal {
+    /**
+     * @dev Returns total balance of the contract. This function can be deprecated when refactroing front end code.
+     * @return The total balance of the contract.
+     */
+    function totalBalance() view public returns (uint256){
+        return token.balanceOf(address(this));
+    }
+
+    function doWithdraw(address payable participant, uint256 amount) internal {
         token.transfer(participant, amount);
     }
 
