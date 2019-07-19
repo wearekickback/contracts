@@ -234,6 +234,11 @@ contract AbstractConference is Conference, GroupAdmin {
         emit FinalizeEvent(attendanceMaps, payoutAmount, endedAt);
     }
 
-    function doWithdraw(address participant, uint256 amount) internal {}
-    function doDeposit(address participant, uint256 amount) internal {}
+    function doDeposit(address participant, uint256 amount) internal {
+        revert('doDeposit must be impelmented int the child class');
+    }
+
+    function doWithdraw(address payable participant, uint256 amount) internal {
+        revert('doWithdraw must be impelmented int the child class');
+    }
 }
