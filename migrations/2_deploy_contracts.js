@@ -50,6 +50,6 @@ module.exports = function(deployer) {
 
     console.log([name, deposit,limitOfParticipants, coolingPeriod].join(','));
 
-    return deployer.deploy(Conference, name, deposit,limitOfParticipants, coolingPeriod, emptyAddress);
+    // return deployer.deploy(Conference, name, deposit,limitOfParticipants, coolingPeriod, emptyAddress);
   });
 }
