@@ -1,7 +1,9 @@
+const Token = require('./build/contracts/ERC20.json')
 const Deployer = require('./build/contracts/Deployer.json')
 const Conference = require('./build/contracts/Conference.json')
 
 module.exports = {
+  Token,
   Deployer,
   Conference,
   events: {
