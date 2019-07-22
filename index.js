@@ -1,4 +1,4 @@
-const Token = require('./build/contracts/ERC20.json')
+const Token = require('./build/contracts/MyToken.json')
 const Deployer = require('./build/contracts/Deployer.json')
 const Conference = require('./build/contracts/Conference.json')
 
