@@ -1,22 +1,14 @@
-const { toWei, toHex, toBN } = require('web3-utils')
+const { toWei } = require('web3-utils')
 const Conference = artifacts.require("ERC20Conference.sol");
 const Token = artifacts.require("MyToken.sol");
 const EthVal = require('ethval')
-const { getBalance, mulBN } = require('./utils')
 
 web3.currentProvider.sendAsync = web3.currentProvider.send
-const { wait, waitUntilBlock } = require('@digix/tempo')(web3);
 
 const { shouldBehaveLikeConference } = require('./behaviors/conference.behavior');
 
-const twitterHandle = '@bighero6';
-const gas = 1000000;
-const gasPrice = 1;
-const participantAttributes = ['index', 'addr', 'paid'];
-
-
 contract('ERC20 Conference', function(accounts) {
-  let conference, deposit, token, getBalance;
+  let token;
 
   beforeEach(async function(){
     token = await Token.new();
@@ -41,9 +33,6 @@ contract('ERC20 Conference', function(accounts) {
       await token.approve(conference.address, deposit, { from: user });
       await conference.register({ from: user });
       return true;
-    }
-    this.getDeposit = function(deposit){
-      return new EthVal(deposit);
     }
   })
 
