@@ -2,19 +2,15 @@ import { toWei, fromWei, toBN } from 'web3-utils'
 
 const moment = require('moment');
 const fs = require('fs');
-const Conference = artifacts.require("Conference.sol");
 
-const Tempo = require('@digix/tempo');
-const { wait, waitUntilBlock } = require('@digix/tempo')(web3);
+const gasPrice = toWei('1', 'gwei')
 
+const { mulBN } = require('../utils')
+const EthVal = require('ethval')
 
-const { getBalance, mulBN } = require('./utils')
-
-
-const gasPrice = toWei('1', 'gwei');
 const usd = 468;
-let deposit, conference;
-let trx,trx2, gasUsed, gasUsed2, result, trxReceipt;
+
+let trx, result, trxReceipt;
 
 const pad = function(n, width, z) {
   z = z || '0';
@@ -25,11 +21,9 @@ const pad = function(n, width, z) {
 const getTransaction = async function(type, transactionHash){
   trx = await web3.eth.getTransaction(transactionHash)
   trxReceipt = await web3.eth.getTransactionReceipt(transactionHash)
-
   const gasPrice = toBN(trx.gasPrice)
   const gasUsed = toBN(trxReceipt.gasUsed)
   const gasTotal = gasUsed.mul(gasPrice)
-
   result = {
     'type             ': type,
     'gasUsed       ': gasUsed,
@@ -45,16 +39,20 @@ const formatArray = function(array){
   return array.join("\t\t")
 }
 
-const reportTest = async function (participants, accounts, finalize){
+const reportTest = async function (participants, ctx, finalize){
+  const { accounts , createConference, getBalance, register } = ctx
   const addresses = [];
   const transactions = [];
   const owner = accounts[0];
-  conference = await Conference.new('Test', '0', participants, '0', '0x0000000000000000000000000000000000000000', {from: accounts[0], gasPrice:gasPrice});
+
+  const conference = await createConference({
+    limitOfParticipants:participants
+  });
   transactions.push(await getTransaction('create   ', conference.transactionHash))
-  deposit = await conference.deposit()
+  const deposit = await conference.deposit()
 
   for (var i = 0; i < participants; i++) {
-    var registerTrx = await conference.register({from:accounts[i], value:deposit, gasPrice:gasPrice});
+    var registerTrx = await register({conference, deposit, user:accounts[i], owner})
     if ((i % 100) == 0 && i != 0) {
       console.log('register', i)
     }
@@ -63,14 +61,13 @@ const reportTest = async function (participants, accounts, finalize){
     }
     addresses.push(accounts[i]);
   }
-
   await conference.registered().should.eventually.eq(participants)
-  await getBalance(conference.address).should.eventually.eq( mulBN(deposit, participants) )
-
+  var contractBalance  = (await getBalance(conference.address))
+  var exptectedBalance = new EthVal(mulBN(deposit, participants))
+  contractBalance.toString().should.eq(exptectedBalance.toString())
   await finalize({
     deposit, conference, owner, addresses, transactions
   })
-
   for (var i = 0; i < participants; i++) {
     trx = await conference.withdraw({from:accounts[i], gasPrice:gasPrice});
     if (i == 0) {
@@ -90,8 +87,8 @@ const reportTest = async function (participants, accounts, finalize){
   fs.writeFileSync(`./log/stress_${pad(participants, 4)}_${date}.log`, bodies.join('\n') + '\n');
 }
 
-const reportFinalize = async (participants, accounts) => (
-  reportTest(participants, accounts, async ({ deposit, conference, owner, addresses, transactions }) => {
+const reportFinalize = async (participants, ctx) => {
+  return reportTest(participants, ctx, async ({ deposit, conference, owner, addresses, transactions }) => {
     // build bitmaps
     const numRegistered = addresses.length;
     let num = toBN(0);
@@ -102,17 +99,22 @@ const reportFinalize = async (participants, accounts) => (
     for (let i = 0; i < Math.ceil(numRegistered / 256); i++) {
       maps.push(num.toString(10))
     }
-    const finalizeTx = await conference.finalize(maps, { from:owner, gasPrice })
+    const finalizeTx = await conference.finalize(maps, { from:owner, gasPrice:gasPrice })
     transactions.push(await getTransaction('finalize  ', finalizeTx.tx))
   })
-)
+}
 
-contract('Stress test', function(accounts) {
+function shouldStressTest () {
+  let ctx;
+  beforeEach(async function(){
+    ctx = this;
+  })
+
   describe('2 participants', function() {
     const num = 2
 
     it('finalize', async function(){
-      await reportFinalize(num, accounts)
+      await reportFinalize(num, ctx)
     })
   })
 
@@ -120,7 +122,7 @@ contract('Stress test', function(accounts) {
     const num = 20
 
     it('finalize', async function(){
-      await reportFinalize(num, accounts)
+      await reportFinalize(num, ctx)
     })
   })
 
@@ -128,7 +130,7 @@ contract('Stress test', function(accounts) {
     const num = 100
 
     it('finalize', async function(){
-      await reportFinalize(num, accounts)
+      await reportFinalize(num, ctx)
     })
   })
 
@@ -136,7 +138,7 @@ contract('Stress test', function(accounts) {
     const num = 200
 
     it('finalize', async function(){
-      await reportFinalize(num, accounts)
+      await reportFinalize(num, ctx)
     })
   })
 
@@ -144,7 +146,11 @@ contract('Stress test', function(accounts) {
     const num = 300
 
     it('finalize', async function(){
-      await reportFinalize(num, accounts)
+      await reportFinalize(num, ctx)
     })
   })
-})
+};
+
+module.exports = {
+  shouldStressTest
+};

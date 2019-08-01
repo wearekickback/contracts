@@ -29,12 +29,11 @@ function shouldBehaveLikeConference () {
     let beforeContractBalance, beforeAccountBalance,
         beforeOwnerBalance, conference, deposit
     beforeEach(async function(){
-      conference = await createConference();
+      conference = await createConference({});
       deposit = await conference.deposit();
-
       beforeContractBalance = await getBalance(conference.address)
       beforeOwnerBalance = await getBalance(owner);
-      await register(conference, deposit, owner);
+      await register({conference, deposit, user:owner});
     })
 
     it('increments registered', async function(){
@@ -61,7 +60,7 @@ function shouldBehaveLikeConference () {
   describe('on failed registration', function(){
     let conference, deposit, depositVal
     beforeEach(async function(){
-      conference = await createConference();
+      conference = await createConference({});
       deposit = await conference.deposit();
       depositVal = new EthVal(deposit);
     })
@@ -69,15 +68,15 @@ function shouldBehaveLikeConference () {
     it('cannot be registered if wrong amount of deposit is sent', async function(){
       let wrongDeposit = 5;
       let beforeContractBalance = (await getBalance(conference.address)).toEth().toFixed(9);
-      await register(conference, wrongDeposit, owner).should.be.rejected;
+      await register({conference, deposit:wrongDeposit, user:owner}).should.be.rejected;
       let afterContractBalance = (await getBalance(conference.address)).toEth().toFixed(9);
       afterContractBalance.should.eq(beforeContractBalance)
       await conference.isRegistered(owner).should.eventually.eq(false)
     })
 
     it('cannot register twice with same address', async function(){
-      await register(conference, deposit, owner)
-      await register(conference, deposit, owner).should.be.rejected;
+      await register({conference, deposit, user:owner})
+      await register({conference, deposit, user:owner}).should.be.rejected;
       let afterContractBalance = (await getBalance(conference.address)).toEth().toFixed(9);;
       afterContractBalance.should.eq(depositVal.toEth().toFixed(9));
       await conference.registered().should.eventually.eq(1)
@@ -89,14 +88,14 @@ function shouldBehaveLikeConference () {
     let conference, deposit, depositVal;
 
     beforeEach(async function(){
-      conference = await createConference();
+      conference = await createConference({});
       deposit = await conference.deposit();
       depositVal = new EthVal(deposit);
 
-      await register(conference, deposit, non_owner,   owner);
-      await register(conference, deposit, accounts[6], owner);
-      await register(conference, deposit, accounts[7], owner);
-      await register(conference, deposit, accounts[8], owner);
+      await register({conference, deposit, user:non_owner,   owner});
+      await register({conference, deposit, user:accounts[6], owner});
+      await register({conference, deposit, user:accounts[7], owner});
+      await register({conference, deposit, user:accounts[8], owner});
     })
 
     it('can be called by owner', async function(){
@@ -187,7 +186,7 @@ function shouldBehaveLikeConference () {
     it('cannot register once finalized', async function() {
       await conference.finalize([13], {from:owner});
 
-      register(conference, deposit, accounts[9]).should.be.rejected;
+      register({conference, deposit, user:accounts[9]}).should.be.rejected;
     })
 
     it('can withdraw winning payout once finalized', async function() {
