@@ -1,6 +1,6 @@
 pragma solidity ^0.5.4;
 
-import "./AbstractConference.sol";
+import './AbstractConference.sol';
 
 contract EthConference is AbstractConference {
     constructor(
