@@ -1,7 +1,9 @@
 
-const { toBN } = require('web3-utils')
+const { toBN, toWei } = require('web3-utils')
 const EthVal = require('ethval')
 const { mulBN } = require('./../utils')
+const emptyAddress = '0x0000000000000000000000000000000000000000'
+
 web3.currentProvider.sendAsync = web3.currentProvider.send
 
 const participantAttributes = ['index', 'addr', 'paid'];
@@ -23,6 +25,89 @@ function shouldBehaveLikeConference () {
     non_owner = this.accounts[1];
     non_registered = this.accounts[4];
     admin = this.accounts[5];
+  })
+
+  describe('on changeName', function(){
+    let conference, deposit;
+
+    beforeEach(async function(){
+      conference = await createConference({});
+      deposit = await conference.deposit();
+    })
+
+    it('owner can rename the event', async function(){
+      await conference.changeName('new name', {from:owner});
+
+      await conference.name().should.eventually.eq('new name')
+    })
+
+    it('non owner cannot rename the event', async function(){
+      await conference.changeName('new name', {from:non_owner}).should.be.rejected;
+      await conference.name().should.not.eventually.eq('new name')
+    })
+
+    it('cannot rename the event once someone registered', async function(){
+      await register({conference, deposit, user:owner});
+      await conference.changeName('new name', {from:owner}).should.be.rejected;
+      await conference.name().should.not.eventually.eq('new name')
+    })
+  })
+
+  describe('on setLimitOfParticipants', function(){
+    let conference, desposit;
+
+    beforeEach(async function(){
+      conference = await createConference({});
+      deposit = await conference.deposit();
+    })
+
+    it('does not allow to register more than the limit', async function(){
+      await conference.setLimitOfParticipants(1)
+      await register({conference, deposit, user:owner});
+
+      await conference.registered().should.eventually.eq(1)
+
+      await register({conference, deposit, user:non_owner}).should.be.rejected;
+      await conference.registered().should.eventually.eq(1)
+    })
+  })
+
+  describe('on creation', function(){
+    const variables = ['name', 'deposit', 'limitOfParticipants', 'coolingPeriod', 'ownerAddress'];
+    variables.forEach((variable)=>{
+      it(`${variable} cannot be empty`, async function(){
+        const config = {};
+        config[variable] = null;
+        await createConference(config).should.be.rejected;
+      })
+    })
+
+    it('cannot set empty address as an owner', async function(){
+      await createConference({
+        ownerAddress:emptyAddress
+      }).should.be.rejected;
+    })
+
+    it('can set config values', async function(){
+      const name = 'Test event'
+      const deposit = toWei('3', 'ether')
+      const limitOfParticipants = 30
+      const coolingPeriod = 60
+
+      const conference = await createConference({
+        name,
+        deposit,
+        limitOfParticipants,
+        coolingPeriod,
+        ownerAddress:non_owner
+      })
+
+      await conference.name().should.eventually.eq(name)
+      await conference.deposit().should.eventually.eq(deposit)
+      await conference.limitOfParticipants().should.eventually.eq(limitOfParticipants)
+      await conference.coolingPeriod().should.eventually.eq(coolingPeriod)
+      await conference.owner().should.eventually.eq(non_owner)
+    })
   })
 
   describe('on registration', function(){

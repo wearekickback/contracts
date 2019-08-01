@@ -57,34 +57,12 @@ contract AbstractConference is Conference, GroupAdmin {
         uint256 _coolingPeriod,
         address payable _owner
     ) public {
-        if (_owner != address(0)) {
-            owner = _owner;
-        }
-
-        if (bytes(_name).length != 0){
-            name = _name;
-        } else {
-            name = 'Test';
-        }
-
-        if(_deposit != 0){
-            deposit = _deposit;
-        }else{
-            // this needs to change.
-            deposit = 0.02 ether;
-        }
-
-        if (_limitOfParticipants != 0){
-            limitOfParticipants = _limitOfParticipants;
-        }else{
-            limitOfParticipants = 20;
-        }
-
-        if (_coolingPeriod != 0) {
-            coolingPeriod = _coolingPeriod;
-        } else {
-            coolingPeriod = 1 weeks;
-        }
+        require(_owner != address(0), 'ower address is required');
+        owner = _owner;
+        name = _name;
+        deposit = _deposit;
+        limitOfParticipants = _limitOfParticipants;
+        coolingPeriod = _coolingPeriod;
     }
 
 

@@ -14,9 +14,9 @@ contract('ETH Conference', function(accounts) {
     this.createConference = ({
       name = '',
       deposit = toWei('0.02', "ether"),
-      limitOfParticipants = 0,
+      limitOfParticipants = 20,
       coolingPeriod = 0,
-      ownerAddress = '0x0000000000000000000000000000000000000000',
+      ownerAddress = accounts[0],
       gasPrice = toWei('1', 'gwei')
     }) => {
       return Conference.new(
