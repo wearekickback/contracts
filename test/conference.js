@@ -1,6 +1,6 @@
 const { toWei } = require('web3-utils')
 const EthVal = require('ethval')
-const Conference = artifacts.require("ETHConference.sol");
+const Conference = artifacts.require("./ETHConference.sol");
 
 const { getBalance } = require('./utils')
 const { shouldBehaveLikeConference } = require('./behaviors/conference.behavior');
