@@ -33,25 +33,17 @@ module.exports = function(deployer) {
   }
 
   return deployer.then(async () => {
-    console.log('deployer1')
     if (deployer.network == 'development'){
       await deployer.deploy(Token);
       token =  await Token.deployed();
     }
-    console.log('deployer2')
     await deployer.deploy(EthDeployer);
     await deployer.deploy(ERC20Deployer);
-    console.log('deployer3')
     const ethDeployer   = await EthDeployer.deployed();
-    console.log('deployer4')
     const erc20Deployer = await ERC20Deployer.deployed();
-    console.log('deployer5')
     await deployer.deploy(Deployer, ethDeployer.address, erc20Deployer.address);
-    console.log('deployer6')
     const mainDeployer = await Deployer.deployed();
-    console.log('deployer7')
     console.log([name, deposit,limitOfParticipants, coolingPeriod].join(','));
-    console.log('deployer8')
     // return deployer.deploy(Conference, name, deposit,limitOfParticipants, coolingPeriod, emptyAddress);
   });
 }
