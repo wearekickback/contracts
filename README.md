@@ -79,6 +79,18 @@ npx ganache-cli --accounts 500
 yarn test
 ```
 
+**Deploy contracts to local network**
+
+Run:
+
+```
+yarn deploy:local
+```
+
+This will also call a script to update the `app` and `server` repo clones if
+you've checked them out as sibling folders.
+
+
 ## Simulation
 
 To deploy a new party onto the local test network:
@@ -141,13 +153,6 @@ yarn coverage
 
 Edit `.deployment.js` and fill in the company mnemonic and Infura key (obtain from 1Password).
 
-Now run:
-
-- `yarn deploy:local` - for deploying to local, private chain, e.g. Ganache. This will also call
-  a script to update the `app` and `server` repo clones if you've checked them out as sibling folders.
-
-## NPM publishing
-
 Releases are done automatically via CI. Prior to doing a release, ensure the
 latest compiled contracts have been deployed to both test nets and the `mainnet`:
 
@@ -165,3 +170,6 @@ Then create a new release:
 2. Once the approved PR has been merged, run `git tag <version>` (where `<version>` is same as in `package.json`) on the merge commit.
 3. Run `git push --tags`
 4. The CI server will now do a build and deploy to NPM.
+5. Once the NPM package has been published you will need to update the dependency to
+it in both the `server` and `app` repositories so that they both refer to the
+latest contract ABI when talking to the blockchain.
