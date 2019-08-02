@@ -8,7 +8,7 @@ contract MyToken is ERC20, ERC20Detailed {
     uint8 private _decimals = 18;
 
     address account = msg.sender;
-    uint value = 100000000000000000000;
+    uint value = 1000000000000000000000000;
 
     constructor() ERC20Detailed( _name, _symbol, _decimals) public {
         _mint(account, value);
