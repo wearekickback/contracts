@@ -42,11 +42,11 @@ contract('ETH Conference', function(accounts) {
     shouldBehaveLikeConference();
   })
 
-  describe('under pressure', function(){
-    shouldStressTest();
-  })
+  // describe('under pressure', function(){
+  //   shouldStressTest();
+  // })
 
-  describe('on big party', function(){
-    shouldHandleLargeParty();
-  })
+  // describe('on big party', function(){
+  //   shouldHandleLargeParty();
+  // })
 })

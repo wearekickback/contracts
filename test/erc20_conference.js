@@ -46,15 +46,15 @@ contract('ERC20 Conference', function(accounts) {
     }
   })
 
-  // describe('on registration', function(){
-  //   shouldBehaveLikeConference();
-  // })
+  describe('on registration', function(){
+    shouldBehaveLikeConference();
+  })
 
   // describe('under pressure', function(){
   //   shouldStressTest();
   // })
 
-  describe.only('on big party', function(){
-    shouldHandleLargeParty();
-  })
+  // describe('on big party', function(){
+  //   shouldHandleLargeParty();
+  // })
 })
