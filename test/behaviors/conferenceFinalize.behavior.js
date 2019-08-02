@@ -1,33 +1,33 @@
-const { toWei, toHex, toBN } = require('web3-utils')
-const Conference = artifacts.require("Conference.sol");
 
-const { getBalance, mulBN, outputBNs } = require('./utils')
+const { toBN } = require('web3-utils')
+const { outputBNs } = require('../utils')
 
 web3.currentProvider.sendAsync = web3.currentProvider.send
-const { wait, waitUntilBlock } = require('@digix/tempo')(web3);
 
-const twitterHandle = '@bighero6';
-const gas = 1000000;
-const gasPrice = 1;
-
-contract('Conference - large party', function(accounts) {
-  const owner = accounts[0];
-  const non_owner = accounts[1];
-  let conference, deposit;
+function shouldHandleLargeParty () {
+  let conference, deposit, owner
+    ,createConference, getBalance
+    ,register, accounts;
 
   beforeEach(async function(){
-    conference = await Conference.new('', 0, 0, 0, '0x0000000000000000000000000000000000000000');
-    deposit = await conference.deposit();
+    accounts = this.accounts;
+    createConference = this.createConference;
+    getBalance = this.getBalance;
+    register = this.register;
+    owner = this.accounts[0];
   })
 
   describe('finalize large party using attendee bitmaps', function(){
     const numRegistered = 300
 
-    beforeEach(async () => {
-      conference = await Conference.new('', 0, 500, 0, '0x0000000000000000000000000000000000000000');
-
+    beforeEach(async function(){
+      conference = await createConference({
+        limitOfParticipants:500,
+        ownerAddress:accounts[0]
+      });
+      deposit = await conference.deposit();
       for (let i = 0; i < numRegistered; ++i) {
-        await conference.register({value:deposit, from:accounts[10 + i]});
+        await register({conference, deposit, user:accounts[10 + i], owner});
       }
     })
 
@@ -55,9 +55,7 @@ contract('Conference - large party', function(accounts) {
       ]
 
       outputBNs(maps)
-
       await conference.finalize(maps, {from:owner});
-
       // thorough check to see who has been marked attended vs not attended
       const attended = [ 1, 2, 256, 257, 298, 299 ]
       for (let i = 0; i < numRegistered; ++i) {
@@ -72,9 +70,7 @@ contract('Conference - large party', function(accounts) {
           throw err
         }
       }
-
       await conference.totalAttended().should.eventually.eq(6)
-
       const payout = await conference.payoutAmount()
       const expectedPayout = deposit.mul(toBN(numRegistered)).div(toBN(6))
       payout.should.eq(expectedPayout)
@@ -83,13 +79,10 @@ contract('Conference - large party', function(accounts) {
 
     it('correctly updates attendee records - p256', async function(){
       // only p256 attended
-
       const maps = [ toBN(0), toBN(0).bincn(0) ]
 
       outputBNs(maps)
-
       await conference.finalize(maps, {from:owner});
-
       // thorough check to see who has been marked attended vs not attended
       const attended = [ 256 ]
       for (let i = 0; i < numRegistered; ++i) {
@@ -104,9 +97,7 @@ contract('Conference - large party', function(accounts) {
           throw err
         }
       }
-
       await conference.totalAttended().should.eventually.eq(1)
-
       const payout = await conference.payoutAmount()
       const expectedPayout = deposit.mul(toBN(numRegistered))
       payout.should.eq(expectedPayout)
@@ -231,4 +222,8 @@ contract('Conference - large party', function(accounts) {
       await conference.payoutAmount().should.eventually.eq(payout)
     })
   })
-})
+}
+
+module.exports = {
+  shouldHandleLargeParty
+};

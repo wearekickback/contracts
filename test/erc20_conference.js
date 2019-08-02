@@ -7,6 +7,7 @@ web3.currentProvider.sendAsync = web3.currentProvider.send
 
 const { shouldBehaveLikeConference } = require('./behaviors/conference.behavior');
 const { shouldStressTest } = require('./behaviors/stress.behavior');
+const { shouldHandleLargeParty } = require('./behaviors/conferenceFinalize.behavior');
 
 contract('ERC20 Conference', function(accounts) {
   let token;
@@ -45,11 +46,15 @@ contract('ERC20 Conference', function(accounts) {
     }
   })
 
-  describe('on registration', function(){
-    shouldBehaveLikeConference();
-  })
+  // describe('on registration', function(){
+  //   shouldBehaveLikeConference();
+  // })
 
-  describe('under pressure', function(){
-    shouldStressTest();
+  // describe('under pressure', function(){
+  //   shouldStressTest();
+  // })
+
+  describe.only('on big party', function(){
+    shouldHandleLargeParty();
   })
 })

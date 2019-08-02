@@ -5,6 +5,8 @@ const Conference = artifacts.require("./ETHConference.sol");
 const { getBalance } = require('./utils')
 const { shouldBehaveLikeConference } = require('./behaviors/conference.behavior');
 const { shouldStressTest } = require('./behaviors/stress.behavior');
+const { shouldHandleLargeParty } = require('./behaviors/conferenceFinalize.behavior');
+
 web3.currentProvider.sendAsync = web3.currentProvider.send
 
 contract('ETH Conference', function(accounts) {
@@ -44,4 +46,7 @@ contract('ETH Conference', function(accounts) {
     shouldStressTest();
   })
 
+  describe('on big party', function(){
+    shouldHandleLargeParty();
+  })
 })
