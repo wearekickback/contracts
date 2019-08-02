@@ -8,7 +8,7 @@ install:
 - yarn global add ganache-cli@6.1.8
 before_script:
 - cp .deployment-sample.js .deployment.js
-- ganache-cli --accounts 500 -e 3000000 >ganache.log 2>&1 &
+- ganache-cli --defaultBalanceEther 2000000 --accounts 500 >ganache.log 2>&1 &
 - sleep 5
 script:
 - yarn lint
