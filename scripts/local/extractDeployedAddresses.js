@@ -15,9 +15,10 @@ const deployedAddresses = networks
 
 Object.keys(deployedAddresses).forEach(key => {
   switch (key) {
-    case '1': // mainnet
-    case '3': // ropsten
-    case '4': // rinkeby
+    case '1':  // mainnet
+    case '3':  // ropsten
+    case '4':  // rinkeby
+    case '42': // kovan
       break
     default:
       delete deployedAddresses[key]
