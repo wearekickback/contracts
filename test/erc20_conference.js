@@ -49,12 +49,4 @@ contract('ERC20 Conference', function(accounts) {
   describe('on registration', function(){
     shouldBehaveLikeConference();
   })
-
-  describe('under pressure', function(){
-    shouldStressTest();
-  })
-
-  describe('on big party', function(){
-    shouldHandleLargeParty();
-  })
 })
