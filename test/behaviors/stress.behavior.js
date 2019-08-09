@@ -118,30 +118,6 @@ function shouldStressTest () {
     })
   })
 
-  describe('20 participants', function() {
-    const num = 20
-
-    it('finalize', async function(){
-      await reportFinalize(num, ctx)
-    })
-  })
-
-  describe('100 participants', function() {
-    const num = 100
-
-    it('finalize', async function(){
-      await reportFinalize(num, ctx)
-    })
-  })
-
-  describe('200 participants', function() {
-    const num = 200
-
-    it('finalize', async function(){
-      await reportFinalize(num, ctx)
-    })
-  })
-
   describe('300 participants', function() {
     const num = 300
 
