@@ -12,6 +12,7 @@ before_script:
 - sleep 5
 script:
 - yarn lint
+- yarn test
 - yarn coverage && cat coverage/lcov.info | coveralls
 notifications:
   email:

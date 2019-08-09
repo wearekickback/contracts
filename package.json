@@ -61,7 +61,7 @@
     "solc": "^0.5.4",
     "solgraph": "^0.3.2",
     "solhint": "^2.0.0",
-    "solidity-coverage": "wearekickback/solidity-coverage#leapdao-decoder",
+    "solidity-coverage": "^0.6.4",
     "truffle": "5.0.5",
     "truffle-hdwallet-provider": "^1.0.0-web3one.0",
     "uuid": "^3.0.1",
