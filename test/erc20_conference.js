@@ -6,8 +6,6 @@ const EthVal = require('ethval')
 web3.currentProvider.sendAsync = web3.currentProvider.send
 
 const { shouldBehaveLikeConference } = require('./behaviors/conference.behavior');
-const { shouldStressTest } = require('./behaviors/stress.behavior');
-const { shouldHandleLargeParty } = require('./behaviors/conferenceFinalize.behavior');
 
 contract('ERC20 Conference', function(accounts) {
   let token;

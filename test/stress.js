@@ -10,7 +10,7 @@ const { shouldHandleLargeParty } = require('./behaviors/conferenceFinalize.behav
 
 web3.currentProvider.sendAsync = web3.currentProvider.send
 
-contract('Big party', function(accounts) {
+contract('Large event', function(accounts) {
   describe('ETH Conference', function() {
     beforeEach(async function(){
       this.accounts = accounts
@@ -39,7 +39,7 @@ contract('Big party', function(accounts) {
       }
     })
 
-    describe('under pressure', function(){
+    describe('on various party size', function(){
       shouldStressTest();
     })
 
@@ -83,7 +83,7 @@ contract('Big party', function(accounts) {
       }
     })
 
-    describe('under pressure', function(){
+    describe('on various party size', function(){
       shouldStressTest();
     })
 

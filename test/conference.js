@@ -4,8 +4,6 @@ const Conference = artifacts.require("./EthConference.sol");
 
 const { getBalance } = require('./utils')
 const { shouldBehaveLikeConference } = require('./behaviors/conference.behavior');
-const { shouldStressTest } = require('./behaviors/stress.behavior');
-const { shouldHandleLargeParty } = require('./behaviors/conferenceFinalize.behavior');
 
 web3.currentProvider.sendAsync = web3.currentProvider.send
 
