@@ -212,7 +212,7 @@ contract Conference is GroupAdmin {
 
     /**
      * @dev Change the deposit. The owner can change it as long as no one has registered yet.
-     * @param _deposit the amount event.
+     * @param _deposit the deposit amount for the event.
      */
     function changeDeposit(uint256 _deposit) external onlyOwner noOneRegistered{
         deposit = _deposit;
