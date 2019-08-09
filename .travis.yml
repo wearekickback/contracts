@@ -13,6 +13,7 @@ before_script:
 script:
 - yarn lint
 - yarn test
+- yarn coverage && cat coverage/lcov.info | coveralls
 notifications:
   email:
   - dev-notifications@noblockno.party
