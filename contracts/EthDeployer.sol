@@ -10,7 +10,7 @@ contract EthDeployer is DeployerInterface{
         uint _limitOfParticipants,
         uint _coolingPeriod,
         address payable _ownerAddress,
-        address _tokenAddress
+        address /* _tokenAddress */
     )external returns(Conference c){
         c = new EthConference(
             _name,
