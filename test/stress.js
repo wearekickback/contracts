@@ -87,8 +87,8 @@ contract('Large event', function(accounts) {
     //   shouldStressTest();
     // })
 
-    describe('on big party', function(){
-      shouldHandleLargeParty();
-    })
+    // describe('on big party', function(){
+    //   shouldHandleLargeParty();
+    // })
   })
 })
