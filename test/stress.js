@@ -12,7 +12,6 @@ web3.currentProvider.sendAsync = web3.currentProvider.send
 
 contract('Big party', function(accounts) {
   describe('ETH Conference', function() {
-
     beforeEach(async function(){
       this.accounts = accounts
       this.createConference = ({
@@ -48,7 +47,7 @@ contract('Big party', function(accounts) {
       shouldHandleLargeParty();
     })
   })
-  dsecribe('ERC20 Conference', function() {
+  describe('ERC20 Conference', function() {
     let token;
     beforeEach(async function(){
       token = await Token.new();
