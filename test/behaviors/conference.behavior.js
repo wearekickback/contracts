@@ -131,7 +131,7 @@ function shouldBehaveLikeConference () {
       assert.equal(totalBalance.sub(beforeContractBalance).toString(10), deposit.toString(10))
     })
 
-    it.only('isRegistered for the registered account is true', async function(){
+    it('isRegistered for the registered account is true', async function(){
       console.log(1111)
       expect(2).to.equal(2)
       console.log(1112)
@@ -286,7 +286,7 @@ function shouldBehaveLikeConference () {
       // 1 0 1 1
       // reverse order since we go from right to left in bit parsing:
       // [ 13 (1101) ]
-      
+
       await conference.finalize([13], {from:owner});
       const previousBalance = await getBalance(non_owner);
       const previousContractBalance = await getBalance(conference.address)

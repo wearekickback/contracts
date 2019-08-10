@@ -1,11 +1,11 @@
 pragma solidity ^0.5.4;
 
 import './AbstractConference.sol';
-import './ERC20.sol';
+import 'openzeppelin-solidity/contracts/token/ERC20/IERC20.sol';
 
 contract ERC20Conference is AbstractConference {
 
-    ERC20 public token; // @todo use a safe transfer proxy
+    IERC20 public token; // @todo use a safe transfer proxy
 
     constructor(
         string memory _name,
@@ -19,7 +19,7 @@ contract ERC20Conference is AbstractConference {
         public
     {
         require(_tokenAddress != address(0), 'token address is not set');
-        token = ERC20(_tokenAddress);
+        token = IERC20(_tokenAddress);
     }
 
     /**
