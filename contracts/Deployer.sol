@@ -1,7 +1,6 @@
 pragma solidity ^0.5.4;
 
 import './zeppelin/lifecycle/Destructible.sol';
-import './ERC20.sol';
 import './DeployerInterface.sol';
 
 /**
