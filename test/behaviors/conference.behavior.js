@@ -131,17 +131,9 @@ function shouldBehaveLikeConference () {
       assert.equal(totalBalance.sub(beforeContractBalance).toString(10), deposit.toString(10))
     })
 
-    it.only('isRegistered for the registered account is true', async function(){
-      console.log(1111)
-      expect(2).to.equal(2)
-      console.log(1112)
-
-      // let registered = await conference.registered()
-      // console.log({registered})
-      // registered.should.eq(1)
-      // let isRegistered = await conference.isRegistered(owner)
-      // console.log({isRegistered})
-      // isRegistered.should.eq(true)
+    it('isRegistered for the registered account is true', async function(){
+      await conference.registered().should.eq(1)
+      await conference.isRegistered(owner).should.eq(true)
     })
 
     it('isRegistered for the different account is not true', async function(){
