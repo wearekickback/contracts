@@ -23,7 +23,6 @@ contract EthConference is AbstractConference {
         return address(this).balance;
     }
 
-
     function doWithdraw(address payable participant, uint256 amount) internal {
         participant.transfer(amount);
     }
@@ -35,5 +34,4 @@ contract EthConference is AbstractConference {
     function tokenAddress() public view returns (address){
         return address(0);
     }
-
 }

@@ -35,11 +35,11 @@ contract('ETH Conference', function(accounts) {
     }
   })
 
-  // describe('checking gas size for ', function(){
-  //   shouldStressTest();
-  // })
+  describe('checking gas size for ', function(){
+    shouldStressTest();
+  })
 
-  // describe('on big party', function(){
-  //   shouldHandleLargeParty();
-  // })
+  describe('on big party', function(){
+    shouldHandleLargeParty();
+  })
 })
