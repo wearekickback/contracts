@@ -16,5 +16,11 @@
     "links": {},
     "address": "0x01C111581d52cb3c1D34FE7dB86b5Aceb603FD75",
     "transactionHash": "0xbcebcc110bf82b1e8b718f8659f35f5402fcbc5174afff8ac6d70304c2e8c549"
+  },
+  "42": {
+    "events": {},
+    "links": {},
+    "address": "0x826C621Aa9c591fa8fF28Dc4B761670E6d7d0230",
+    "transactionHash": "0xc39268d0812c585a1ad21af0f381c5484c252b15010429a4855541f7429d74a7"
   }
 }

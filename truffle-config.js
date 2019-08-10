@@ -24,18 +24,23 @@ module.exports = {
       gasPrice: 0x01      // <-- Use this low gas price
     },
     rinkeby: {
-      provider: (num_addresses = 1) => new HDWalletProvider(mnemonic, `https://rinkeby.infura.io/${infuraKey}`, 0, num_addresses),
+      provider: (num_addresses = 1) => new HDWalletProvider(mnemonic, `https://rinkeby.infura.io/v3/${infuraKey}`, 0, num_addresses),
       gasPrice: 50000000000, // 50 gwei,
       network_id: 4
     },
     ropsten: {
-      provider: (num_addresses = 1) => new HDWalletProvider(mnemonic, `https://ropsten.infura.io/${infuraKey}`, 0, num_addresses),
+      provider: (num_addresses = 1) => new HDWalletProvider(mnemonic, `https://ropsten.infura.io/v3/${infuraKey}`, 0, num_addresses),
       gasPrice: 50000000000, // 50 gwei,
       network_id: 3
     },
+    kovan: {
+      provider: (num_addresses = 1) => new HDWalletProvider(mnemonic, `https://kovan.infura.io/v3/${infuraKey}`, 0, num_addresses),
+      gasPrice: 10000000000, // 10 gwei,
+      network_id: 42
+    },
     mainnet: {
       // gas: 5000000,
-      provider: (num_addresses = 1) => new HDWalletProvider(mnemonic, `https://mainnet.infura.io/${infuraKey}`, 0, num_addresses),
+      provider: (num_addresses = 1) => new HDWalletProvider(mnemonic, `https://mainnet.infura.io/v3/${infuraKey}`, 0, num_addresses),
       gasPrice: 20000000000, // 20 gwei
       port: 8545,
       network_id: 1,
