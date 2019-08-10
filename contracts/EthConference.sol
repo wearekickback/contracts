@@ -32,10 +32,6 @@ contract EthConference is AbstractConference {
         require(msg.value == amount, 'must send exact deposit amount');
     }
 
-    function depositType() public view returns (string memory){
-        return 'eth';
-    }
-
     function tokenAddress() public view returns (address){
         return address(0);
     }

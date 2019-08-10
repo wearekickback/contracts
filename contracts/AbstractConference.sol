@@ -224,7 +224,4 @@ contract AbstractConference is Conference, GroupAdmin {
         revert('tokenAddress must be impelmented int the child class');
     }
 
-    function depositType() public view returns (string memory){
-        revert('depositType must be impelmented int the child class');
-    }
 }

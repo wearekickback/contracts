@@ -38,11 +38,6 @@ contract ERC20Conference is AbstractConference {
         token.transferFrom(participant, address(this), amount);
     }
 
-
-    function depositType() public view returns (string memory){
-        return 'erc20';
-    }
-
     function tokenAddress() public view returns (address){
         return address(token);
     }
