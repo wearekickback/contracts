@@ -37,7 +37,7 @@ contract('ETH Conference', function(accounts) {
   })
 
   describe('on registration', function(){
-    // shouldBehaveLikeConference();
+    shouldBehaveLikeConference();
 
     it('tokenAddress is empty', async function(){
       let emptyAddress = '0x0000000000000000000000000000000000000000';
