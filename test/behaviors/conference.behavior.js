@@ -2,6 +2,8 @@
 const { toBN, toWei } = require('web3-utils')
 const EthVal = require('ethval')
 const { mulBN } = require('./../utils')
+const { wait, waitUntilBlock } = require('@digix/tempo')(web3);
+
 const emptyAddress = '0x0000000000000000000000000000000000000000'
 
 web3.currentProvider.sendAsync = web3.currentProvider.send
@@ -10,6 +12,10 @@ const participantAttributes = ['index', 'addr', 'paid'];
 
 const getParticipantDetail = function(participant, detail){
   return participant[participantAttributes.indexOf(detail)];
+}
+
+const assertBalanceWithDeposit = function(balance, deposit){
+  balance.toFixed(9).should.eq((new EthVal(deposit)).toFixed(9))
 }
 
 function shouldBehaveLikeConference () {
@@ -297,6 +303,205 @@ function shouldBehaveLikeConference () {
     })
   })
 
+  describe('empty events', function(){
+    let conference, deposit;
+
+    beforeEach(async function(){
+      conference = await createConference({});
+      deposit = await conference.deposit();
+    })
+
+    it('nothing to withdraw if no one registered', async function(){
+      await conference.finalize([], { from: owner });
+      await conference.ended().should.eventually.eq(true);
+      await conference.payoutAmount().should.eventually.eq(0);
+      await conference.withdraw({ from: owner }).should.be.rejected;
+    })
+
+    it('nothing to withdraw if no one showed up', async function(){
+      await register({conference, deposit, user:owner, owner});
+      await conference.finalize([0], { from: owner });
+      await conference.ended().should.eventually.eq(true);
+      await conference.payoutAmount().should.eventually.eq(0);
+      await conference.withdraw({ from: owner }).should.be.rejected;
+    })
+  })
+
+  describe('on cancel', function(){
+    let previousBalance, currentRegistered, diff, participant;
+    let conference, deposit, attended, notRegistered, notAttended;
+
+    beforeEach(async function(){
+      attended = accounts[2];
+      notAttended = accounts[3];
+      notRegistered = accounts[4];  
+      conference = await createConference({});
+      deposit = await conference.deposit();
+      await register({conference, deposit, user:attended, owner});
+      await register({conference, deposit, user:notAttended, owner});
+    })
+
+    it('cannot cancel if non owner calls', async function(){
+      await conference.cancel({from:non_owner}).should.be.rejected;
+      await conference.withdraw({from:attended}).should.be.rejected;
+      // money is still left on contract
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 2))
+    })
+
+    it('everybody receives refund', async function(){
+      await conference.cancel();
+      // attended
+      previousBalance = await getBalance(attended);
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 2))
+      await conference.withdraw({from:attended});
+      assertBalanceWithDeposit((await getBalance(conference.address)), deposit)
+      diff = (await getBalance(attended)).sub(previousBalance)
+      assert.isOk(diff.gt( mulBN(deposit, 0.9) ))
+      participant = await conference.participants(attended);
+      assert.equal(getParticipantDetail(participant, 'paid'), true);
+      // notAttended
+      previousBalance = await getBalance(notAttended);
+      await conference.withdraw({from:notAttended});
+      assertBalanceWithDeposit((await getBalance(conference.address)), 0)
+      diff = (await getBalance(notAttended)).sub(previousBalance)
+      assert.isOk(diff.gt( mulBN(deposit, 0.9) ))
+      participant = await conference.participants(notAttended);
+      assert.equal(getParticipantDetail(participant, 'paid'), true);
+    })
+
+    it('cannot register any more', async function(){
+      await conference.cancel();
+      currentRegistered = await conference.registered();
+
+      await register({conference, deposit, user:notRegistered, owner}).should.be.rejected;
+      await conference.registered().should.eventually.eq(currentRegistered)
+      await conference.ended().should.eventually.eq(true)
+    })
+    // - cannot attend any more
+    // - cannot payback any more
+
+    it('cannot be canceled if the event is already ended', async function(){
+      await conference.finalize([1], { from: owner });
+      await conference.cancel().should.be.rejected;
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 2))
+      await conference.withdraw({from:notAttended}).should.be.rejected;
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 2))
+      await conference.withdraw({from:attended});
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 0))
+
+      await conference.ended().should.eventually.eq(true)
+    })
+  })
+
+  describe('on withdraw', function(){
+    let conference, deposit, registered, notRegistered
+    beforeEach(async function(){
+      conference = await createConference({});
+      deposit = await conference.deposit();
+      registered = accounts[1];
+      notRegistered = accounts[2];
+  
+      await register({conference, deposit, user:owner, owner});
+      await register({conference, deposit, user:registered, owner});
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 2))
+    })
+
+    it('cannot withdraw twice', async function(){
+      await conference.cancel({from:owner});
+      await conference.withdraw({from:registered});
+      await conference.withdraw({from:registered}).should.be.rejected;
+      // only 1 ether is taken out
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 1))
+    })
+
+    it('cannot withdraw if you did not register', async function(){
+      await conference.cancel({from:owner});
+      await conference.withdraw({from:notRegistered}).should.be.rejected;
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 2))
+    })
+
+    it('cannot withdraw until finalized', async function(){
+      await conference.withdraw({from:registered}).should.be.rejected;
+      await conference.finalize([3], { from: owner });
+      await conference.withdraw({from:registered});
+    })
+  })
+
+  describe('on clear', function(){
+    let conference, deposit, registered, notRegistered
+    beforeEach(async function(){
+      conference = await createConference({});
+      deposit = await conference.deposit();
+      // registered = accounts[1];
+      // notRegistered = accounts[2];
+  
+      // await register({conference, deposit, user:owner, owner});
+      // await register({conference, deposit, user:registered, owner});
+
+      // assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 2))
+    })
+
+    it('cooling period can be set', async function(){
+      let coolingPeriod = 10
+      conference = await createConference({coolingPeriod:coolingPeriod});
+
+      await conference.coolingPeriod().should.eventually.eq(10)
+    })
+
+    it('cannot be cleared by non owner', async function(){
+
+      await register({conference, deposit, user:owner, owner});
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 1))
+      await conference.clear({from:non_owner}).should.be.rejected;
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 1))
+    })
+
+    it('cannot be cleared if event is not ended', async function(){
+      await register({conference, deposit, user:owner, owner});
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 1))
+      await conference.clear({from:owner}).should.be.rejected;
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 1))
+    })
+
+    it('cannot be cleared if cooling period is not passed', async function(){
+      await register({conference, deposit, user:owner, owner});
+      await conference.cancel({from:owner});
+
+      await conference.ended().should.eventually.eq(true)
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 1))
+
+      await conference.clear({from:owner}).should.be.rejected;
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 1))
+    })
+
+    it('owner receives the remaining if cooling period is passed', async function(){
+      conference = await createConference({coolingPeriod:0});
+      deposit = await conference.deposit();
+
+      await register({conference, deposit, user:owner, owner});
+      await conference.cancel({from:owner});
+
+      await conference.ended().should.eventually.eq(true)
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 1))
+
+      let previousBalance = await getBalance(owner);
+      await wait(2, 1);
+      await conference.clear({from:owner});
+
+      let diff = (await getBalance(owner)).sub(previousBalance)
+      assert.isOk(diff.gt( mulBN(deposit, 0.9) ))
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 0))
+    })
+  })
 };
 
 module.exports = {
