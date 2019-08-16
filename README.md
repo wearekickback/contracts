@@ -112,6 +112,7 @@ Options:
   -i, --id <id>            Id of party (obtain from UI /create page)
   --ropsten                Use Ropsten instead of local development network
   --rinkeby                Use Rinkeby instead of local development network
+  --kovan                  Use Rinkeby instead of local development network
   --mainnet                Use Mainnet instead of local development network
   --admins <n>             Number of additional party admins to have
   -c, --cancelled          Whether to mark the party as cancelled

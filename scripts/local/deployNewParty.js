@@ -29,6 +29,7 @@ async function init() {
     .option('-i, --id <id>', 'Id of party (obtain from UI /create page)')
     .option('--ropsten', 'Use Ropsten instead of local development network')
     .option('--rinkeby', 'Use Rinkeby instead of local development network')
+    .option('--kovan',   'Use Kovan instead of local development network')
     .option('--mainnet', 'Use Mainnet instead of local development network')
     .option(
       '--admins <n>',
@@ -72,13 +73,14 @@ async function init() {
   const coolingPeriod = program.coolingPeriod
   const ropsten = program.ropsten
   const rinkeby = program.rinkeby
+  const kovan = program.kovan
   const mainnet = program.mainnet
 
   console.log(
     `
 Config
 ------
-Network:                ${ropsten ? 'ropsten' : (mainnet ? 'mainnet' : (rinkeby ? 'rinkeby' : 'development'))}
+Network:                ${ropsten ? 'ropsten' : (mainnet ? 'mainnet' : (rinkeby ? 'rinkeby' : (kovan ? 'kovan' : 'development')))}
 Party id:               ${id}
 Deposit level:          ${deposit.toFixed(3)} ETH
 Cooling Period:         ${coolingPeriod} seconds
@@ -102,6 +104,9 @@ Payout withdrawals:     ${numWithdrawals}
   }
   else if (rinkeby) {
     provider = networks.rinkeby.provider(maxAccountsNeeded)
+  }
+  else if (kovan) {
+    provider = networks.kovan.provider(maxAccountsNeeded)
   }
   else if (mainnet) {
     provider = networks.mainnet.provider(maxAccountsNeeded)
