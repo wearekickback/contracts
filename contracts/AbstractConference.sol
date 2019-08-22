@@ -183,6 +183,14 @@ contract AbstractConference is Conference, GroupAdmin {
     }
 
     /**
+     * @dev Change the deposit. The owner can change it as long as no one has registered yet.
+     * @param _deposit the deposit amount for the event.
+     */
+    function changeDeposit(uint256 _deposit) external onlyOwner noOneRegistered{
+        deposit = _deposit;
+    }
+
+    /**
      * @dev Mark participants as attended and enable payouts. The attendance cannot be undone.
      * @param _maps The attendance status of participants represented by uint256 values.
      */

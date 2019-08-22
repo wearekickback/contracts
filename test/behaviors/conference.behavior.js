@@ -59,6 +59,32 @@ function shouldBehaveLikeConference () {
     })
   })
 
+  describe('on changeDeposit', function(){
+    let newDeposit, conference, deposit;
+
+    beforeEach(async function(){
+      conference = await createConference({})
+      deposit = await conference.deposit()
+      newDeposit = mulBN(deposit, 2)
+    })
+
+    it('owner can change the deposit', async function(){
+      await conference.changeDeposit(newDeposit, {from:owner});
+      await conference.deposit().should.eventually.eq(newDeposit)
+    })
+
+    it('non owner cannot change the deposit', async function(){
+      await conference.changeDeposit(newDeposit, {from:non_owner}).should.be.rejected;
+      await conference.deposit().should.not.eventually.eq(newDeposit)
+    })
+
+    it('cannot change the deposit once someone registered', async function(){
+      await register({conference, deposit, user:owner});
+      await conference.changeDeposit(newDeposit, {from:owner}).should.be.rejected;
+      await conference.deposit().should.not.eventually.eq(newDeposit)
+    })
+  })
+
   describe('on setLimitOfParticipants', function(){
     let conference, desposit;
 
