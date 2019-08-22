@@ -44,12 +44,21 @@ contract('ERC20 Conference', function(accounts) {
     }
   })
 
-  describe('on registration', function(){
-    shouldBehaveLikeConference();
+  shouldBehaveLikeConference();
 
+  describe('on creation', function(){
     it('tokenAddress is not empty', async function(){
       let conference = await this.createConference({});
       await conference.tokenAddress().should.eventually.eq(token.address)
+    })
+  })
+
+  describe('on registration', function(){
+    it('fail if token is not approved', async function(){
+      let conference = await this.createConference({});
+      let user = this.accounts[1];
+      await conference.register({ from: user }).should.be.rejected;
+      await conference.isRegistered(user).should.eventually.eq(false)
     })
   })
 })

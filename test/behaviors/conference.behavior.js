@@ -140,7 +140,6 @@ function shouldBehaveLikeConference () {
     it('isRegistered for the registered account is true', async function(){
       let registered = await conference.registered()
       let isRegistered = await conference.isRegistered(owner)
-      console.log({registered, isRegistered})
       registered.should.eq(1)
       isRegistered.should.eq(true)
     })
