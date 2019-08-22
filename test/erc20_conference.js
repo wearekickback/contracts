@@ -51,6 +51,10 @@ contract('ERC20 Conference', function(accounts) {
       let conference = await this.createConference({});
       await conference.tokenAddress().should.eventually.eq(token.address)
     })
+
+    it('tokenAddress cannot be empty', async function(){
+      await this.createConference({tokenAdderss:null}).should.be.rejected;
+    })
   })
 
   describe('on registration', function(){
