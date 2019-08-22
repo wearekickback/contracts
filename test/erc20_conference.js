@@ -53,7 +53,8 @@ contract('ERC20 Conference', function(accounts) {
     })
 
     it('tokenAddress cannot be empty', async function(){
-      await this.createConference({tokenAdderss:null}).should.be.rejected;
+      const emptyAddress = '0x0000000000000000000000000000000000000000'
+      await this.createConference({tokenAdderss:emptyAddress}).should.be.rejected;
     })
   })
 
