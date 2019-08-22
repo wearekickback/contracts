@@ -146,7 +146,7 @@ contract AbstractConference is Conference, GroupAdmin {
     /**
      * @dev Cancels the event by owner. When the event is canceled each participant can withdraw their deposit back.
      */
-    function cancel() external onlyOwner onlyActive{
+    function cancel() external onlyAdmin onlyActive{
         payoutAmount = deposit;
         cancelled = true;
         ended = true;
@@ -157,7 +157,7 @@ contract AbstractConference is Conference, GroupAdmin {
     /**
     * @dev The event owner transfer the outstanding deposits  if there are any unclaimed deposits after cooling period
     */
-    function clear() external onlyOwner onlyEnded{
+    function clear() external onlyAdmin onlyEnded{
         require(now > endedAt + coolingPeriod, 'still in cooling period');
         uint256 leftOver = totalBalance();
         doWithdraw(owner, leftOver);
@@ -168,7 +168,7 @@ contract AbstractConference is Conference, GroupAdmin {
      * @dev Change the capacity of the event. The owner can change it until event is over.
      * @param _limitOfParticipants the number of the capacity of the event.
      */
-    function setLimitOfParticipants(uint256 _limitOfParticipants) external onlyOwner onlyActive{
+    function setLimitOfParticipants(uint256 _limitOfParticipants) external onlyAdmin onlyActive{
         limitOfParticipants = _limitOfParticipants;
 
         emit UpdateParticipantLimit(limitOfParticipants);
@@ -178,7 +178,7 @@ contract AbstractConference is Conference, GroupAdmin {
      * @dev Change the name of the event. The owner can change it as long as no one has registered yet.
      * @param _name the name of the event.
      */
-    function changeName(string calldata _name) external onlyOwner noOneRegistered{
+    function changeName(string calldata _name) external onlyAdmin noOneRegistered{
         name = _name;
     }
 
@@ -186,7 +186,7 @@ contract AbstractConference is Conference, GroupAdmin {
      * @dev Change the deposit. The owner can change it as long as no one has registered yet.
      * @param _deposit the deposit amount for the event.
      */
-    function changeDeposit(uint256 _deposit) external onlyOwner noOneRegistered{
+    function changeDeposit(uint256 _deposit) external onlyAdmin noOneRegistered{
         deposit = _deposit;
     }
 
