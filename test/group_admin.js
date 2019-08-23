@@ -67,6 +67,27 @@ contract('GroupAdmin', function(accounts) {
 
     })
 
+    describe('on transferOwnership', function(){
+        beforeEach(async function(){
+            await admin.grant([operator, another_operator, one_more_operator], {from:owner});
+            assert.strictEqual(await admin.isAdmin.call(operator), true);
+            assert.strictEqual(await admin.isAdmin.call(another_operator), true);
+            assert.strictEqual(await admin.isAdmin.call(one_more_operator), true);
+            assert.strictEqual(await admin.owner.call(), owner);
+            assert.strictEqual((await admin.numOfAdmins.call()).toNumber(), 3);
+        })
+
+        it('admins cannot transfer ownership', async function(){
+            await admin.transferOwnership(operator, {from:operator}).catch(function(){});
+            assert.strictEqual(await admin.owner.call(), owner);
+        })
+
+        it('owner can transfer ownership', async function(){
+            await admin.transferOwnership(operator, {from:owner}).catch(function(){});
+            assert.strictEqual(await admin.owner.call(), operator);
+        })
+    })
+
     describe('admins', async function(){
         it('list number of admins', async function(){
             await admin.grant([operator], {from:owner})
