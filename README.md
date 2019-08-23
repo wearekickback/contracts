@@ -93,6 +93,8 @@ you've checked them out as sibling folders.
 
 ## Simulation
 
+** NOTE: This is currently not up to date so more likely not working **
+
 To deploy a new party onto the local test network:
 
 ```shell
@@ -160,6 +162,7 @@ latest compiled contracts have been deployed to both test nets and the `mainnet`
 ```
 $ yarn deploy:ropsten
 $ yarn deploy:rinkeby
+$ yarn deploy:kovan
 $ yarn deploy:mainnet
 ```
 
