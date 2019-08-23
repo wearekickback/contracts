@@ -32,7 +32,7 @@ async init = () => {
   const deployer = await contract.deployed()
 
   // deploy a new party (see Deployer.sol for parameter documentation)
-  await deployer.deploy('My event', 0, 0, 0)
+  await deployer.deploy('My event', 0, 0, 0, oneweek, owneraddress, tokenaddress)
 
   const events = await promisify(deployer.contract.getPastEvents, deployer.contract)('NewParty')
 
