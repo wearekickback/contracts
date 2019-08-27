@@ -32,7 +32,7 @@ contract('GroupAdmin', function(accounts) {
             assert.strictEqual(await admin.isAdmin.call(operator), true);
         })
 
-        it('cannot be added by non owner', async function(){
+        it('cannot be added by non operator', async function(){
             await admin.grant([operator], {from:non_operator}).catch(function(){});
             assert.strictEqual(await admin.isAdmin.call(non_operator), false);
         })
