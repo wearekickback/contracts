@@ -1,4 +1,4 @@
-pragma solidity ^0.5.4;
+pragma solidity ^0.5.11;
 
 import './zeppelin/lifecycle/Destructible.sol';
 import './DeployerInterface.sol';

@@ -1,4 +1,4 @@
-pragma solidity ^0.5.4;
+pragma solidity ^0.5.11;
 import './Conference.sol';
 
 interface DeployerInterface {

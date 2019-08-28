@@ -1,4 +1,4 @@
-pragma solidity ^0.5.4;
+pragma solidity ^0.5.11;
 import './ERC20Conference.sol';
 import './Conference.sol';
 import './DeployerInterface.sol';
