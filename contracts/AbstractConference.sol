@@ -1,4 +1,4 @@
-pragma solidity ^0.5.4;
+pragma solidity ^0.5.11;
 
 import './GroupAdmin.sol';
 import './Conference.sol';
