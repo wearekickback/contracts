@@ -25,9 +25,16 @@ contract('GroupAdmin', function(accounts) {
             assert.strictEqual(await admin.isAdmin.call(non_operator), false);
         })
 
-        it('cannot be added by non owner', async function(){
-            await admin.grant([operator], {from:operator}).catch(function(){});
-            assert.strictEqual(await admin.isAdmin.call(operator), false);
+        it('can be added by operator', async function(){
+            await admin.grant([operator], {from:owner});
+            await admin.grant([another_operator], {from:operator});
+            assert.strictEqual(await admin.isAdmin.call(operator), true);
+            assert.strictEqual(await admin.isAdmin.call(operator), true);
+        })
+
+        it('cannot be added by non operator', async function(){
+            await admin.grant([operator], {from:non_operator}).catch(function(){});
+            assert.strictEqual(await admin.isAdmin.call(non_operator), false);
         })
     })
 
@@ -48,9 +55,36 @@ contract('GroupAdmin', function(accounts) {
             assert.strictEqual((await admin.numOfAdmins.call()).toNumber(), 1);
         })
 
-        it('cannot be revoked by non owner', async function(){
-            await admin.revoke([operator], {from:operator}).catch(function(){});
+        it('cannot be revoked by non operator', async function(){
+            await admin.revoke([operator], {from:non_operator}).catch(function(){});
             assert.strictEqual(await admin.isAdmin.call(operator), true);
+        })
+
+        it('can be revoked by operator', async function(){
+            await admin.revoke([operator], {from:operator});
+            assert.strictEqual(await admin.isAdmin.call(operator), false);
+        })
+
+    })
+
+    describe('on transferOwnership', function(){
+        beforeEach(async function(){
+            await admin.grant([operator, another_operator, one_more_operator], {from:owner});
+            assert.strictEqual(await admin.isAdmin.call(operator), true);
+            assert.strictEqual(await admin.isAdmin.call(another_operator), true);
+            assert.strictEqual(await admin.isAdmin.call(one_more_operator), true);
+            assert.strictEqual(await admin.owner.call(), owner);
+            assert.strictEqual((await admin.numOfAdmins.call()).toNumber(), 3);
+        })
+
+        it('admins cannot transfer ownership', async function(){
+            await admin.transferOwnership(operator, {from:operator}).catch(function(){});
+            assert.strictEqual(await admin.owner.call(), owner);
+        })
+
+        it('owner can transfer ownership', async function(){
+            await admin.transferOwnership(operator, {from:owner}).catch(function(){});
+            assert.strictEqual(await admin.owner.call(), operator);
         })
     })
 
