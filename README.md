@@ -32,7 +32,7 @@ async init = () => {
   const deployer = await contract.deployed()
 
   // deploy a new party (see Deployer.sol for parameter documentation)
-  await deployer.deploy('My event', 0, 0, 0)
+  await deployer.deploy('My event', 0, 0, 0, oneweek, owneraddress, tokenaddress)
 
   const events = await promisify(deployer.contract.getPastEvents, deployer.contract)('NewParty')
 
@@ -92,6 +92,8 @@ you've checked them out as sibling folders.
 
 
 ## Simulation
+
+** NOTE: This is currently not up to date so more likely not working **
 
 To deploy a new party onto the local test network:
 
@@ -160,6 +162,7 @@ latest compiled contracts have been deployed to both test nets and the `mainnet`
 ```
 $ yarn deploy:ropsten
 $ yarn deploy:rinkeby
+$ yarn deploy:kovan
 $ yarn deploy:mainnet
 ```
 
@@ -174,3 +177,97 @@ Then create a new release:
 5. Once the NPM package has been published you will need to update the dependency to
 it in both the `server` and `app` repositories so that they both refer to the
 latest contract ABI when talking to the blockchain.
+
+## Business logic and smart contract structure
+
+### Actors
+
+- Event organiser = the creator of the event contract. There is only one per event.
+- Event admins = the people who can help the event organiser. Can do everything the organiser can do apart from transfering the contract ownership and destroying the event contract deployer contract.
+- Participants = People who RSVPed the event
+- Attendees = People who were marked as attended
+
+### Event flow
+
+- When the event organiser creates an event, the organiser can specify the unit of currency (ETH or ERC20), name of the event(`name`), amount of commitment (`deposit`), event capaicty (`limitOfParticipants`), and cooling period (`cooling period`) when users can withdraw their commitment.
+- The event organiser adds admins
+- Until the first participant RSVP, the event admins can change the name and `deposit` amount
+- The event admins can change limitOfParticipants to increase the capacity of the event.
+- When participants RSVP, they can RSVP if they call `register` function with the correct `deposit` value.
+- For events participants commit ERC20 tokens, the user has to call `token.approve(deposit)` prior to RSVP.
+- When user arrives to the venue, admins can check in users. This will be done off chain.
+- If the event is canceled, each participant can withdraw the deposit amount (minus gas fee)
+- Once the event is over, one of the admins call `finalize` sending the array of participants information in the bitmap format (to save gas).
+- Once the event is finalised, the attendees can withdraw the proportion of the sum of the deposit on the contract. For example, if the `deposit` is 0.1 ETH , 10 people RSVP, and 5 people turned up, then each attendee can withdraw 1/5 = 0.2 ETH.
+- If the attendees do not withdraw within cooling period, one of the admins can `clear` so that the remaining `deposit` will be send to the event organiser.
+
+### Contract files
+
+```
+~/.../kickback/contracts (spike-dai)$tree contracts/
+contracts/
+├── AbstractConference.sol
+├── Conference.sol
+├── Deployer.sol
+├── DeployerInterface.sol
+├── ERC20Conference.sol
+├── ERC20Deployer.sol
+├── EthConference.sol
+├── EthDeployer.sol
+├── GroupAdmin.sol
+├── Migrations.sol
+├── MyToken.sol
+└── zeppelin
+    ├── lifecycle
+    │   └── Destructible.sol
+    └── ownership
+        └── Ownable.sol
+
+```
+
+
+- Each even has its own contract. `AbstractConference.sol` is the superclass which contains all the functions. 
+- The `AbstractConference.sol` inherits from Distructible, Ownnable and GroupAdmin.
+- `ERC20Conference.sol` and `EthConference.sol` inherits `AbstractConference.sol` and override logic to RSVP and withdraw.
+- `Deployer.sol` is a factory contract to deploy smart contract for each event.
+- Due to the gas size exceeding the block size, the actual binaries of the contracts are deployed via `ERC20Deployer.sol` and `EthDeployer.sol` and their deployed contract addresses are passed into the constructor of `Deployer.sol`. The `Deployer.sol` determines whether it should deploy ERC20 version if contract address is passed. Otherwise it will deploy the Eth version.
+- For ERC20 token contracts, we import the openzeppelin library.
+
+```
+$grep openzeppelin contracts/*sol
+contracts/ERC20Conference.sol:import 'openzeppelin-solidity/contracts/token/ERC20/IERC20.sol';
+contracts/MyToken.sol:import 'openzeppelin-solidity/contracts/token/ERC20/ERC20.sol';
+contracts/MyToken.sol:import 'openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol';
+```
+
+The reason we have `zeppelin/*` contracts locally rather than importing from NPM is that they are as follows.
+
+- `zeppelin/lifecycle/Destructible.sol` no longer exists on openzeppelin repo
+- `zeppelin/lifecycle/Ownable.sol` has code changed (`owner` field is changed from `private` to `public`)
+
+### Some decision behind the architectural choice.
+
+We have made certain architectual deciisions which may seem suboptimal to people who look into the code for the first time. The following section covers context behind why we made such decisions.
+
+#### Deploying each contract per event.
+
+A new contract needs to be deployed for each event, which incurs some cost at each deploy.
+This makes it relatively expensive to use for a small number of participant especially when the gas price or Ether price is expensive. However, this will allow us to constantly update and refactor the contract to be up to date without having complex upgradability strategy.
+
+As our contract matures we would like to transition to a model where one contract holds multiple events and make certain logics pluggable/upgradable.
+
+#### No strict time dependencies.
+
+The current contract does not contain any information about the event start and end time as real events often do not have strict deadlines on participation. Also, the current unstable nature of Ethereum mainnet occasionally makes it difficult (or too expensive) to interact with the contract in a timely manner so it often comes down to the event owner to decide when one ends the event. The only exception is `cooling period` which lasts for a week by default. Having the cooling period is mainly to encourage users to withdraw deposits as soon as possible so that users can avoid possible loss of funds if any bugs or vulnerabilities are found (or the deployment account is compromised). Please refer to [this blog post](https://medium.com/@makoto_inoue/running-everyday-dapp-when-ethereum-is-under-pressure-2c5bf4412c13) for the user impact when the Ethereum network is under performance pressure.
+
+#### Pull over Push
+
+The users need to interact with the smart contract twice, at registration and at withdrawal. The need to manually withdraw fund is an inconvenience to the users but this is to avoid the potential reentrancy attack. Please refer to [this blog post](https://medium.com/@makoto_inoue/a-smartcontract-best-practice-push-pull-or-give-b2e8428e032a) for how this decision was made.
+
+We are planning to transaition into [a model where user commitment is always stored in their pot so that they do not have to withdraw every time the event ends](https://github.com/wearekickback/KIPs/blob/master/kips/kip-1.md)
+
+### Past vulnerabilities
+
+Please refer to [BlockParty version 0.8.4 pre auditing guide.](https://github.com/wearekickback/contracts/blob/master/doc/SelfAuditV084.md)
+
+
