@@ -54,8 +54,8 @@ contract GroupAdmin is Ownable {
     }
 
     /**
-    * @dev Returns number of admings.
-    * @return Number of admings.
+    * @dev Returns number of admins.
+    * @return Number of admins.
     */
     function numOfAdmins() public view returns(uint){
         return admins.length;
