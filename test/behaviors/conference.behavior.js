@@ -102,6 +102,15 @@ function shouldBehaveLikeConference () {
       await register({conference, deposit, user:non_owner}).should.be.rejected;
       await conference.registered().should.eventually.eq(1)
     })
+
+    it('does not allow to lower than already registered', async function(){
+      await conference.setLimitOfParticipants(2)
+      await register({conference, deposit, user:owner, owner});
+      await register({conference, deposit, user:accounts[6], owner});
+      await conference.registered().should.eventually.eq(2)
+      await conference.setLimitOfParticipants(1).should.be.rejected;
+      await conference.registered().should.eventually.eq(2)
+    })
   })
 
   describe('on creation', function(){

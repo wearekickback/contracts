@@ -169,6 +169,7 @@ contract AbstractConference is Conference, GroupAdmin {
      * @param _limitOfParticipants the number of the capacity of the event.
      */
     function setLimitOfParticipants(uint256 _limitOfParticipants) external onlyAdmin onlyActive{
+        require(registered <= _limitOfParticipants, 'cannot lower than already registered');
         limitOfParticipants = _limitOfParticipants;
 
         emit UpdateParticipantLimit(limitOfParticipants);
