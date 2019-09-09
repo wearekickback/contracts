@@ -212,8 +212,8 @@ contract AbstractConference is Conference, GroupAdmin {
                 _totalAttended++;
             }
         }
-        // since maps can contain more bits than there are registrants, we cap the value!
-        totalAttended = _totalAttended < registered ? _totalAttended : registered;
+        require(_totalAttended <= registered, 'should not have more attendees than regerested');
+        totalAttended = _totalAttended;
 
         if (totalAttended > 0) {
             payoutAmount = uint256(totalBalance()) / totalAttended;
