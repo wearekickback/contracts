@@ -1,7 +1,7 @@
 
 const { toBN } = require('web3-utils')
 const { outputBNs } = require('../utils')
-
+const { calculateFinalizeMaps } = require('@wearekickback/shared')
 web3.currentProvider.sendAsync = web3.currentProvider.send
 
 function shouldHandleLargeParty () {
@@ -193,14 +193,17 @@ function shouldHandleLargeParty () {
     })
 
     it('correctly updates attendee records - all attended', async function(){
-      // all attended
-      let n = toBN(0)
-      for (let i = 0; i < 256; i++) {
-        n = n.bincn(i)
+      let n1 = toBN(0)
+      for (let i = 0; i < 256; i += 1) {
+        n1 = n1.bincn(i)
       }
-      const maps = [ n, n ]
-
-      outputBNs(maps)
+  
+      let n2 = toBN(0)
+      for (let i = 0; i < (300 - 256); i += 1) {
+        n2 = n2.bincn(i)
+      }
+  
+      const maps = [ n1.toString(10), n2.toString(10) ]
 
       await conference.finalize(maps, {from:owner});
 
