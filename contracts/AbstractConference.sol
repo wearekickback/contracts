@@ -212,7 +212,7 @@ contract AbstractConference is Conference, GroupAdmin {
                 _totalAttended++;
             }
         }
-        require(_totalAttended <= registered, 'should not have more attendees than regerested');
+        require(_totalAttended <= registered, 'should not have more attendees than registered');
         totalAttended = _totalAttended;
 
         if (totalAttended > 0) {

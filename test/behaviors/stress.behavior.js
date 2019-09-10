@@ -92,7 +92,7 @@ const reportFinalize = async (participants, ctx) => {
     // build bitmaps
     const numRegistered = addresses.length;
     let num = toBN(0);
-    for (let i = 0; i < 256; i++) {
+    for (let i = 0; i < numRegistered; i++) {
       num = num.bincn(i)
     }
     const maps = [];
