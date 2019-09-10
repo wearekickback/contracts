@@ -119,13 +119,13 @@ function shouldStressTest () {
     })
   })
 
-  // describe('300 participants', function() {
-  //   const num = 300
+  describe('300 participants', function() {
+    const num = 300
 
-  //   it('finalize', async function(){
-  //     await reportFinalize(num, ctx)
-  //   })
-  // })
+    it('finalize', async function(){
+      await reportFinalize(num, ctx)
+    })
+  })
 };
 
 module.exports = {
