@@ -270,15 +270,15 @@ function shouldBehaveLikeConference () {
       await conference.payoutAmount().should.eventually.eq(mulBN(deposit, 4))
     })
 
-    it('correctly calculates total attended even if more 1 bits are set than there are registrations', async function() {
+    it('does not allow finalising with more attendees than registered', async function() {
       // all attended
       let n = toBN(0)
       for (let i = 0; i < 256; i++) {
         n = n.bincn(i)
       }
-      await conference.finalize([n], {from:owner});
+      await conference.finalize([n], {from:owner}).should.be.rejected;
 
-      await conference.totalAttended().should.eventually.eq(4)
+      await conference.totalAttended().should.eventually.eq(0)
     })
 
     it('correctly updates attendee records', async function() {
