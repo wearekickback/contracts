@@ -1,5 +1,5 @@
 import { toWei, fromWei, toBN } from 'web3-utils'
-
+import { calculateFinalizeMaps } from '@wearekickback/shared'
 const moment = require('moment');
 const fs = require('fs');
 
@@ -89,16 +89,17 @@ const reportTest = async function (participants, ctx, finalize){
 
 const reportFinalize = async (participants, ctx) => {
   return reportTest(participants, ctx, async ({ deposit, conference, owner, addresses, transactions }) => {
-    // build bitmaps
     const numRegistered = addresses.length;
-    let num = toBN(0);
-    for (let i = 0; i < 256; i++) {
-      num = num.bincn(i)
+    const ps = []
+
+    // build bitmaps
+    for (let i = 0; numRegistered > i; i += 1) {
+      ps.push({
+        index: i,
+        status: 'SHOWED_UP'
+      })
     }
-    const maps = [];
-    for (let i = 0; i < Math.ceil(numRegistered / 256); i++) {
-      maps.push(num.toString(10))
-    }
+    const maps = calculateFinalizeMaps(ps)    
     const finalizeTx = await conference.finalize(maps, { from:owner, gasPrice:gasPrice })
     transactions.push(await getTransaction('finalize  ', finalizeTx.tx))
   })

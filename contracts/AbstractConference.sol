@@ -49,6 +49,7 @@ contract AbstractConference is Conference, GroupAdmin {
      * @param _deposit The amount each participant deposits. The default is set to 0.02 Ether. The amount cannot be changed once deployed.
      * @param _limitOfParticipants The number of participant. The default is set to 20. The number can be changed by the owner of the event.
      * @param _coolingPeriod The period participants should withdraw their deposit after the event ends. After the cooling period, the event owner can claim the remining deposits.
+     * @param _owner The owner of the event
      */
     constructor (
         string memory _name,
@@ -57,7 +58,7 @@ contract AbstractConference is Conference, GroupAdmin {
         uint256 _coolingPeriod,
         address payable _owner
     ) public {
-        require(_owner != address(0), 'ower address is required');
+        require(_owner != address(0), 'owner address is required');
         owner = _owner;
         name = _name;
         deposit = _deposit;
@@ -102,7 +103,7 @@ contract AbstractConference is Conference, GroupAdmin {
      * @return The total balance of the contract.
      */
     function totalBalance() view public returns (uint256){
-        revert('totalBalance must be impelmented int the child class');
+        revert('totalBalance must be impelmented in the child class');
     }
 
     /**
@@ -169,6 +170,7 @@ contract AbstractConference is Conference, GroupAdmin {
      * @param _limitOfParticipants the number of the capacity of the event.
      */
     function setLimitOfParticipants(uint256 _limitOfParticipants) external onlyAdmin onlyActive{
+        require(registered <= _limitOfParticipants, 'cannot lower than already registered');
         limitOfParticipants = _limitOfParticipants;
 
         emit UpdateParticipantLimit(limitOfParticipants);
@@ -210,8 +212,8 @@ contract AbstractConference is Conference, GroupAdmin {
                 _totalAttended++;
             }
         }
-        // since maps can contain more bits than there are registrants, we cap the value!
-        totalAttended = _totalAttended < registered ? _totalAttended : registered;
+        require(_totalAttended <= registered, 'should not have more attendees than registered');
+        totalAttended = _totalAttended;
 
         if (totalAttended > 0) {
             payoutAmount = uint256(totalBalance()) / totalAttended;
@@ -221,15 +223,15 @@ contract AbstractConference is Conference, GroupAdmin {
     }
 
     function doDeposit(address /* participant */, uint256 /* amount */ ) internal {
-        revert('doDeposit must be impelmented int the child class');
+        revert('doDeposit must be impelmented in the child class');
     }
 
     function doWithdraw(address payable /* participant */ , uint256 /* amount */ ) internal {
-        revert('doWithdraw must be impelmented int the child class');
+        revert('doWithdraw must be impelmented in the child class');
     }
 
     function tokenAddress() public view returns (address){
-        revert('tokenAddress must be impelmented int the child class');
+        revert('tokenAddress must be impelmented in the child class');
     }
 
 }
