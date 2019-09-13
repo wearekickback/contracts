@@ -1,11 +1,19 @@
 const Token = require('./build/contracts/MyToken.json')
 const Deployer = require('./build/contracts/Deployer.json')
+const EthConference = require('./build/contracts/EthConference.json')
+const ERC20Conference = require('./build/contracts/ERC20Conference.json')
 const Conference = require('./build/contracts/Conference.json')
+const EthDeployer = require('./build/contracts/EthDeployer.json')
+const ERC20Deployer = require('./build/contracts/ERC20Deployer.json')
 
 module.exports = {
   Token,
   Deployer,
   Conference,
+  EthConference,
+  ERC20Conference,
+  EthDeployer,
+  ERC20Deployer,
   events: {
     /* when new party gets deployed */
     NewParty: Deployer.abi.find(({ type, name }) => type === 'event' && name === 'NewParty'),
