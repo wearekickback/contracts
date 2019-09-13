@@ -102,6 +102,15 @@ function shouldBehaveLikeConference () {
       await register({conference, deposit, user:non_owner}).should.be.rejected;
       await conference.registered().should.eventually.eq(1)
     })
+
+    it('does not allow to lower than already registered', async function(){
+      await conference.setLimitOfParticipants(2)
+      await register({conference, deposit, user:owner, owner});
+      await register({conference, deposit, user:accounts[6], owner});
+      await conference.registered().should.eventually.eq(2)
+      await conference.setLimitOfParticipants(1).should.be.rejected;
+      await conference.registered().should.eventually.eq(2)
+    })
   })
 
   describe('on creation', function(){
@@ -261,15 +270,15 @@ function shouldBehaveLikeConference () {
       await conference.payoutAmount().should.eventually.eq(mulBN(deposit, 4))
     })
 
-    it('correctly calculates total attended even if more 1 bits are set than there are registrations', async function() {
+    it('does not allow finalising with more attendees than registered', async function() {
       // all attended
       let n = toBN(0)
       for (let i = 0; i < 256; i++) {
         n = n.bincn(i)
       }
-      await conference.finalize([n], {from:owner});
+      await conference.finalize([n], {from:owner}).should.be.rejected;
 
-      await conference.totalAttended().should.eventually.eq(4)
+      await conference.totalAttended().should.eventually.eq(0)
     })
 
     it('correctly updates attendee records', async function() {
