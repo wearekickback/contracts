@@ -33,8 +33,7 @@ interface Conference {
         address payable addr,
         bool paid
     );
-
-
+    function participantsIndex(uint256) view external returns(address);
     // Functions
     // Ownable
     function transferOwnership(address payable newOwner) external;
