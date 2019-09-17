@@ -35,12 +35,14 @@ contract('ERC20 Conference', function(accounts) {
     this.getBalance = async (account) => {
       return new EthVal(await token.balanceOf(account));
     }
-    this.register = async function({conference, deposit, user, owner, gasPrice = toWei('1', "gwei")}){
+    this.register = async function({conference, deposit, user, owner, approve = true, gasPrice = toWei('1', "gwei"), value = 0}){
       if(owner){
-        token.transfer(user, deposit, {from:owner, gasPrice})
+        token.transfer(user, deposit, {from:owner, gasPrice});
       }
-      await token.approve(conference.address, deposit, { from: user, gasPrice });
-      return await conference.register({ from: user, gasPrice });
+      if(approve){
+        await token.approve(conference.address, deposit, { from: user, gasPrice });
+      }
+      return await conference.register({ from: user, gasPrice, value });
     }
   })
 
@@ -59,10 +61,21 @@ contract('ERC20 Conference', function(accounts) {
   })
 
   describe('on registration', function(){
+    let conference, owner, user, deposit;
+    beforeEach(async function(){
+      conference = await this.createConference({});
+      owner = this.accounts[0];
+      user = this.accounts[1];
+      deposit = await conference.deposit();
+    })
+
     it('fail if token is not approved', async function(){
-      let conference = await this.createConference({});
-      let user = this.accounts[1];
-      await conference.register({ from: user }).should.be.rejected;
+      await this.register({conference, deposit, user, owner, approve:false}).should.be.rejected;
+      await conference.isRegistered(user).should.eventually.eq(false)
+    })
+
+    it('fail if it tries to send some ETH', async function(){
+      await this.register({conference, deposit, user, owner, value:1}).should.be.rejected;
       await conference.isRegistered(user).should.eventually.eq(false)
     })
   })

@@ -35,6 +35,7 @@ contract ERC20Conference is AbstractConference {
     }
 
     function doDeposit(address participant, uint256 amount) internal {
+        require(msg.value == 0, 'ERC20Conference can not receive ETH');
         token.transferFrom(participant, address(this), amount);
     }
 
