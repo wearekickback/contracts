@@ -271,3 +271,13 @@ We are planning to transaition into [a model where user commitment is always sto
 Please refer to [BlockParty version 0.8.4 pre auditing guide.](https://github.com/wearekickback/contracts/blob/master/doc/SelfAuditV084.md)
 
 
+## Deployed contracts
+
+For all the latest deployed deployer contracts, see refer to `deployedAddresses.json`
+
+### Mainnet deployer contract revisions
+
+- npm version 1.2.9 "0x3361aa92E426E052141Daf9e41A09d36e994Ba23"
+- npm version 1.2.0 "0x5cD26E6DC8200630508672fF5C726478e08Da52B" (contained a bug so aborted)
+- npm version 1.0.x "0x0F84461931866cFB2796E09B20520847D49F80F2"
+
