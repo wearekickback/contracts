@@ -1,4 +1,4 @@
-pragma solidity ^0.5.4;
+pragma solidity ^0.5.11;
 
 import './zeppelin/ownership/Ownable.sol';
 
@@ -20,7 +20,7 @@ contract GroupAdmin is Ownable {
     * @dev Grants admin right to given addresses.
     * @param newAdmins An array of addresses
     */
-    function grant(address[] memory newAdmins) public onlyOwner{
+    function grant(address[] memory newAdmins) public onlyAdmin{
         for(uint i = 0; i < newAdmins.length; i++){
             admins.push(newAdmins[i]);
             emit AdminGranted(newAdmins[i]);
@@ -31,7 +31,7 @@ contract GroupAdmin is Ownable {
     * @dev Revoke admin right from given addresses.
     * @param oldAdmins An array of addresses
     */
-    function revoke(address[] memory oldAdmins) public onlyOwner{
+    function revoke(address[] memory oldAdmins) public onlyAdmin{
         for(uint oldIdx = 0; oldIdx < oldAdmins.length; oldIdx++){
             for (uint idx = 0; idx < admins.length; idx++) {
                 if (admins[idx] == oldAdmins[oldIdx]) {
@@ -54,8 +54,8 @@ contract GroupAdmin is Ownable {
     }
 
     /**
-    * @dev Returns number of admings.
-    * @return Number of admings.
+    * @dev Returns number of admins.
+    * @return Number of admins.
     */
     function numOfAdmins() public view returns(uint){
         return admins.length;
