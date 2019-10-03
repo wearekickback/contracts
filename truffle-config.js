@@ -1,4 +1,4 @@
-const { mnemonic, infuraKey } = require('./.deployment.js')
+const { mnemonic, infuraKey, etherscanApiKey } = require('./.deployment.js')
 const HDWalletProvider = require('truffle-hdwallet-provider')
 
 module.exports = {
@@ -48,6 +48,13 @@ module.exports = {
     }
   },
 
+  plugins: [
+    'truffle-plugin-verify'
+  ],
+  api_keys: {
+    etherscan: etherscanApiKey
+  },
+
   mocha: {
     reporter: 'eth-gas-reporter',
     reporterOptions : {
@@ -63,7 +70,8 @@ module.exports = {
       settings: {
         optimizer: {
           enabled: true
-        }
+        },
+        evmVersion: 'petersburg' // Important, see https://github.com/trufflesuite/truffle/issues/2416
       }
     }
   }

@@ -1,4 +1,5 @@
 module.exports = {
   mnemonic: 'mnemonic',
-  infuraKey: 'infuraKey'
+  infuraKey: 'infuraKey',
+  etherscanApiKey: 'etherscanApiKey'
 }
