@@ -5,7 +5,7 @@ node_js: 10
 cache: yarn
 install:
 - yarn
-- yarn global add ganache-cli@6.1.8
+- yarn global add ganache-cli@6.7.0
 before_script:
 - cp .deployment-sample.js .deployment.js
 - ganache-cli --defaultBalanceEther 2000000 --accounts 500 >ganache.log 2>&1 &
