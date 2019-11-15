@@ -5,7 +5,7 @@ const fs = require('fs');
 
 const gasPrice = toWei('1', 'gwei')
 
-const { mulBN } = require('../utils')
+const { mulBN, promiseMapRange } = require('../utils')
 const EthVal = require('ethval')
 
 const usd = 468;
@@ -99,7 +99,7 @@ const reportFinalize = async (participants, ctx) => {
         status: 'SHOWED_UP'
       })
     }
-    const maps = calculateFinalizeMaps(ps)    
+    const maps = calculateFinalizeMaps(ps)
     const finalizeTx = await conference.finalize(maps, { from:owner, gasPrice:gasPrice })
     transactions.push(await getTransaction('finalize  ', finalizeTx.tx))
   })

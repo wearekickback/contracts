@@ -8,7 +8,7 @@ const { shouldHandleLargeParty } = require('./behaviors/conferenceFinalize.behav
 
 web3.currentProvider.sendAsync = web3.currentProvider.send
 
-contract('ERC20 Conference', function(accounts) {
+contract('ERC20 Conference - stress tests', function(accounts) {
   let token;
   beforeEach(async function(){
     token = await Token.new();

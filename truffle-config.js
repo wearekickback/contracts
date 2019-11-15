@@ -54,7 +54,7 @@ module.exports = {
       currency: 'USD',
       gasPrice: 1
     },
-    timeout: 100000,
+    timeout: 300000,
   },
 
   compilers: {
