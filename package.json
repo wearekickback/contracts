@@ -31,7 +31,7 @@
     "coverage": "solidity-coverage",
     "sol-merger": "sol-merger './contracts/*.sol' ./build",
     "solgraph": "solgraph contracts/Conference.sol  > doc/Conference.dot && dot -Tpng doc/Conference.dot -o doc/Conference.png",
-    "verify": "yarn truffle run verify"
+    "verify": "yarn prepublishOnly && yarn truffle run verify"
   },
   "repository": {
     "type": "git",
