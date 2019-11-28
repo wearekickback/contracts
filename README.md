@@ -154,7 +154,7 @@ yarn coverage
 
 ## Deployment to public networks
 
-Edit `.deployment.js` and fill in the company mnemonic and Infura key (obtain from 1Password).
+Edit `.deployment.js` and fill in the company mnemonic, Infura key (obtain from 1Password) and Etherscan key (obtain from 1Password).
 
 Releases are done automatically via CI. Prior to doing a release, ensure the
 latest compiled contracts have been deployed to both test nets and the `mainnet`:
@@ -164,6 +164,15 @@ $ yarn deploy:ropsten
 $ yarn deploy:rinkeby
 $ yarn deploy:kovan
 $ yarn deploy:mainnet
+```
+
+Once contracts are deployed to public network, run the verify script to verify the source code on Etherscan.
+
+```
+truffle run verify Deployer --network ropsten
+truffle run verify Deployer --network rinkeby
+truffle run verify Deployer --network kovan
+truffle run verify Deployer --network mainnet
 ```
 
 _Note: ensure `.deployment.js` is accurately setup for the above to work_.
