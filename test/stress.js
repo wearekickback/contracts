@@ -3,7 +3,6 @@ const EthVal = require('ethval')
 const Conference = artifacts.require("./EthConference.sol");
 
 const { getBalance } = require('./utils')
-const { shouldStressTest } = require('./behaviors/stress.behavior');
 const { shouldHandleLargeParty } = require('./behaviors/conferenceFinalize.behavior');
 
 web3.currentProvider.sendAsync = web3.currentProvider.send
@@ -36,9 +35,6 @@ contract('ETH Conference - stress tests', function(accounts) {
     }
   })
 
-  describe('checking gas size for ', function(){
-    shouldStressTest();
-  })
   describe('on big party', function(){
     shouldHandleLargeParty();
   })
