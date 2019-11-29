@@ -321,7 +321,7 @@ function shouldBehaveLikeConference () {
       // 1 0 1 1
       // reverse order since we go from right to left in bit parsing:
       // [ 13 (1101) ]
-      
+
       await conference.finalize([13], {from:owner});
       const previousBalance = await getBalance(non_owner);
       const previousContractBalance = await getBalance(conference.address)
@@ -368,7 +368,7 @@ function shouldBehaveLikeConference () {
     beforeEach(async function(){
       attended = accounts[2];
       notAttended = accounts[3];
-      notRegistered = accounts[4];  
+      notRegistered = accounts[4];
       conference = await createConference({});
       deposit = await conference.deposit();
       await register({conference, deposit, user:attended, owner});
@@ -437,7 +437,7 @@ function shouldBehaveLikeConference () {
       deposit = await conference.deposit();
       registered = accounts[1];
       notRegistered = accounts[2];
-  
+
       await register({conference, deposit, user:owner, owner});
       await register({conference, deposit, user:registered, owner});
 
@@ -469,11 +469,11 @@ function shouldBehaveLikeConference () {
   describe('on clear', function(){
     let conference, deposit, registered, notRegistered
     beforeEach(async function(){
-      conference = await createConference({});
+      conference = await createConference({coolingPeriod:10});
       deposit = await conference.deposit();
       // registered = accounts[1];
       // notRegistered = accounts[2];
-  
+
       // await register({conference, deposit, user:owner, owner});
       // await register({conference, deposit, user:registered, owner});
 
@@ -481,9 +481,6 @@ function shouldBehaveLikeConference () {
     })
 
     it('cooling period can be set', async function(){
-      let coolingPeriod = 10
-      conference = await createConference({coolingPeriod:coolingPeriod});
-
       await conference.coolingPeriod().should.eventually.eq(10)
     })
 
@@ -527,7 +524,7 @@ function shouldBehaveLikeConference () {
       assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 1))
 
       let previousBalance = await getBalance(owner);
-      await wait(2, 1);
+      await wait(20, 1);
       await conference.clear({from:owner});
 
       let diff = (await getBalance(owner)).sub(previousBalance)
