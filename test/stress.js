@@ -3,12 +3,11 @@ const EthVal = require('ethval')
 const Conference = artifacts.require("./EthConference.sol");
 
 const { getBalance } = require('./utils')
-const { shouldStressTest } = require('./behaviors/stress.behavior');
 const { shouldHandleLargeParty } = require('./behaviors/conferenceFinalize.behavior');
 
 web3.currentProvider.sendAsync = web3.currentProvider.send
 
-contract('ETH Conference', function(accounts) {
+contract('ETH Conference - stress tests', function(accounts) {
   beforeEach(async function(){
     this.accounts = accounts
     this.createConference = ({
@@ -34,10 +33,6 @@ contract('ETH Conference', function(accounts) {
     this.register = async function({conference, deposit, user, gasPrice = toWei('1', 'gwei')}){
       return await conference.register({value:deposit, from: user, gasPrice});
     }
-  })
-
-  describe('checking gas size for ', function(){
-    shouldStressTest();
   })
 
   describe('on big party', function(){
