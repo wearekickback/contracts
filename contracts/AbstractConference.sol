@@ -2,8 +2,11 @@ pragma solidity ^0.5.11;
 
 import './GroupAdmin.sol';
 import './Conference.sol';
+import './zeppelin/SafeMath.sol';
 
 contract AbstractConference is Conference, GroupAdmin {
+    using SafeMath for uint256;
+
     string public name;
     uint256 public deposit;
     uint256 public limitOfParticipants;
@@ -116,7 +119,7 @@ contract AbstractConference is Conference, GroupAdmin {
 
         uint256 sumOfValues = 0;
         for(uint i = 0; i < values.length; i++) {
-            sumOfValues += values[i];
+            sumOfValues = sumOfValues.add(values[i]);
         }
 
         require(sumOfValues <= payoutAmount, 'payout amount is less than sum of values');
