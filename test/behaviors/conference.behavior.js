@@ -466,6 +466,39 @@ function shouldBehaveLikeConference () {
     })
   })
 
+  describe('on send and withdraw', function(){
+    let conference, deposit, registered, donation;
+    beforeEach(async function(){
+      conference = await createConference({});
+      deposit = await conference.deposit(); // should be 0.02 ether (2*10e16 wei)
+      registered = accounts[1];
+      donation = toWei('0.01', "ether");
+
+      await register({conference, deposit, user:owner, owner});
+      await register({conference, deposit, user:registered, owner});
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 2))
+    })
+
+    it('should take only `deposit` value', async function() {
+      await conference.cancel({from:owner});
+      await conference.sendAndWithdraw([accounts[2]], [donation], {from:registered});
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 1))
+    })
+
+    it('more addresses than values or viceversa', async function(){
+      await conference.cancel({from:owner});
+      await conference.sendAndWithdraw([accounts[2]], [donation, donation], {from:registered}).should.be.rejected;
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 2))
+    })
+
+    it('payout amount is less than sum of values', async function(){
+      await conference.cancel({from:owner});
+      await conference.sendAndWithdraw([accounts[2]], [toWei('1', "ether")], {from:registered}).should.be.rejected;
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 2))
+    })
+  })
+
   describe('on clear', function(){
     let conference, deposit, registered, notRegistered
     beforeEach(async function(){
