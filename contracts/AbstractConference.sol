@@ -89,12 +89,12 @@ contract AbstractConference is Conference, GroupAdmin {
      * @dev Withdraws deposit after the event is over.
      */
     function withdraw() external onlyEnded {
-        require(payoutAmount > 0, 'payout is 0');        
+        require(payoutAmount > 0, 'payout is 0');
         Participant storage participant = participants[msg.sender];
         require(participant.addr == msg.sender, 'forbidden access');
         require(cancelled || isAttended(msg.sender), 'event still active or you did not attend');
         require(participant.paid == false, 'already withdrawn');
-        
+
         participant.paid = true;
         doWithdraw(msg.sender, payoutAmount);
         emit WithdrawEvent(msg.sender, payoutAmount);
