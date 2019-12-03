@@ -2,7 +2,7 @@ pragma solidity ^0.5.11;
 
 import './GroupAdmin.sol';
 import './Conference.sol';
-import './zeppelin/SafeMath.sol';
+import 'openzeppelin-solidity/contracts/math/SafeMath.sol';
 
 contract AbstractConference is Conference, GroupAdmin {
     using SafeMath for uint256;
