@@ -497,6 +497,19 @@ function shouldBehaveLikeConference () {
       await conference.sendAndWithdraw([accounts[2]], [toWei('1', "ether")], {from:registered}).should.be.rejected;
       assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 2))
     })
+
+    it('send and withdraw with empty arrays should send funds to sender', async function(){
+      await conference.cancel({from:owner});
+
+      let previousBalance = await getBalance(registered);
+
+      await conference.sendAndWithdraw([], [], {from:registered});
+      
+      let diff = (await getBalance(registered)).sub(previousBalance);
+      assert.isOk(diff.gt( mulBN(deposit, 0.9) ))
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 1))
+    })
   })
 
   describe('on clear', function(){

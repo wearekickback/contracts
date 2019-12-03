@@ -45,6 +45,15 @@ contract AbstractConference is Conference, GroupAdmin {
         _;
     }
 
+    modifier canWithdraw {
+        require(payoutAmount > 0, 'payout is 0');
+        Participant storage participant = participants[msg.sender];
+        require(participant.addr == msg.sender, 'forbidden access');
+        require(cancelled || isAttended(msg.sender), 'event still active or you did not attend');
+        require(participant.paid == false, 'already withdrawn');
+        _;
+    }
+
     /* Public functions */
     /**
      * @dev Construcotr.
@@ -88,14 +97,8 @@ contract AbstractConference is Conference, GroupAdmin {
     /**
      * @dev Withdraws deposit after the event is over.
      */
-    function withdraw() external onlyEnded {
-        require(payoutAmount > 0, 'payout is 0');
-        Participant storage participant = participants[msg.sender];
-        require(participant.addr == msg.sender, 'forbidden access');
-        require(cancelled || isAttended(msg.sender), 'event still active or you did not attend');
-        require(participant.paid == false, 'already withdrawn');
-
-        participant.paid = true;
+    function withdraw() external onlyEnded canWithdraw {
+        participants[msg.sender].paid = true;
         doWithdraw(msg.sender, payoutAmount);
         emit WithdrawEvent(msg.sender, payoutAmount);
     }
@@ -110,13 +113,7 @@ contract AbstractConference is Conference, GroupAdmin {
     * The function emits the event SendAndWithdraw with the following informations:
     * (addresses, values, participant address, payoutAmount - sum(values), payoutAmount)
     */
-    function sendAndWithdraw(address payable[] calldata addresses, uint256[] calldata values) external onlyEnded {
-        require(payoutAmount > 0, 'payout is 0');        
-        Participant storage participant = participants[msg.sender];
-        require(participant.addr == msg.sender, 'forbidden access');
-        require(cancelled || isAttended(msg.sender), 'event still active or you did not attend');
-        require(participant.paid == false, 'already withdrawn');
-
+    function sendAndWithdraw(address payable[] calldata addresses, uint256[] calldata values) external canWithdraw onlyEnded {
         uint256 sumOfValues = 0;
         for(uint i = 0; i < values.length; i++) {
             sumOfValues = sumOfValues.add(values[i]);
@@ -125,7 +122,7 @@ contract AbstractConference is Conference, GroupAdmin {
         require(sumOfValues <= payoutAmount, 'payout amount is less than sum of values');
         require(addresses.length == values.length, 'more addresses than values or viceversa');
 
-        participant.paid = true;
+        participants[msg.sender].paid = true;
 
         for(uint i = 0; i < addresses.length; i++) {
             doWithdraw(addresses[i], values[i]);
