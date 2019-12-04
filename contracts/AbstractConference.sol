@@ -87,7 +87,7 @@ contract AbstractConference is Conference, GroupAdmin {
         require(!isRegistered(msg.sender), 'already registered');
         doDeposit(msg.sender, deposit);
 
-        registered++;
+        registered = registered.add(1);
         participantsIndex[registered] = msg.sender;
         participants[msg.sender] = Participant(registered, msg.sender, false);
 
@@ -114,21 +114,21 @@ contract AbstractConference is Conference, GroupAdmin {
     * (addresses, values, participant address, payoutAmount - sum(values), payoutAmount)
     */
     function sendAndWithdraw(address payable[] calldata addresses, uint256[] calldata values) external canWithdraw onlyEnded {
-        uint256 sumOfValues = 0;
-        for(uint i = 0; i < values.length; i++) {
-            sumOfValues = sumOfValues.add(values[i]);
-        }
-
-        require(sumOfValues <= payoutAmount, 'payout amount is less than sum of values');
         require(addresses.length == values.length, 'more addresses than values or viceversa');
 
         participants[msg.sender].paid = true;
 
+        uint256 sumOfValues = 0;
         for(uint i = 0; i < addresses.length; i++) {
+            sumOfValues = sumOfValues.add(values[i]);
+            
+            if(sumOfValues > payoutAmount)
+                revert('payout amount is less than sum of values');
+            
             doWithdraw(addresses[i], values[i]);
         }
-
-        uint256 amountLeft = payoutAmount - sumOfValues;
+                
+        uint256 amountLeft = payoutAmount.sub(sumOfValues);
         doWithdraw(msg.sender, amountLeft);
         emit SendAndWithdraw(addresses, values, msg.sender, amountLeft);
     }
@@ -163,9 +163,9 @@ contract AbstractConference is Conference, GroupAdmin {
         // check the attendance maps
         else {
             Participant storage p = participants[_addr];
-            uint256 pIndex = p.index - 1;
-            uint256 map = attendanceMaps[uint256(pIndex / 256)];
-            return (0 < (map & (2 ** (pIndex % 256))));
+            uint256 pIndex = p.index.sub(1);
+            uint256 map = attendanceMaps[uint256(pIndex.div(256))];
+            return (0 < (map & (2 ** (pIndex.mod(256)))));
         }
     }
 
@@ -195,7 +195,7 @@ contract AbstractConference is Conference, GroupAdmin {
     * @dev The event owner transfer the outstanding deposits  if there are any unclaimed deposits after cooling period
     */
     function clear() external onlyAdmin onlyEnded{
-        require(now > endedAt + coolingPeriod, 'still in cooling period');
+        require(now > endedAt.add(coolingPeriod), 'still in cooling period');
         uint256 leftOver = totalBalance();
         doWithdraw(owner, leftOver);
         emit ClearEvent(owner, leftOver);
@@ -233,8 +233,8 @@ contract AbstractConference is Conference, GroupAdmin {
      * @param _maps The attendance status of participants represented by uint256 values.
      */
     function finalize(uint256[] calldata _maps) external onlyAdmin onlyActive {
-        uint256 totalBits = _maps.length * 256;
-        require(totalBits >= registered && totalBits - registered < 256, 'incorrect no. of bitmaps provided');
+        uint256 totalBits = _maps.length.mul(256);
+        require(totalBits >= registered && totalBits.sub(registered) < 256, 'incorrect no. of bitmaps provided');
         attendanceMaps = _maps;
         ended = true;
         endedAt = now;
@@ -244,15 +244,15 @@ contract AbstractConference is Conference, GroupAdmin {
             uint256 map = attendanceMaps[i];
             // brian kerninghan bit-counting method - O(log(n))
             while (map != 0) {
-                map &= (map - 1);
-                _totalAttended++;
+                map &= (map.sub(1));
+                _totalAttended = _totalAttended.add(1);
             }
         }
         require(_totalAttended <= registered, 'should not have more attendees than registered');
         totalAttended = _totalAttended;
 
         if (totalAttended > 0) {
-            payoutAmount = uint256(totalBalance()) / totalAttended;
+            payoutAmount = uint256(totalBalance()).div(totalAttended);
         }
 
         emit FinalizeEvent(attendanceMaps, payoutAmount, endedAt);

@@ -510,6 +510,24 @@ function shouldBehaveLikeConference () {
 
       assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 1))
     })
+
+    it('splits correctly', async function(){
+      await conference.cancel({from:owner});
+
+      let previousBalanceOne = await getBalance(accounts[10]);
+      let previousBalanceTwo = await getBalance(accounts[20]);
+
+      await conference.sendAndWithdraw([accounts[10], accounts[20]], [donation, donation], {from:registered});
+      
+      let diffOne = (await getBalance(accounts[10])).sub(previousBalanceOne);
+      let diffTwo = (await getBalance(accounts[20])).sub(previousBalanceTwo);
+      
+      assert.isOk(diffOne.eq(donation));
+      assert.isOk(diffTwo.eq(donation));
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 1))
+    })
+
   })
 
   describe('on clear', function(){
