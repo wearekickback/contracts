@@ -36,7 +36,8 @@ contract Deployer is Destructible {
         uint256 _deposit,
         uint _limitOfParticipants,
         uint _coolingPeriod,
-        address _tokenAddress
+        address _tokenAddress,
+        uint256 _clearFee
     ) external {
         Conference c;
         if(_tokenAddress != address(0)){
@@ -46,7 +47,8 @@ contract Deployer is Destructible {
                 _limitOfParticipants,
                 _coolingPeriod,
                 msg.sender,
-                _tokenAddress
+                _tokenAddress,
+                _clearFee
             );
         }else{
             c = ethDeployer.deploy(
@@ -55,7 +57,8 @@ contract Deployer is Destructible {
                 _limitOfParticipants,
                 _coolingPeriod,
                 msg.sender,
-                address(0)
+                address(0),
+                _clearFee
             );
         }
         emit NewParty(address(c), msg.sender);

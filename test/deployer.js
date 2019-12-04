@@ -11,6 +11,7 @@ const Token = artifacts.require("MyToken.sol");
 contract('Deployer', accounts => {
   let deployer, ethDeployer, erc20Deployer;
   let emptyAddress = '0x0000000000000000000000000000000000000000'
+  let clearFee = 1000
   beforeEach(async () => {
     ethDeployer = await EthDeployer.new();
     erc20Deployer = await ERC20Deployer.new();
@@ -39,7 +40,8 @@ contract('Deployer', accounts => {
       toHex(toWei('0.02')),
       toHex(2),
       toHex(60 * 60 * 24 * 7),
-      emptyAddress
+      emptyAddress,
+      clearFee
     )
 
     const events = await getEvents(result, 'NewParty')
@@ -64,7 +66,8 @@ contract('Deployer', accounts => {
       toHex(10),
       toHex(2),
       toHex(60 * 60 * 24 * 7),
-      token.address
+      token.address,
+      clearFee
     )
 
     const events = await getEvents(result, 'NewParty')
@@ -90,7 +93,8 @@ contract('Deployer', accounts => {
       toHex(toWei('0.02')),
       toHex(2),
       toHex(60 * 60 * 24 * 7),
-      emptyAddress
+      emptyAddress,
+      clearFee
     )
 
     const [ { args: { deployedAddress} } ] = (await getEvents(result, 'NewParty'))

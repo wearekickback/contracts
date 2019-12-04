@@ -17,6 +17,9 @@ contract AbstractConference is Conference, GroupAdmin {
     uint256 public payoutAmount;
     uint256[] public attendanceMaps;
 
+    uint256 public clearFee;
+    uint256 lastSent = 0;
+
     mapping (address => Participant) public participants;
     mapping (uint256 => address) public participantsIndex;
 
@@ -42,6 +45,11 @@ contract AbstractConference is Conference, GroupAdmin {
         _;
     }
 
+    modifier afterCoolingPeriod {
+        require(now > endedAt + coolingPeriod, 'still in cooling period');
+        _;
+    }
+
     /* Public functions */
     /**
      * @dev Construcotr.
@@ -56,7 +64,8 @@ contract AbstractConference is Conference, GroupAdmin {
         uint256 _deposit,
         uint256 _limitOfParticipants,
         uint256 _coolingPeriod,
-        address payable _owner
+        address payable _owner,
+        uint256 _clearFee
     ) public {
         require(_owner != address(0), 'owner address is required');
         owner = _owner;
@@ -64,6 +73,7 @@ contract AbstractConference is Conference, GroupAdmin {
         deposit = _deposit;
         limitOfParticipants = _limitOfParticipants;
         coolingPeriod = _coolingPeriod;
+        clearFee = _clearFee;
     }
 
 
@@ -158,12 +168,21 @@ contract AbstractConference is Conference, GroupAdmin {
     /**
     * @dev The event owner transfer the outstanding deposits  if there are any unclaimed deposits after cooling period
     */
-    function clear() external onlyAdmin onlyEnded{
-        require(now > endedAt + coolingPeriod, 'still in cooling period');
+    function clear() external onlyAdmin onlyEnded afterCoolingPeriod {
         uint256 leftOver = totalBalance();
         doWithdraw(owner, leftOver);
         emit ClearEvent(owner, leftOver);
     }
+
+    function clearAndSend() external onlyEnded afterCoolingPeriod {
+        _clearAndSend(totalAttended);
+    }
+
+    function clearAndSend(uint256 _num) external onlyEnded afterCoolingPeriod {
+        require(_num > 0, 'You have to send to at least one address!');
+        _clearAndSend(_num);
+    }
+
 
     /**
      * @dev Change the capacity of the event. The owner can change it until event is over.
@@ -221,6 +240,33 @@ contract AbstractConference is Conference, GroupAdmin {
 
         emit FinalizeEvent(attendanceMaps, payoutAmount, endedAt);
     }
+
+    function _clearAndSend(uint256 _num) internal onlyEnded afterCoolingPeriod {
+        require(_num <= totalAttended, '_num > totalAttended!');
+        uint256 fee = payoutAmount.mul(clearFee).div(1000);
+        uint256 toAttenders = payoutAmount.sub(fee);
+        uint256 toSender = fee.mul(_num);
+        address payable[] memory addresses = new address payable[](_num);
+
+        uint256 i = lastSent;
+        uint256 sent = 0;
+        address payable pAddress;
+        for(; i < totalAttended; i++) {
+            if(sent == _num) break;
+            uint256 map = attendanceMaps[uint256(i.div(256))];
+            if(0 < (map & (2 ** (i.mod(256))))) {
+                pAddress = participants[participantsIndex[i]].addr;
+                addresses[sent] = pAddress;
+                sent = sent.add(1);
+                doWithdraw(pAddress, toAttenders);
+            }
+        }
+        lastSent = i;
+
+        doWithdraw(msg.sender, toSender);
+        emit ClearAndSend(addresses, toAttenders, msg.sender, toSender);
+    }
+
 
     function doDeposit(address /* participant */, uint256 /* amount */ ) internal {
         revert('doDeposit must be impelmented in the child class');

@@ -20,6 +20,7 @@ contract('ERC20 Conference', function(accounts) {
       coolingPeriod = 0,
       ownerAddress = accounts[0],
       tokenAdderss = token.address,
+      clearFee = 1000,
       gasPrice = toWei('1', 'gwei')
     }) => {
       return Conference.new(
@@ -28,7 +29,8 @@ contract('ERC20 Conference', function(accounts) {
         limitOfParticipants,
         coolingPeriod,
         ownerAddress,
-        tokenAdderss
+        tokenAdderss,
+        clearFee
         , {gasPrice:gasPrice}
       );
     }

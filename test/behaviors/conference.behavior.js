@@ -533,6 +533,28 @@ function shouldBehaveLikeConference () {
       assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 0))
     })
   })
+
+/*
+  describe('on clear and send', function(){
+    let conference, deposit, attended, fee;
+
+    beforeEach(async function(){
+      conference = await createConference({})
+      deposit = await conference.deposit()
+      
+      let numRegistered = 4;
+      for (let i = 0; i < numRegistered; ++i) {
+          await register({conference, deposit, user:accounts[10 + i], owner})
+      }
+
+      console.log(payoutAmount, fee);
+    })
+
+    it('owner can change the deposit', async function(){
+
+    })
+  })
+  */
 };
 
 module.exports = {

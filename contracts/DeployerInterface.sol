@@ -8,6 +8,7 @@ interface DeployerInterface {
         uint _limitOfParticipants,
         uint _coolingPeriod,
         address payable _ownerAddress,
-        address _tokenAddress
+        address _tokenAddress,
+        uint256 _clearFee
     )external returns(Conference c);
 }
