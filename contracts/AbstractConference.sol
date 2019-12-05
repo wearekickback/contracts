@@ -105,7 +105,7 @@ contract AbstractConference is Conference, GroupAdmin {
      * @dev Returns total dai balance of the contract. This function can be deprecated when refactroing front end code.
      * @return The total Dai balance of the contract.
      */
-    function totalDaiBalance() view public returns (uint256){
+    function totalDaiBalance() public returns (uint256){
         revert('totalDaiBalance must be impelmented in the child class');
     }
 
