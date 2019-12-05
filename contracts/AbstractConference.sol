@@ -12,6 +12,7 @@ contract AbstractConference is Conference, GroupAdmin {
     bool public cancelled;
     uint256 public endedAt;
     uint256 public totalAttended;
+    uint256 public totalDeposits;
 
     uint256 public coolingPeriod;
     uint256 public payoutAmount;
@@ -74,6 +75,7 @@ contract AbstractConference is Conference, GroupAdmin {
         require(registered < limitOfParticipants, 'participant limit reached');
         require(!isRegistered(msg.sender), 'already registered');
         doDeposit(msg.sender, deposit);
+        totalDeposits += deposit;
 
         registered++;
         participantsIndex[registered] = msg.sender;
@@ -93,17 +95,18 @@ contract AbstractConference is Conference, GroupAdmin {
         require(participant.paid == false, 'already withdrawn');
 
         participant.paid = true;
+        totalDeposits -= payoutAmount;
         doWithdraw(msg.sender, payoutAmount);
         emit WithdrawEvent(msg.sender, payoutAmount);
     }
 
     /* Constants */
     /**
-     * @dev Returns total balance of the contract. This function can be deprecated when refactroing front end code.
-     * @return The total balance of the contract.
+     * @dev Returns total dai balance of the contract. This function can be deprecated when refactroing front end code.
+     * @return The total Dai balance of the contract.
      */
-    function totalBalance() view public returns (uint256){
-        revert('totalBalance must be impelmented in the child class');
+    function totalDaiBalance() view public returns (uint256){
+        revert('totalDaiBalance must be impelmented in the child class');
     }
 
     /**
@@ -160,7 +163,7 @@ contract AbstractConference is Conference, GroupAdmin {
     */
     function clear() external onlyAdmin onlyEnded{
         require(now > endedAt + coolingPeriod, 'still in cooling period');
-        uint256 leftOver = totalBalance();
+        uint256 leftOver = totalDaiBalance();
         doWithdraw(owner, leftOver);
         emit ClearEvent(owner, leftOver);
     }
@@ -216,7 +219,7 @@ contract AbstractConference is Conference, GroupAdmin {
         totalAttended = _totalAttended;
 
         if (totalAttended > 0) {
-            payoutAmount = uint256(totalBalance()) / totalAttended;
+            payoutAmount = uint256(totalDeposits) / totalAttended;
         }
 
         emit FinalizeEvent(attendanceMaps, payoutAmount, endedAt);
