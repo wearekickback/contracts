@@ -1,7 +1,6 @@
-
 const { toBN, toWei } = require('web3-utils')
 const EthVal = require('ethval')
-const { mulBN } = require('./../utils')
+const { mulBN, outputBNs } = require('./../utils')
 const { wait, waitUntilBlock } = require('@digix/tempo')(web3);
 
 const emptyAddress = '0x0000000000000000000000000000000000000000'
@@ -534,27 +533,120 @@ function shouldBehaveLikeConference () {
     })
   })
 
-/*
   describe('on clear and send', function(){
-    let conference, deposit, attended, fee;
+    let conference, deposit, attended, payoutAmount, clearFee, fees;
 
     beforeEach(async function(){
-      conference = await createConference({})
+      conference = await createConference({coolingPeriod:0})
       deposit = await conference.deposit()
       
       let numRegistered = 4;
-      for (let i = 0; i < numRegistered; ++i) {
+      for (let i = 0; i < numRegistered; i++) {
           await register({conference, deposit, user:accounts[10 + i], owner})
-      }
+      } 
 
-      console.log(payoutAmount, fee);
+      // [ 110 ], accounts[11], accounts[12]
+      const maps = [ toBN(0).bincn(1).bincn(2) ];
+
+      await conference.finalize(maps, {from:owner});
+      await conference.ended().should.eventually.eq(true)
+      
+      payoutAmount = new EthVal(await conference.payoutAmount());
+      clearFee = await conference.clearFee();
+      fees = payoutAmount.mul(clearFee).div(1000).toString(10);
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 4))
     })
 
-    it('owner can change the deposit', async function(){
+    it('fees calculation works correctly', async function(){
+      let previousBalanceOne = await getBalance(accounts[11]);
+      let previousBalanceTwo = await getBalance(accounts[12]);
+      let previousBalanceOwner = await getBalance(owner);
 
+      await wait(20, 1);
+      await conference.clearAndSend({from:owner});
+
+      let diffOne = new EthVal(await getBalance(accounts[11])).sub(previousBalanceOne)
+      let diffTwo = new EthVal(await getBalance(accounts[12])).sub(previousBalanceTwo)
+      let diffOwner = new EthVal(await getBalance(owner)).sub(previousBalanceOwner)
+
+      assert.isOk(diffOne.eq(payoutAmount.sub(fees)))
+      assert.isOk(diffTwo.eq(payoutAmount.sub(fees)))
+      assert.isOk(diffOwner.gt(new EthVal(fees).mul(1.9)))
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), 0)
     })
+
+    it('calling with a number of attenders', async function() {
+      let previousBalanceOne = await getBalance(accounts[11]);
+      let previousBalanceTwo = await getBalance(accounts[12]);
+
+      await wait(20, 1);
+      await conference.clearAndSend(1);
+      
+      let diffOne = new EthVal(await getBalance(accounts[11])).sub(previousBalanceOne)
+      let diffTwo = new EthVal(await getBalance(accounts[12])).sub(previousBalanceTwo)
+      
+      assert.isOk(diffOne.eq(payoutAmount.sub(fees)))
+      assert.isOk(diffTwo.lt(payoutAmount.sub(fees)))
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(payoutAmount, 1))
+    })
+
+    it('calling with a number of attendees greater than the contract\'s one', async function() {
+      await wait(20, 1);
+      await conference.clearAndSend(5).should.be.rejected;
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(payoutAmount, 2))
+    })
+
+    it('consecutive calls', async function() {
+      let previousBalanceOne = await getBalance(accounts[11]);
+      let previousBalanceTwo = await getBalance(accounts[12]);
+
+      await wait(20, 1);
+      await conference.clearAndSend(1);
+      await conference.clearAndSend(1);
+      
+      let diffOne = new EthVal(await getBalance(accounts[11])).sub(previousBalanceOne)
+      let diffTwo = new EthVal(await getBalance(accounts[12])).sub(previousBalanceTwo)
+      
+      assert.isOk(diffOne.eq(payoutAmount.sub(fees)))
+      assert.isOk(diffTwo.eq(payoutAmount.sub(fees)))
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(payoutAmount, 0))
+    })
+
+    it('paid users are not refunded', async function() {
+      await wait(20, 1);
+
+      await conference.withdraw({from:accounts[11]});
+
+      let previousBalanceOne = await getBalance(accounts[11]);
+      let previousBalanceTwo = await getBalance(accounts[12]);
+      await conference.clearAndSend();
+
+      let diffOne = new EthVal(await getBalance(accounts[11])).sub(previousBalanceOne)
+      let diffTwo = new EthVal(await getBalance(accounts[12])).sub(previousBalanceTwo)
+      
+      assert.isOk(diffOne.eq(0))
+      assert.isOk(diffTwo.eq(payoutAmount.sub(fees)))
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(payoutAmount, 0))
+    })
+
+    it('users can\'t withdraw after clear and send is called', async function() {
+      await wait(20, 1);
+      let previousBalanceOne = await getBalance(accounts[11]);
+      await conference.clearAndSend();
+      await conference.withdraw({from:accounts[11]}).should.be.rejected;
+      let diffOne = new EthVal(await getBalance(accounts[11])).sub(previousBalanceOne)
+      assert.isOk(diffOne.lte(payoutAmount.sub(fees))) // for eth: due to gas
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(payoutAmount, 0))
+    })
+
   })
-  */
+
 };
 
 module.exports = {

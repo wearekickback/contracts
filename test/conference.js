@@ -17,7 +17,7 @@ contract('ETH Conference', function(accounts) {
       limitOfParticipants = 20,
       coolingPeriod = 0,
       ownerAddress = accounts[0],
-      clearFee = 1000,
+      clearFee = 10,
       gasPrice = toWei('1', 'gwei')
     }) => {
       return Conference.new(

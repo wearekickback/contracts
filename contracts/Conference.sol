@@ -12,7 +12,6 @@ interface Conference {
     event WithdrawEvent(address addr, uint256 payout);
     event CancelEvent(uint256 endedAt);
     event ClearEvent(address addr, uint256 leftOver);
-    event ClearAndSend(address payable[] addresses, uint256 value, address payable sender, uint256 fee);
     event UpdateParticipantLimit(uint256 limit);
 
     // Variables

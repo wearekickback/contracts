@@ -11,7 +11,7 @@ const Token = artifacts.require("MyToken.sol");
 contract('Deployer', accounts => {
   let deployer, ethDeployer, erc20Deployer;
   let emptyAddress = '0x0000000000000000000000000000000000000000'
-  let clearFee = 1000
+  let clearFee = 10
   beforeEach(async () => {
     ethDeployer = await EthDeployer.new();
     erc20Deployer = await ERC20Deployer.new();

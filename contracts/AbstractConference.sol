@@ -2,8 +2,11 @@ pragma solidity ^0.5.11;
 
 import './GroupAdmin.sol';
 import './Conference.sol';
+import 'openzeppelin-solidity/contracts/math/SafeMath.sol';
 
 contract AbstractConference is Conference, GroupAdmin {
+    using SafeMath for uint256;
+
     string public name;
     uint256 public deposit;
     uint256 public limitOfParticipants;
@@ -58,6 +61,7 @@ contract AbstractConference is Conference, GroupAdmin {
      * @param _limitOfParticipants The number of participant. The default is set to 20. The number can be changed by the owner of the event.
      * @param _coolingPeriod The period participants should withdraw their deposit after the event ends. After the cooling period, the event owner can claim the remining deposits.
      * @param _owner The owner of the event
+     * @param _clearFee the fee for _clearAndSend function in per-mille (e.g. _clearFee = 10 means 1% fees, _clearFee = 1 means 0.1% fees) 
      */
     constructor (
         string memory _name,
@@ -80,12 +84,12 @@ contract AbstractConference is Conference, GroupAdmin {
     /**
      * @dev Register for the event
      */
-    function register() external payable onlyActive{
+    function register() external payable onlyActive {
         require(registered < limitOfParticipants, 'participant limit reached');
         require(!isRegistered(msg.sender), 'already registered');
         doDeposit(msg.sender, deposit);
 
-        registered++;
+        registered = registered.add(1);
         participantsIndex[registered] = msg.sender;
         participants[msg.sender] = Participant(registered, msg.sender, false);
 
@@ -137,9 +141,9 @@ contract AbstractConference is Conference, GroupAdmin {
         // check the attendance maps
         else {
             Participant storage p = participants[_addr];
-            uint256 pIndex = p.index - 1;
-            uint256 map = attendanceMaps[uint256(pIndex / 256)];
-            return (0 < (map & (2 ** (pIndex % 256))));
+            uint256 pIndex = p.index.sub(1);
+            uint256 map = attendanceMaps[uint256(pIndex.div(256))];
+            return (0 < (map & (2 ** (pIndex.mod(256)))));
         }
     }
 
@@ -174,12 +178,22 @@ contract AbstractConference is Conference, GroupAdmin {
         emit ClearEvent(owner, leftOver);
     }
 
+    /**
+    * @dev Anyone that calls the function clear the contract sending 
+    * (_payoutAmount_ - fee) to *all* the unpaid attenders. 
+    * Fees are aggregated and sent to msg.sender
+    */
     function clearAndSend() external onlyEnded afterCoolingPeriod {
         _clearAndSend(totalAttended);
     }
 
+    /**
+    * @dev Anyone that calls the function clear the contract sending 
+    * (_payoutAmount_ - fee) to the first *_num* unpaid attenders. 
+    * Fees are aggregated and sent to msg.sender.
+    */
     function clearAndSend(uint256 _num) external onlyEnded afterCoolingPeriod {
-        require(_num > 0, 'You have to send to at least one address!');
+        require(_num > 0 && _num <= totalAttended, 'Wrong number of withdrawals');
         _clearAndSend(_num);
     }
 
@@ -216,8 +230,8 @@ contract AbstractConference is Conference, GroupAdmin {
      * @param _maps The attendance status of participants represented by uint256 values.
      */
     function finalize(uint256[] calldata _maps) external onlyAdmin onlyActive {
-        uint256 totalBits = _maps.length * 256;
-        require(totalBits >= registered && totalBits - registered < 256, 'incorrect no. of bitmaps provided');
+        uint256 totalBits = _maps.length.mul(256);
+        require(totalBits >= registered && totalBits.sub(registered) < 256, 'incorrect no. of bitmaps provided');
         attendanceMaps = _maps;
         ended = true;
         endedAt = now;
@@ -227,46 +241,49 @@ contract AbstractConference is Conference, GroupAdmin {
             uint256 map = attendanceMaps[i];
             // brian kerninghan bit-counting method - O(log(n))
             while (map != 0) {
-                map &= (map - 1);
-                _totalAttended++;
+                map &= (map.sub(1));
+                _totalAttended = _totalAttended.add(1);
             }
         }
         require(_totalAttended <= registered, 'should not have more attendees than registered');
         totalAttended = _totalAttended;
 
         if (totalAttended > 0) {
-            payoutAmount = uint256(totalBalance()) / totalAttended;
+            payoutAmount = uint256(totalBalance()).div(totalAttended);
         }
 
         emit FinalizeEvent(attendanceMaps, payoutAmount, endedAt);
     }
 
+    /**
+    * @dev The function clear the contract sending 
+    * (_payoutAmount_ - fee) to the first *_num* unpaid attenders.
+    * Fees are calculated in this way: (payAmount * clearFee / 1000)
+    * Fees are aggregated as (fee * _num) and sent to msg.sender.
+    */ 
     function _clearAndSend(uint256 _num) internal onlyEnded afterCoolingPeriod {
-        require(_num <= totalAttended, '_num > totalAttended!');
         uint256 fee = payoutAmount.mul(clearFee).div(1000);
         uint256 toAttenders = payoutAmount.sub(fee);
-        uint256 toSender = fee.mul(_num);
-        address payable[] memory addresses = new address payable[](_num);
 
-        uint256 i = lastSent;
-        uint256 sent = 0;
+        uint256 totalSent = 0;
         address payable pAddress;
-        for(; i < totalAttended; i++) {
-            if(sent == _num) break;
-            uint256 map = attendanceMaps[uint256(i.div(256))];
-            if(0 < (map & (2 ** (i.mod(256))))) {
-                pAddress = participants[participantsIndex[i]].addr;
-                addresses[sent] = pAddress;
-                sent = sent.add(1);
-                doWithdraw(pAddress, toAttenders);
+        for(uint j = lastSent.div(256); totalSent < _num && j < attendanceMaps.length; j++) {
+            uint256 map = attendanceMaps[j];
+            for(uint256 i = 0; totalSent < _num && i < 256; i++) {
+                Participant storage participant = participants[participantsIndex[(j.mul(256).add(i).add(1))]];
+                if(0 < (map & (2 ** i)) && !participant.paid) {
+                    participant.paid = true;
+                    totalSent = totalSent.add(1);
+                    doWithdraw(participant.addr, toAttenders);
+                }
             }
         }
-        lastSent = i;
+        lastSent = lastSent.add(totalSent);
 
+        uint256 toSender = fee.mul(totalSent);
         doWithdraw(msg.sender, toSender);
-        emit ClearAndSend(addresses, toAttenders, msg.sender, toSender);
+        emit ClearEvent(msg.sender, toSender);
     }
-
 
     function doDeposit(address /* participant */, uint256 /* amount */ ) internal {
         revert('doDeposit must be impelmented in the child class');
