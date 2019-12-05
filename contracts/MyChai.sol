@@ -7,7 +7,7 @@ contract MyChai is ERC20, ERC20Detailed {
     string private _name = 'Chai';
     string private _symbol = 'CHAI';
     uint8 private _decimals = 18;
-    myToken public daiToken;
+    MyToken public daiToken;
     address account = msg.sender;
     uint value = 1000000 ether;
 
@@ -20,21 +20,23 @@ contract MyChai is ERC20, ERC20Detailed {
 
     constructor(address _daiToken) ERC20Detailed( _name, _symbol, _decimals) public {
         _mint(account, value);
-        daiToken = _daiToken;
+        daiToken = MyToken(_daiToken);
     }
 
     function join(address dst, uint256 wad) public {
         daiToken.transferFrom(msg.sender, address(this), wad);
-        balanceOf[msg.sender] += wad;
+        // _balances[msg.sender] += wad;
+        _mint(msg.sender, wad);
     }
 
     function draw(address src, uint256 wad) public {
-        balanceOf[msg.sender] = sub(balanceOf[msg.sender], (wad * ONE) / rate);
-        daiToken.mint(address(this), (wad * (rate - 1 ether)) / ONE);
+        // _balances[msg.sender] = sub(_balances[msg.sender], (wad * ONE) / rate);
+        _burn(msg.sender, (wad * ONE) / rate);
+        daiToken.mint((wad * (rate - 1 ether)) / ONE);
         daiToken.transfer(msg.sender, wad);
     }
 
-    function dai(address usr) public {
-        return rate * balanceOf[usr];
+    function dai(address usr) public returns(uint256){
+        return rate * balanceOf(usr);
     }
 }

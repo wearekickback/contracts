@@ -25,6 +25,7 @@ contract ERC20Conference is AbstractConference {
         token = IERC20(_tokenAddress);
         chai = MyChai(_chaiAddress);
         require(chai.daiToken() == token);
+        token.approve(_chaiAddress, uint(-1));
     }
 
     function totalDaiBalance() public returns (uint256){

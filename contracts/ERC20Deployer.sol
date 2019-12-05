@@ -10,7 +10,8 @@ contract ERC20Deployer is DeployerInterface{
         uint _limitOfParticipants,
         uint _coolingPeriod,
         address payable _ownerAddress,
-        address _tokenAddress
+        address _tokenAddress,
+        address _chaiAddress
     )external returns(Conference c){
         c = new ERC20Conference(
             _name,
@@ -18,7 +19,8 @@ contract ERC20Deployer is DeployerInterface{
             _limitOfParticipants,
             _coolingPeriod,
             _ownerAddress,
-            _tokenAddress
+            _tokenAddress,
+            _chaiAddress
         );
     }   
 }

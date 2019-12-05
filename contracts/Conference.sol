@@ -47,7 +47,7 @@ interface Conference {
     // AbstractConference
     function register() external payable;
     function withdraw() external;
-    function totalBalance() view external returns (uint256);
+    function totalDaiBalance() external returns (uint256);
     function isRegistered(address _addr) view external returns (bool);
     function isAttended(address _addr) external view returns (bool);
     function isPaid(address _addr) external view returns (bool);
