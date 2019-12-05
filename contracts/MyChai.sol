@@ -8,7 +8,6 @@ contract MyChai is ERC20, ERC20Detailed {
     string private _symbol = 'CHAI';
     uint8 private _decimals = 18;
     myToken public daiToken;
-
     address account = msg.sender;
     uint value = 1000000 ether;
 
