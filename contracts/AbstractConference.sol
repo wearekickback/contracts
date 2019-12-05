@@ -13,6 +13,7 @@ contract AbstractConference is Conference, GroupAdmin {
     uint256 public endedAt;
     uint256 public totalAttended;
     uint256 public totalDeposits;
+    uint256 public totalDaiBalance;
 
     uint256 public coolingPeriod;
     uint256 public payoutAmount;
@@ -105,8 +106,8 @@ contract AbstractConference is Conference, GroupAdmin {
      * @dev Returns total dai balance of the contract. This function can be deprecated when refactroing front end code.
      * @return The total Dai balance of the contract.
      */
-    function totalDaiBalance() public returns (uint256){
-        revert('totalDaiBalance must be impelmented in the child class');
+    function updateDaiBalance() public returns (uint256){
+        revert('updateDaiBalance must be impelmented in the child class');
     }
 
     /**
@@ -163,7 +164,7 @@ contract AbstractConference is Conference, GroupAdmin {
     */
     function clear() external onlyAdmin onlyEnded{
         require(now > endedAt + coolingPeriod, 'still in cooling period');
-        uint256 leftOver = totalDaiBalance();
+        uint256 leftOver = updateDaiBalance();
         doWithdraw(owner, leftOver);
         emit ClearEvent(owner, leftOver);
     }

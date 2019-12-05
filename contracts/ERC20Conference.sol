@@ -28,8 +28,9 @@ contract ERC20Conference is AbstractConference {
         token.approve(_chaiAddress, uint(-1));
     }
 
-    function totalDaiBalance() public returns (uint256){
-        return chai.dai(address(this));
+    function updateDaiBalance() public returns(uint256){
+        totalDaiBalance = chai.dai(address(this));
+        return totalDaiBalance;
     }
 
     function doWithdraw(address payable participant, uint256 amount) internal {

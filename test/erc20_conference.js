@@ -89,12 +89,12 @@ contract('ERC20 Conference', function(accounts) {
       await this.register({conference, deposit, user, owner})
       await conference.finalize([1], {from:owner});
       await conference.withdraw({ from: user });
-      console.log(1, (new EthVal(await token.balanceOf(owner))).toFixed(9));
+      console.log('before clear', (new EthVal(await token.balanceOf(owner))).toFixed(9));
       await wait(20, 1);
-      // const totalDaiBalance = await conference.totalDaiBalance();
-
+      await conference.updateDaiBalance();
+      console.log('total dai balance', (new EthVal(await conference.totalDaiBalance())).toFixed(9));
       await conference.clear({from:owner})
-      console.log((new EthVal(await token.balanceOf(owner))).toFixed(9));
+      console.log('after clear', (new EthVal(await token.balanceOf(owner))).toFixed(9));
     })
   })
 })

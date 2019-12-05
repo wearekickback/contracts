@@ -37,6 +37,6 @@ contract MyChai is ERC20, ERC20Detailed {
     }
 
     function dai(address usr) public returns(uint256){
-        return rate * balanceOf(usr);
+        return rate * balanceOf(usr) / ONE;
     }
 }
