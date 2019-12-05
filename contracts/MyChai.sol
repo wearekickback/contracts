@@ -1,13 +1,13 @@
 pragma solidity ^0.5.11;
 
+import './MyToken.sol';
 import 'openzeppelin-solidity/contracts/token/ERC20/ERC20.sol';
 import 'openzeppelin-solidity/contracts/token/ERC20/ERC20Detailed.sol';
 contract MyChai is ERC20, ERC20Detailed {
     string private _name = 'Chai';
     string private _symbol = 'CHAI';
     uint8 private _decimals = 18;
-    address public daiToken;
-
+    myToken public daiToken;
     address account = msg.sender;
     uint value = 1000000 ether;
 
