@@ -13,4 +13,8 @@ contract MyToken is ERC20, ERC20Detailed {
     constructor() ERC20Detailed( _name, _symbol, _decimals) public {
         _mint(account, value);
     }
+
+    function mint(uint256 value) public {
+        _mint(msg.sender, value);
+    }
 }
