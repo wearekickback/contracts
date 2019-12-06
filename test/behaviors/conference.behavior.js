@@ -467,12 +467,13 @@ function shouldBehaveLikeConference () {
   })
 
   describe('on send and withdraw', function(){
-    let conference, deposit, registered, donation;
+    let conference, deposit, registered, donation, donationTwo;
     beforeEach(async function(){
       conference = await createConference({});
       deposit = await conference.deposit(); // should be 0.02 ether (2*10e16 wei)
       registered = accounts[1];
       donation = toWei('0.01', "ether");
+      donationTwo = toWei('0.005', "ether");
 
       await register({conference, deposit, user:owner, owner});
       await register({conference, deposit, user:registered, owner});
@@ -517,13 +518,13 @@ function shouldBehaveLikeConference () {
       let previousBalanceOne = await getBalance(accounts[10]);
       let previousBalanceTwo = await getBalance(accounts[20]);
 
-      await conference.sendAndWithdraw([accounts[10], accounts[20]], [donation, donation], {from:registered});
+      await conference.sendAndWithdraw([accounts[10], accounts[20]], [donation, donationTwo], {from:registered});
       
       let diffOne = (await getBalance(accounts[10])).sub(previousBalanceOne);
       let diffTwo = (await getBalance(accounts[20])).sub(previousBalanceTwo);
       
       assert.isOk(diffOne.eq(donation));
-      assert.isOk(diffTwo.eq(donation));
+      assert.isOk(diffTwo.eq(donationTwo));
 
       assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 1))
     })
