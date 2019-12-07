@@ -548,6 +548,7 @@ function shouldBehaveLikeConference () {
       // [ 110 ], accounts[11], accounts[12]
       const maps = [ toBN(0).bincn(1).bincn(2) ];
 
+
       await conference.finalize(maps, {from:owner});
       await conference.ended().should.eventually.eq(true)
       
@@ -555,7 +556,7 @@ function shouldBehaveLikeConference () {
       clearFee = await conference.clearFee();
       fees = payoutAmount.mul(clearFee).div(1000).toString(10);
 
-      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 4))
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, numRegistered))
     })
 
     it('fees calculation works correctly', async function(){
@@ -572,7 +573,7 @@ function shouldBehaveLikeConference () {
 
       assert.isOk(diffOne.eq(payoutAmount.sub(fees)))
       assert.isOk(diffTwo.eq(payoutAmount.sub(fees)))
-      assert.isOk(diffOwner.gt(new EthVal(fees).mul(1.9)))
+      assert.isOk(diffOwner.gt(new EthVal(fees).mul(2).mul(0.9))) // greater than ((fees * 2) * 0.9) due to gas consumption
 
       assertBalanceWithDeposit((await getBalance(conference.address)), 0)
     })
@@ -607,7 +608,8 @@ function shouldBehaveLikeConference () {
       await wait(20, 1);
       await conference.clearAndSend(1);
       await conference.clearAndSend(1);
-      
+      await conference.clearAndSend(1).should.be.rejected;
+
       let diffOne = new EthVal(await getBalance(accounts[11])).sub(previousBalanceOne)
       let diffTwo = new EthVal(await getBalance(accounts[12])).sub(previousBalanceTwo)
       
