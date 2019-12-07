@@ -269,8 +269,7 @@ contract AbstractConference is Conference, GroupAdmin {
         uint256 toAttenders = payoutAmount.sub(fee);
 
         uint256 totalSent = 0;
-        address payable pAddress;
-        for(uint j = lastSent.div(256); totalSent < _num && j < attendanceMaps.length; j++) {
+        for(uint256 j = lastSent.div(256); totalSent < _num && j < attendanceMaps.length; j++) {
             uint256 map = attendanceMaps[j];
             for(uint256 i = 0; totalSent < _num && i < 256; i++) {
                 Participant storage participant = participants[participantsIndex[(j.mul(256).add(i).add(1))]];

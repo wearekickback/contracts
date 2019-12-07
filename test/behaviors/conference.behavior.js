@@ -654,6 +654,12 @@ function shouldBehaveLikeConference () {
 
       await conference.clearAndSend(1);
       await conference.withdraw({from:accounts[11]}).should.be.rejected;
+
+      let paidOne = await conference.isPaid(accounts[11]);
+      let paidTwo = await conference.isPaid(accounts[12]);
+      paidOne.should.eq(true);
+      paidTwo.should.eq(false);
+
       await conference.withdraw({from:accounts[12]});
       
       let diffOne = new EthVal(await getBalance(accounts[11])).sub(previousBalanceOne)
