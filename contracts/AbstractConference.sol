@@ -22,6 +22,7 @@ contract AbstractConference is Conference, GroupAdmin {
 
     uint256 public clearFee;
     uint256 lastSent = 0;
+    uint256 withdrawn = 0;
 
     mapping (address => Participant) public participants;
     mapping (uint256 => address) public participantsIndex;
@@ -106,6 +107,7 @@ contract AbstractConference is Conference, GroupAdmin {
         require(cancelled || isAttended(msg.sender), 'event still active or you did not attend');
         require(participant.paid == false, 'already withdrawn');
 
+        withdrawn = withdrawn.add(1);
         participant.paid = true;
         doWithdraw(msg.sender, payoutAmount);
         emit WithdrawEvent(msg.sender, payoutAmount);
@@ -172,7 +174,7 @@ contract AbstractConference is Conference, GroupAdmin {
     /**
     * @dev The event owner transfer the outstanding deposits  if there are any unclaimed deposits after cooling period
     */
-    function clear() external onlyAdmin onlyEnded afterCoolingPeriod {
+    function clear() external onlyAdmin onlyEnded afterCoolingPeriod {        
         uint256 leftOver = totalBalance();
         doWithdraw(owner, leftOver);
         emit ClearEvent(owner, leftOver);
@@ -262,6 +264,7 @@ contract AbstractConference is Conference, GroupAdmin {
     * Fees are aggregated as (fee * _num) and sent to msg.sender.
     */ 
     function _clearAndSend(uint256 _num) internal onlyEnded afterCoolingPeriod {
+        require(withdrawn < totalAttended, 'No more users to clear!');
         uint256 fee = payoutAmount.mul(clearFee).div(1000);
         uint256 toAttenders = payoutAmount.sub(fee);
 
@@ -279,7 +282,8 @@ contract AbstractConference is Conference, GroupAdmin {
             }
         }
         lastSent = lastSent.add(totalSent);
-
+        withdrawn = withdrawn.add(totalSent);
+        
         uint256 toSender = fee.mul(totalSent);
         doWithdraw(msg.sender, toSender);
         emit ClearEvent(msg.sender, toSender);

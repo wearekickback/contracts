@@ -647,6 +647,23 @@ function shouldBehaveLikeConference () {
       assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(payoutAmount, 0))
     })
 
+    it('user can withdraw even after clearAndSend is called as long as the user is not withdrawn', async function() {
+      await wait(20, 1);
+      let previousBalanceOne = await getBalance(accounts[11]);
+      let previousBalanceTwo = await getBalance(accounts[12]);
+
+      await conference.clearAndSend(1);
+      await conference.withdraw({from:accounts[11]}).should.be.rejected;
+      await conference.withdraw({from:accounts[12]});
+      
+      let diffOne = new EthVal(await getBalance(accounts[11])).sub(previousBalanceOne)
+      let diffTwo = new EthVal(await getBalance(accounts[12])).sub(previousBalanceTwo)
+      assert.isOk(diffOne.lte(payoutAmount.sub(fees))) // for eth: due to gas
+      assert.isOk(diffTwo.gt(payoutAmount.mul(0.9))) // for eth: due to gas
+      
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(payoutAmount, 0))
+    })
+
   })
 
 };
