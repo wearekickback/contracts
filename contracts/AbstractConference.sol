@@ -21,8 +21,8 @@ contract AbstractConference is Conference, GroupAdmin {
     uint256[] public attendanceMaps;
 
     uint256 public clearFee;
-    uint256 lastSent = 0;
-    uint256 withdrawn = 0;
+    uint256 public lastSent = 0;
+    uint256 public withdrawn = 0;
 
     mapping (address => Participant) public participants;
     mapping (uint256 => address) public participantsIndex;
@@ -172,7 +172,7 @@ contract AbstractConference is Conference, GroupAdmin {
     }
 
     /**
-    * @dev The event owner transfer the outstanding deposits  if there are any unclaimed deposits after cooling period
+    * @dev The event owner transfer the outstanding deposits if there are any unclaimed deposits after cooling period
     */
     function clear() external onlyAdmin onlyEnded afterCoolingPeriod {        
         uint256 leftOver = totalBalance();
@@ -195,7 +195,6 @@ contract AbstractConference is Conference, GroupAdmin {
     * Fees are aggregated and sent to msg.sender.
     */
     function clearAndSend(uint256 _num) external onlyEnded afterCoolingPeriod {
-        require(_num > 0 && _num <= totalAttended, 'Wrong number of withdrawals');
         _clearAndSend(_num);
     }
 
@@ -265,6 +264,10 @@ contract AbstractConference is Conference, GroupAdmin {
     */ 
     function _clearAndSend(uint256 _num) internal onlyEnded afterCoolingPeriod {
         require(withdrawn < totalAttended, 'No more users to clear!');
+
+        uint256 remain = totalAttended - withdrawn;
+        _num = (_num < remain) ? _num : remain;
+
         uint256 fee = payoutAmount.mul(clearFee).div(1000);
         uint256 toAttenders = payoutAmount.sub(fee);
 
