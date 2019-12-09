@@ -595,10 +595,25 @@ function shouldBehaveLikeConference () {
     })
 
     it('calling with a number of attendees greater than the contract\'s one', async function() {
-      await wait(20, 1);
-      await conference.clearAndSend(5).should.be.rejected;
+      let previousBalanceOne = await getBalance(accounts[11]);
+      let previousBalanceTwo = await getBalance(accounts[12]);
 
-      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(payoutAmount, 2))
+      await wait(20, 1);
+      await conference.clearAndSend(5);
+
+      let paidOne = await conference.isPaid(accounts[11]);
+      let paidTwo = await conference.isPaid(accounts[12]);
+      paidOne.should.eq(true);
+      paidTwo.should.eq(true);
+
+      let diffOne = new EthVal(await getBalance(accounts[11])).sub(previousBalanceOne)
+      let diffTwo = new EthVal(await getBalance(accounts[12])).sub(previousBalanceTwo)
+      
+      assert.isOk(diffOne.eq(payoutAmount.sub(fees)))
+      assert.isOk(diffTwo.eq(payoutAmount.sub(fees)))
+
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(payoutAmount, 0))
     })
 
     it('consecutive calls', async function() {
