@@ -53,6 +53,14 @@ contract AbstractConference is Conference, GroupAdmin {
         require(now > endedAt + coolingPeriod, 'still in cooling period');
         _;
     }
+    modifier canWithdraw {
+        require(payoutAmount > 0, 'payout is 0');
+        Participant storage participant = participants[msg.sender];
+        require(participant.addr == msg.sender, 'forbidden access');
+        require(cancelled || isAttended(msg.sender), 'event still active or you did not attend');
+        require(participant.paid == false, 'already withdrawn');
+        _;
+    }
 
     /* Public functions */
     /**
@@ -100,17 +108,41 @@ contract AbstractConference is Conference, GroupAdmin {
     /**
      * @dev Withdraws deposit after the event is over.
      */
-    function withdraw() external onlyEnded {
-        require(payoutAmount > 0, 'payout is 0');
-        Participant storage participant = participants[msg.sender];
-        require(participant.addr == msg.sender, 'forbidden access');
-        require(cancelled || isAttended(msg.sender), 'event still active or you did not attend');
-        require(participant.paid == false, 'already withdrawn');
-
+    function withdraw() external onlyEnded canWithdraw {
+        participants[msg.sender].paid = true;
         withdrawn = withdrawn.add(1);
-        participant.paid = true;
         doWithdraw(msg.sender, payoutAmount);
         emit WithdrawEvent(msg.sender, payoutAmount);
+    }
+
+    /**
+    * @dev sendAndWithDraw function allows to split _payoutAmount_ among addresses in _addresses_.
+    * 
+    * _addresses_ contains ethereum addresses
+    * _values_ contains the value of eth/dai to give to addresses
+    * 
+    * addresses[i] will receive values[i]
+    * The function emits the event SendAndWithdraw with the following informations:
+    * (addresses, values, participant address, payoutAmount - sum(values), payoutAmount)
+    */
+    function sendAndWithdraw(address payable[] calldata addresses, uint256[] calldata values) external canWithdraw onlyEnded {
+        require(addresses.length == values.length, 'more addresses than values or viceversa');
+
+        participants[msg.sender].paid = true;
+
+        uint256 sumOfValues = 0;
+        for(uint i = 0; i < addresses.length; i++) {
+            sumOfValues = sumOfValues.add(values[i]);
+            
+            if(sumOfValues > payoutAmount)
+                revert('payout amount is less than sum of values');
+            
+            doWithdraw(addresses[i], values[i]);
+        }
+                
+        uint256 amountLeft = payoutAmount.sub(sumOfValues);
+        doWithdraw(msg.sender, amountLeft);
+        emit SendAndWithdraw(addresses, values, msg.sender, amountLeft);
     }
 
     /* Constants */
@@ -163,7 +195,7 @@ contract AbstractConference is Conference, GroupAdmin {
     /**
      * @dev Cancels the event by owner. When the event is canceled each participant can withdraw their deposit back.
      */
-    function cancel() external onlyAdmin onlyActive{
+    function cancel() external onlyAdmin onlyActive {
         payoutAmount = deposit;
         cancelled = true;
         ended = true;

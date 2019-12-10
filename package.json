@@ -30,7 +30,8 @@
     "test": "yarn truffle migrate --network test && yarn truffle test --network test",
     "coverage": "solidity-coverage",
     "sol-merger": "sol-merger './contracts/*.sol' ./build",
-    "solgraph": "solgraph contracts/Conference.sol  > doc/Conference.dot && dot -Tpng doc/Conference.dot -o doc/Conference.png"
+    "solgraph": "solgraph contracts/Conference.sol  > doc/Conference.dot && dot -Tpng doc/Conference.dot -o doc/Conference.png",
+    "verify": "yarn prepublishOnly && yarn truffle run verify"
   },
   "repository": {
     "type": "git",
@@ -65,6 +66,7 @@
     "solidity-coverage": "^0.6.4",
     "truffle": "^5.1.0",
     "truffle-hdwallet-provider": "^1.0.0-web3one.0",
+    "truffle-plugin-verify": "^0.3.3",
     "uuid": "^3.0.1",
     "web3": "1.0.0-beta.33",
     "web3-utils": "^1.0.0-beta.36",
