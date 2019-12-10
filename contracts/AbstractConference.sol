@@ -174,7 +174,8 @@ contract AbstractConference is Conference, GroupAdmin {
     /**
     * @dev The event owner transfer the outstanding deposits if there are any unclaimed deposits after cooling period
     */
-    function clear() external onlyAdmin onlyEnded afterCoolingPeriod {        
+    function clear() external onlyAdmin onlyEnded afterCoolingPeriod {  
+        require(withdrawn == totalAttended, 'You can clear the contract only when everybody withdraw!');      
         uint256 leftOver = totalBalance();
         doWithdraw(owner, leftOver);
         emit ClearEvent(owner, leftOver);

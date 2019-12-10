@@ -512,22 +512,37 @@ function shouldBehaveLikeConference () {
       assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 1))
     })
 
-    it('owner receives the remaining if cooling period is passed', async function(){
-      conference = await createConference({coolingPeriod:0});
-      deposit = await conference.deposit();
+    it('owner receives the remaining if cooling period is passed and everyone called withdraw', async function(){
+      conference = await createConference({coolingPeriod:0})
+      deposit = await conference.deposit()
 
-      await register({conference, deposit, user:owner, owner});
-      await conference.cancel({from:owner});
+      await register({conference, deposit, user:accounts[10], owner})
+      await register({conference, deposit, user:accounts[11], owner})
+      await register({conference, deposit, user:accounts[12], owner})
+      await register({conference, deposit, user:accounts[13], owner})
 
+      const maps = [ toBN(0).bincn(1).bincn(2).bincn(3) ]
+      await conference.finalize(maps, {from:owner})
       await conference.ended().should.eventually.eq(true)
-      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 1))
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 4))
 
-      let previousBalance = await getBalance(owner);
+      //let previousBalance = await getBalance(owner);
       await wait(20, 1);
-      await conference.clear({from:owner});
+      await conference.clear({from:owner}).should.be.rejected
 
-      let diff = (await getBalance(owner)).sub(previousBalance)
-      assert.isOk(diff.gt( mulBN(deposit, 0.9) ))
+      await conference.withdraw({from:accounts[11]})
+      await conference.withdraw({from:accounts[12]})
+      await conference.withdraw({from:accounts[13]})
+
+      let previousBalance = (await getBalance(owner))
+
+      let conferenceBalance = (await getBalance(conference.address))
+      assert.isOk(conferenceBalance.gt(0))
+
+      await conference.clear({from:owner})
+
+      let diff = previousBalance.sub((await getBalance(owner)));
+      assert.isOk(conferenceBalance.eq(conferenceBalance));
 
       assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 0))
     })
