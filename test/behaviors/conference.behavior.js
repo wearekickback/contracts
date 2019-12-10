@@ -526,7 +526,6 @@ function shouldBehaveLikeConference () {
       await conference.ended().should.eventually.eq(true)
       assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 4))
 
-      //let previousBalance = await getBalance(owner);
       await wait(20, 1);
       await conference.clear({from:owner}).should.be.rejected
 
