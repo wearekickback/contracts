@@ -48,6 +48,7 @@ Pre-requisites:
 
 - [Node 8.12+](https://nodejs.org/)
 - [Yarn](https://yarnpkg.com)
+- [Ganache CLI v6.7.0 or above](https://www.npmjs.com/package/ganache-cli)
 
 **Setup Truffle config**
 
