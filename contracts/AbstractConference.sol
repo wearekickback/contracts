@@ -136,8 +136,9 @@ contract AbstractConference is Conference, GroupAdmin {
             
             if(sumOfValues > payoutAmount)
                 revert('payout amount is less than sum of values');
-            
+
             doWithdraw(addresses[i], values[i]);
+            emit WithdrawEvent(addresses[i], values[i]);
         }
                 
         uint256 amountLeft = payoutAmount.sub(sumOfValues);
