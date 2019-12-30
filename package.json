@@ -1,6 +1,6 @@
 {
   "name": "@wearekickback/contracts-integration",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Kickback smart contracts",
   "main": "index.js",
   "publishConfig": {
