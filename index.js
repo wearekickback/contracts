@@ -25,6 +25,8 @@ module.exports = {
     Finalize: Conference.abi.find(({ type, name }) => type === 'event' && name === 'FinalizeEvent'),
     /* when someone withdraws their payout */
     Withdraw: Conference.abi.find(({ type, name }) => type === 'event' && name === 'WithdrawEvent'),
+    /* when someone sends and withdraws their payout */
+    SendAndWithdraw: Conference.abi.find(({ type, name }) => type === 'event' && name === 'SendAndWithdraw'),
     /* when the party gets cancelled */
     CancelParty: Conference.abi.find(({ type, name }) => type === 'event' && name === 'CancelEvent'),
     /* when a new admin gets added */
