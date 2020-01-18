@@ -178,6 +178,7 @@ contract AbstractConference is Conference, GroupAdmin {
             Participant storage p = participants[_addr];
             uint256 pIndex = p.index.sub(1);
             uint256 map = attendanceMaps[uint256(pIndex.div(256))];
+            // Check to see if bit number "pIndex" is set
             return (0 < (map & (2 ** (pIndex.mod(256)))));
         }
     }
