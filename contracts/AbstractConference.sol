@@ -311,6 +311,7 @@ contract AbstractConference is Conference, GroupAdmin {
             uint256 map = attendanceMaps[j];
             for(uint256 i = 0; totalSent < _num && i < 256; i++) {
                 Participant storage participant = participants[participantsIndex[(j.mul(256).add(i).add(1))]];
+                // Check to see if bit number "i" is set but participant has not been paid back
                 if(0 < (map & (2 ** i)) && !participant.paid) {
                     participant.paid = true;
                     totalSent = totalSent.add(1);
