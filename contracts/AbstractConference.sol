@@ -267,7 +267,7 @@ contract AbstractConference is Conference, GroupAdmin {
      */
     function finalize(uint256[] calldata _maps) external onlyAdmin onlyActive {
         uint256 totalBits = _maps.length.mul(256);
-        require(totalBits >= registered && totalBits.sub(registered) < 256, 'incorrect no. of bitmaps provided');
+        require(totalBits.sub(registered) < 256, 'incorrect no. of bitmaps provided');
         attendanceMaps = _maps;
         ended = true;
         endedAt = now;
