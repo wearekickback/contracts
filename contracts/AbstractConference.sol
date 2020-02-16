@@ -16,6 +16,9 @@ contract AbstractConference is Conference, GroupAdmin {
     uint256 public coolingPeriod;
     uint256 public payoutAmount;
     uint256[] public attendanceMaps;
+    bytes32 public ipfsHash;
+    // "QmfR8hBapMEruidnTKfV6E5d8TxP7KWBR83NdcEfnNSRYM";
+    // "0x516d665238684261704d45727569646e544b66563645356438547850374b57425238334e646345666e4e5352594d";
 
     mapping (address => Participant) public participants;
     mapping (uint256 => address) public participantsIndex;
@@ -66,6 +69,14 @@ contract AbstractConference is Conference, GroupAdmin {
         coolingPeriod = _coolingPeriod;
     }
 
+    /**
+     * @dev Change the metadata of the event. The owner can change it as long as no one has registered yet.
+     * @param _ipfsHash the metadata of the event.
+     */
+    function changeMeta(bytes32 _ipfsHash) external onlyAdmin noOneRegistered{
+        ipfsHash = _ipfsHash;
+        emit ChangeMeta(ipfsHash);
+    }
 
     /**
      * @dev Register for the event

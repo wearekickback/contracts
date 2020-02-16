@@ -13,12 +13,14 @@ interface Conference {
     event CancelEvent(uint256 endedAt);
     event ClearEvent(address addr, uint256 leftOver);
     event UpdateParticipantLimit(uint256 limit);
+    event ChangeMeta(bytes32 ipfsHash);
 
     // Variables
     // Ownable
     function owner() view external returns (address);
      // AbstractConference
     function name() view external returns (string memory);
+    function ipfsHash() view external returns (bytes32);
     function deposit() view external returns (uint256);
     function limitOfParticipants() view external returns (uint256);
     function registered() view external returns (uint256);
@@ -54,6 +56,7 @@ interface Conference {
     function cancel() external;
     function clear() external;
     function setLimitOfParticipants(uint256 _limitOfParticipants) external;
+    function changeMeta(bytes32 _ipfsHash) external;
     function changeName(string calldata _name) external;
     function changeDeposit(uint256 _deposit) external;
     function finalize(uint256[] calldata _maps) external;
