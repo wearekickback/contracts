@@ -1,0 +1,33 @@
+version: '3.5'
+services:
+  # ganachecli: simulated test rpc on dev environment
+  ganache:
+    container_name: ganache
+    hostname: ganache
+    image: trufflesuite/ganache-cli
+    ports:
+      - 8545:8545
+    command: >
+      ganache-cli -m mnemonic
+    networks:
+      - container-link    
+  contracts:
+    depends_on:
+      - ganache
+    container_name: contracts
+    hostname: contracts
+    image: wearekickback/contracts
+    command: >
+      /usr/local/bin/wait-for-it.sh ganache:8545 -- yarn truffle migrate --network docker
+    tty: true
+    networks:
+      - container-link
+    volumes:
+      - ./docker/app:/app
+      - ./docker/server:/server
+  
+networks:
+  default:
+    external:
+      name: bridge
+  container-link:
