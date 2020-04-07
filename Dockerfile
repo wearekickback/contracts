@@ -3,6 +3,8 @@ ADD . /kickback/contracts
 WORKDIR /kickback/contracts
 
 # Clone and install utils
+RUN apt-get update
+RUN apt-get install -y libsecret-1-dev
 RUN git clone https://github.com/vishnubob/wait-for-it \
     && cp wait-for-it/wait-for-it.sh /usr/local/bin \
     && chmod +x /usr/local/bin/wait-for-it.sh \
@@ -13,5 +15,10 @@ RUN git clone https://github.com/vishnubob/wait-for-it \
 RUN yarn \ 
     && cp .deployment-sample.js .deployment.js
 
-# CMD cd /kickback/contracts && yarn truffle migrate 
+# Setup Subgraph
+
+RUN cd /kickback \
+    && git clone https://github.com/wearekickback/kickback-subgraph.git \
+    && cd kickback-subgraph \
+    && yarn
 

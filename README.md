@@ -92,6 +92,49 @@ This will also call a script to update the `app` and `server` repo clones if
 you've checked them out as sibling folders.
 
 
+## Docker
+
+### Pre-requisite
+
+-  Set 'mnemonic' as mnemonic to your Metamask
+- Make sure ganache is NOT running (We have ganache in the docker)
+
+### Run
+
+- `docker-compose up`
+
+
+### Troubleshoot
+
+
+#### no such image
+
+If the following message appears, simply press "Y"
+
+```
+ERROR: for contracts  no such image: sha256:da60023afedd7dc105eaa927ee47ca761c850be205b869c9986ed047f9603354: No such image: sha256:da60023afedd7dc105eaa927ee47ca761c850be205b869c9986ed047f9603354
+Creating graph                ... done
+
+ERROR: for contracts  no such image: sha256:da60023afedd7dc105eaa927ee47ca761c850be205b869c9986ed047f9603354: No such image: sha256:da60023afedd7dc105eaa927ee47ca761c850be205b869c9986ed047f9603354
+ERROR: The image for the service you're trying to recreate has been removed. If you continue, volume data could be lost. Consider backing up your data before continuing.
+
+Continue with the new image? [yN]y
+```
+
+#### Did you change networks without changing the network name?
+
+If the following message appears, remove `data` dir and try again
+
+```
+graph        | Apr 07 20:43:52.131 INFO Connected to Ethereum, network_version: 1586292225353, network: mainnet
+graph        | Apr 07 20:43:52.151 INFO Waiting for other graph-node instances to finish migrating, component: Store
+graph        | Apr 07 20:43:52.153 INFO Running migrations, component: Store
+graph        | Apr 07 20:43:52.215 INFO Migrations finished, component: Store
+graph        | Apr 07 20:43:52.215 INFO Completed pending Postgres schema migrations, component: Store
+graph        | thread 'tokio-runtime-worker' panicked at 'Ethereum node provided net_version 1586292225353, but we expected 1586291081321. Did you change networks without changing the network name?', store/postgres/src/store.rs:245:21
+```
+
+
 ## Simulation
 
 ** NOTE: This is currently not up to date so more likely not working **
