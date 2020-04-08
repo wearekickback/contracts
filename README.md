@@ -111,9 +111,7 @@ Deployed to http://graph:8000/subgraphs/name/wearekickback/kickback/graphql
 
 `graph:8000` is hostname only used within docker. To access from your machine, just connect via http://localhost:8000/subgraphs/name/wearekickback/kickback/graphql
 
-
 ### Troubleshoot
-
 
 #### no such image
 
@@ -129,9 +127,16 @@ ERROR: The image for the service you're trying to recreate has been removed. If 
 Continue with the new image? [yN]y
 ```
 
-#### Did you change networks without changing the network name?
+#### timeout occurred after waiting 15 seconds for graph:8020
 
-If the following message appears, remove `data` dir and try again
+```
+contracts    | wait-for-it.sh: waiting 15 seconds for graph:8020
+contracts    | wait-for-it.sh: timeout occurred after waiting 15 seconds for graph:8020
+```
+
+This means graph-node is not properly up and running.
+
+If you scroll up the log, you may see the following error.
 
 ```
 graph        | Apr 07 20:43:52.131 INFO Connected to Ethereum, network_version: 1586292225353, network: mainnet
@@ -141,6 +146,13 @@ graph        | Apr 07 20:43:52.215 INFO Migrations finished, component: Store
 graph        | Apr 07 20:43:52.215 INFO Completed pending Postgres schema migrations, component: Store
 graph        | thread 'tokio-runtime-worker' panicked at 'Ethereum node provided net_version 1586292225353, but we expected 1586291081321. Did you change networks without changing the network name?', store/postgres/src/store.rs:245:21
 ```
+
+When this happens, do the following
+
+- Stop the service (CMD+C)
+- `rm -rf data`
+- Restart ganache with some random network id (eg: `ganache-cli -m mnemonic -i 12345`)
+- Start again with `docker-compose up`
 
 
 ## Simulation
