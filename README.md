@@ -111,6 +111,18 @@ Deployed to http://graph:8000/subgraphs/name/wearekickback/kickback/graphql
 
 `graph:8000` is hostname only used within docker. To access from your machine, just connect via http://localhost:8000/subgraphs/name/wearekickback/kickback/graphql
 
+The deployment will create a dummy event. If you run the following query and returns an entry, then indexing should have worked.
+
+```
+query{
+  partyEntities(first:5){
+    id
+  }
+}
+```
+
+After this, you have to manually update deployer address at `app` and `server` to `0xD8F3257ea8E50bf78B2d950A1949f5d94d613DBe`(this will be always the same as long as you start up ganache with `-m mnemonic`)
+
 ### Troubleshoot
 
 #### no such image
