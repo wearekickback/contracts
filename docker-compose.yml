@@ -1,32 +1,18 @@
 version: '3.5'
 services:
-  # ganachecli: simulated test rpc on dev environment
-  ganache:
-    container_name: ganache
-    hostname: ganache
-    image: trufflesuite/ganache-cli
-    ports:
-      - 8545:8545
-    command: >
-      ganache-cli -m mnemonic
-    networks:
-      - container-link    
   contracts:
-    depends_on:
-      - ganache
     container_name: contracts
     hostname: contracts
     image: wearekickback/contracts
     command: >
       bash -c "
-      /usr/local/bin/wait-for-it.sh ganache:8545
-      && yarn truffle migrate --network docker 
+      yarn truffle migrate --network docker
       && cd /kickback/kickback-subgraph 
       && yarn codegen
       && /usr/local/bin/wait-for-it.sh graph:8020
       && yarn graph create wearekickback/kickback --node http://graph:8020/ wearekickback/kickback 
       && /usr/local/bin/wait-for-it.sh ipfs:5001
-      && graph deploy --node http://graph:8020/ --ipfs http://ipfs:5001 wearekickback/kickback
+      && yarn graph deploy --node http://graph:8020/ --ipfs http://ipfs:5001 wearekickback/kickback
       "
     tty: true
     networks:
@@ -55,7 +41,7 @@ services:
       postgres_pass: let-me-in
       postgres_db: graph-node
       ipfs: 'ipfs:5001'
-      ethereum: 'mainnet:http://ganache:8545'
+      ethereum: 'mainnet:http://host.docker.internal:8545'
       RUST_LOG: info
   ipfs:
     image: ipfs/go-ipfs:v0.4.23

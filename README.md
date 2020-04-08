@@ -96,12 +96,20 @@ you've checked them out as sibling folders.
 
 ### Pre-requisite
 
--  Set 'mnemonic' as mnemonic to your Metamask
-- Make sure ganache is NOT running (We have ganache in the docker)
+- Start ganache with `ganache-cli -m mnemonic`
+- Clear data dir with `rm -rf data`
 
 ### Run
 
 - `docker-compose up`
+
+Once you show message like this, then it was abile to create contract and deploy the graph successfully.
+
+`
+Deployed to http://graph:8000/subgraphs/name/wearekickback/kickback/graphql
+`
+
+`graph:8000` is hostname only used within docker. To access from your machine, just connect via http://localhost:8000/subgraphs/name/wearekickback/kickback/graphql
 
 
 ### Troubleshoot
