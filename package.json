@@ -28,6 +28,7 @@
     "docker:build": "docker build -t wearekickback/contracts:latest .",
     "docker:push": "docker image push wearekickback/contracts:latest",
     "docker:deploy": "yarn docker:build && yarn docker:push",
+    "docker:remove": "rm  ~/Library/Containers/com.docker.docker/Data/vms/0/data/Docker.raw",
     "cleanup": "yarn truffle networks --clean",
     "seed:party": "scripts/local/deployNewParty.js",
     "prepublishOnly": "yarn truffle compile && yarn cleanup && scripts/local/injectDeployedAddresses.js",
