@@ -3,6 +3,7 @@
   "title": "Kickback",
   "description": "For managing Kickback events.",
   "aboutUrl": "https://kickback.events",
+  "production": true,
   "panels": [
     {
       "id": "register",
