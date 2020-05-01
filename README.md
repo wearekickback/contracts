@@ -101,6 +101,7 @@ you've checked them out as sibling folders.
 
 ### Run
 
+
 - `docker-compose up`
 
 Once you show message like this, then it was abile to create contract and deploy the graph successfully.
@@ -143,6 +144,17 @@ query{
 ```
 
 After this, you have to manually update deployer address at `app` and `server` to `0xD8F3257ea8E50bf78B2d950A1949f5d94d613DBe`(this will be always the same as long as you start up ganache with `-m mnemonic`)
+
+#### Creating and pushing new docker image.
+
+When you update `contract` or `kickback-subgraph` you should update new images.
+
+```
+yarn docker:deploy
+```
+
+Once this is pushed, remove the existing image with `docker image rm $IMAGEID` and try `docker-compose up` again 
+
 
 ### Troubleshoot
 
