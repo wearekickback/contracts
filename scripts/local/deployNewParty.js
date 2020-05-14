@@ -23,10 +23,12 @@ async function waitTx (promise) {
   return txReceipt
 }
 
+// Example
+// yarn seed:party -p 299 -r 280 -d 0.02 -a $ADDRESS
 async function init() {
   program
     .usage('[options]')
-    .option('-i, --id <id>', 'Id of party (obtain from UI /create page)')
+    .option('-a, --address <address>', 'Address of party (obtain from UI /create page)')
     .option('--ropsten', 'Use Ropsten instead of local development network')
     .option('--rinkeby', 'Use Rinkeby instead of local development network')
     .option('--kovan',   'Use Kovan instead of local development network')
@@ -57,10 +59,10 @@ async function init() {
     )
     .parse(process.argv)
 
-  const id = program.id
+  const address = program.address
 
-  if (!id) {
-    throw new Error('Id not given')
+  if (!address) {
+    throw new Error('Address not given')
   }
 
   const cancelled = !!program.cancelled
@@ -81,7 +83,7 @@ async function init() {
 Config
 ------
 Network:                ${ropsten ? 'ropsten' : (mainnet ? 'mainnet' : (rinkeby ? 'rinkeby' : (kovan ? 'kovan' : 'development')))}
-Party id:               ${id}
+Party address:          ${address}
 Deposit level:          ${deposit.toFixed(3)} ETH
 Cooling Period:         ${coolingPeriod} seconds
 Extra admins:           ${numAdmins}
@@ -116,73 +118,13 @@ Payout withdrawals:     ${numWithdrawals}
 
   const networkId = await web3.eth.net.getId()
 
-  const { address: deployerAddress } = Deployer.networks[networkId] || deployedAddresses[networkId]
-  if (!deployerAddress) {
-    throw new Error('Unable to find address of Deployer contract on this network!')
-  }
-
-  console.log(`Deployer: ${deployerAddress}`)
-
   const accounts = await web3.eth.getAccounts()
-
-  if (numAdmins + 1 > accounts.length) {
-    throw new Error(
-      `Not enough web3 accounts to register ${numAdmins} additional party admins!`
-    )
-  }
-
-  if (numRegistrations > accounts.length) {
-    throw new Error(
-      `Not enough web3 accounts to register ${numRegistrations} attendees!`
-    )
-  }
-
-  if (numRegistrations > maxParticipants) {
-    throw new Error(`Cannot register more attendees than the limit!`)
-  }
-
-  if (numFinalized > numRegistrations) {
-    throw new Error(`Cannot have more attendees than there are registrations!`)
-  }
-
-  if (numWithdrawals > numFinalized) {
-    throw new Error(
-      `Cannot have more deposits withdrawn than there are people who showed up!`
-    )
-  }
-
-  if (numWithdrawals && !(numFinalized || cancelled)) {
-    throw new Error(
-      `Cannot withdraw deposits unless party is finalized or cancelled!`
-    )
-  }
 
   const [account] = accounts
 
   console.log(`Owner: ${account}`)
 
-  const deployer = new web3.eth.Contract(Deployer.abi, deployerAddress)
-
-  console.log(`
-
-Deploying new party
--------------------`
-)
-
-  const tx = await waitTx(deployer.methods
-    .deploy(
-      id,
-      deposit.toWei().toString(16),
-      toHex(maxParticipants),
-      toHex(coolingPeriod)
-    )
-    .send({ from: account, gas: 4000000 }))
-
-  const { deployedAddress: partyAddress } = tx.events.NewParty.returnValues
-
-  console.log(`New party: ${partyAddress}`)
-
-  const party = new web3.eth.Contract(Conference.abi, partyAddress)
+  const party = new web3.eth.Contract(Conference.abi, address)
 
   console.log(`
 
@@ -197,6 +139,7 @@ Ensuring accounts have enough ETH in them
     throw new Error(`Main account ${owner} only has ${ownerBalance.toEth().toFixed(4)} ETH but ${minEthNeededPerAccount.toFixed(4)} is needed.` )
   }
   for (let i = 1; maxAccountsNeeded > i; ++i) {
+    console.log(i, accounts[i])
     const balance = new EthVal(await web3.eth.getBalance(accounts[i]))
 
     if (balance.lt(minEthNeededPerAccount)) {
