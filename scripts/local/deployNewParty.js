@@ -132,7 +132,7 @@ Ensuring accounts have enough ETH in them
 ------------------------------------------`
 )
 
-  const minEthNeededPerAccount = deposit.toWei().add(new EthVal(0.05, 'eth') /* assume 0.1 ETH for total gas cost */)
+  const minEthNeededPerAccount = deposit.toWei().add(new EthVal(0.03, 'eth') /* assume 0.1 ETH for total gas cost */)
   // check main account
   const ownerBalance = new EthVal(await web3.eth.getBalance(accounts[0]))
   if (ownerBalance.lt(minEthNeededPerAccount)) {
