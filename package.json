@@ -80,7 +80,7 @@
     "yargs": "^9.0.1"
   },
   "dependencies": {
-    "@wearekickback/shared": "^1.14.0",
+    "@wearekickback/shared": "^1.14.1",
     "openzeppelin-solidity": "^2.3.0"
   },
   "engines": {
