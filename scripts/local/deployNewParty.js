@@ -95,7 +95,7 @@ Payout withdrawals:     ${numWithdrawals}
 `
   )
 
-  const maxAccountsNeeded = parseInt(Math.max(numRegistrations, numAdmins + 1), 10)
+  const maxAccountsNeeded = parseInt(Math.max(numRegistrations || numFinalized || numWithdrawals , numAdmins + 1), 10)
 
   let provider = new Web3.providers.HttpProvider(
     `http://${networks.development.host}:${networks.development.port}`
@@ -121,44 +121,42 @@ Payout withdrawals:     ${numWithdrawals}
   const accounts = await web3.eth.getAccounts()
 
   const [account] = accounts
-
   console.log(`Owner: ${account}`)
 
   const party = new web3.eth.Contract(Conference.abi, address)
+  if(numRegistrations){
+    console.log(`
 
-  console.log(`
-
-Ensuring accounts have enough ETH in them
-------------------------------------------`
-)
-
-  const minEthNeededPerAccount = deposit.toWei().add(new EthVal(0.03, 'eth') /* assume 0.1 ETH for total gas cost */)
-  // check main account
-  const ownerBalance = new EthVal(await web3.eth.getBalance(accounts[0]))
-  if (ownerBalance.lt(minEthNeededPerAccount)) {
-    throw new Error(`Main account ${owner} only has ${ownerBalance.toEth().toFixed(4)} ETH but ${minEthNeededPerAccount.toFixed(4)} is needed.` )
-  }
-  for (let i = 1; maxAccountsNeeded > i; ++i) {
-    console.log(i, accounts[i])
-    const balance = new EthVal(await web3.eth.getBalance(accounts[i]))
-
-    if (balance.lt(minEthNeededPerAccount)) {
-      const rem = minEthNeededPerAccount.sub(balance)
-      if (ownerBalance.sub(rem).lt(minEthNeededPerAccount)) {
-        throw new Error(`Main account ${owner} does not enough ETH to share with ${accounts[i]}.` )
+    Ensuring accounts have enough ETH in them
+    ------------------------------------------`
+    )
+      const minEthNeededPerAccount = deposit.toWei().add(new EthVal(0.03, 'eth') /* assume 0.1 ETH for total gas cost */)
+      // check main account
+      const ownerBalance = new EthVal(await web3.eth.getBalance(accounts[0]))
+      if (ownerBalance.lt(minEthNeededPerAccount)) {
+        throw new Error(`Main account ${owner} only has ${ownerBalance.toEth().toFixed(4)} ETH but ${minEthNeededPerAccount.toFixed(4)} is needed.` )
       }
-
-      console.log(`${accounts[0]} -> ${accounts[i]} (${i}): ${rem.toEth().toFixed(4)} ETH`)
-
-      await waitTx(web3.eth.sendTransaction({
-        from: accounts[0],
-        to: accounts[i],
-        value: rem.toWei().toString(16)
-      }))
-    }
+      for (let i = 1; maxAccountsNeeded > i; ++i) {
+        console.log(i, accounts[i])
+        const balance = new EthVal(await web3.eth.getBalance(accounts[i]))
+    
+        if (balance.lt(minEthNeededPerAccount)) {
+          const rem = minEthNeededPerAccount.sub(balance)
+          if (ownerBalance.sub(rem).lt(minEthNeededPerAccount)) {
+            throw new Error(`Main account ${owner} does not enough ETH to share with ${accounts[i]}.` )
+          }
+    
+          console.log(`${accounts[0]} -> ${accounts[i]} (${i}): ${rem.toEth().toFixed(4)} ETH`)
+    
+          await waitTx(web3.eth.sendTransaction({
+            from: accounts[0],
+            to: accounts[i],
+            value: rem.toWei().toString(16)
+          }))
+        }
+      }
+      console.log('Done.')
   }
-  console.log('Done.')
-
 
   if (numAdmins) {
     console.log(
@@ -258,16 +256,14 @@ Withdraw payout - ${payout.toEth().toFixed(4)} ETH
 -----------------------------`
     )
 
-    const promises = []
-    for (let i = 0; numWithdrawals > i; i += 1) {
-      console.log(`${accounts[i]} (${i})`)
-
-      promises.push(
-        waitTx(party.methods.withdraw().send({ from: accounts[i], gas: 200000 }))
-      )
+    for (let i = 0; numWithdrawals > i; i += 1) {      
+      try{
+        await party.methods.withdraw().send({ from: accounts[i], gas: 200000 })
+        console.log(`SUCCESS ${accounts[i]} (${i})`)
+      }catch(e){
+        console.log(`FAIL ${accounts[i]} (${i})`, e)
+      }
     }
-
-    await Promise.all(promises)
     console.log('Done.')
   }
 }
