@@ -193,20 +193,19 @@ Register participants
 -----------------------`
     )
 
-    const promises = []
     for (let i = 0; numRegistrations > i; i += 1) {
       console.log(`${accounts[i]} (${i})`)
-
-      promises.push(
-        waitTx(party.methods.register().send({
+      try{
+        let tx = await party.methods.register().send({
           value: deposit.toWei().toString(16),
           from: accounts[i],
           gas: 200000
-        }))
-      )
+        })
+        console.log(`SUCCESS ${accounts[i]} (${i}), ${tx.blockNumber}, ${tx.status}, ${tx.blockHash}`)
+      }catch(e){
+        console.log(`FAIL ${accounts[i]} (${i})`, e)
+      }
     }
-
-    const tx = await Promise.all(promises)
     console.log('Done.')
   }
 
@@ -230,7 +229,8 @@ Mark as finalized (${numFinalized} attendees)
       maps[maps.length - 1] = maps[maps.length - 1].bincn(i)
     }
 
-    await waitTx(party.methods.finalize(maps).send({ from: accounts[0], gas: 200000 }))
+    let finalizeTx = await waitTx(party.methods.finalize(maps).send({ from: accounts[0], gas: 200000 }))
+    console.log(`SUCCESS ${finalizeTx.blockNumber}, ${finalizeTx.status}, ${finalizeTx.blockHash}`)
     console.log('Done.')
   }
 
@@ -258,8 +258,8 @@ Withdraw payout - ${payout.toEth().toFixed(4)} ETH
 
     for (let i = 0; numWithdrawals > i; i += 1) {      
       try{
-        await party.methods.withdraw().send({ from: accounts[i], gas: 200000 })
-        console.log(`SUCCESS ${accounts[i]} (${i})`)
+        let tx = await party.methods.withdraw().send({ from: accounts[i], gas: 200000 })
+        console.log(`SUCCESS ${accounts[i]} (${i}), ${tx.blockNumber}, ${tx.status}, ${tx.blockHash}`)
       }catch(e){
         console.log(`FAIL ${accounts[i]} (${i})`, e)
       }
