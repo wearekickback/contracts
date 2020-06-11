@@ -10,6 +10,13 @@ module.exports = {
       // gasPrice: 2000000000, // 1 gwei
       network_id: "*"
     },
+    docker: {
+      host: "host.docker.internal",
+      port: 8545,
+      gas: 6712388,
+      // gasPrice: 2000000000, // 1 gwei
+      network_id: "*"
+    },
     test: {
       host: "localhost",
       port: 8545,

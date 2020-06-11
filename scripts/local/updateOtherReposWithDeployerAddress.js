@@ -5,6 +5,7 @@ const fs = require('fs')
 const path = require('path')
 const Web3 = require('web3')
 const projectDir = path.join(__dirname, '..', '..')
+const yaml = require('js-yaml')
 
 async function init () {
   const web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:8545'))
@@ -42,6 +43,18 @@ async function init () {
     fs.writeFileSync(appConfigPath, JSON.stringify(appConfig, null, 2))
   } else {
     console.warn('App folder not found, skipping ...')
+  }
+
+  const subgraphDir = path.join(projectDir, '..', 'kickback-subgraph')
+  if (fs.existsSync(subgraphDir)) {
+    console.log('Writing to subgraph config ...')
+
+    const subgraphConfigPath = path.join(subgraphDir, 'subgraph.yaml')
+    const doc = yaml.safeLoad(fs.readFileSync(subgraphConfigPath))
+    doc.dataSources[0].source.address = address
+    fs.writeFileSync(subgraphConfigPath, yaml.safeDump(doc))
+  } else {
+    console.warn('Subgraph folder not found, skipping ...')
   }
 }
 
