@@ -466,14 +466,14 @@ function shouldBehaveLikeConference () {
   })
 
   describe('on send and withdraw', function(){
-    let conference, deposit, registered, donation, donationTwo;
+    let conference, deposit, registered, donation, donationTwo, beneficiary;
     beforeEach(async function(){
       conference = await createConference({});
       deposit = await conference.deposit(); // should be 0.02 ether (2*10e16 wei)
       registered = accounts[1];
-      donation = toWei('0.01', "ether");
+      donation = toWei('0.015', "ether");
       donationTwo = toWei('0.005', "ether");
-
+      beneficiary = accounts[2];
       await register({conference, deposit, user:owner, owner});
       await register({conference, deposit, user:registered, owner});
 
@@ -482,8 +482,17 @@ function shouldBehaveLikeConference () {
 
     it('should take only `deposit` value', async function() {
       await conference.cancel({from:owner});
-      await conference.sendAndWithdraw([accounts[2]], [donation], {from:registered});
+      let registeredBeforeBalance = await getBalance(registered)
+      let beneficiaryBeforeBalance = await getBalance(beneficiary)
+      await conference.sendAndWithdraw([beneficiary], [donation], {from:registered});
+      let beneficiaryAfterBalance = await getBalance(beneficiary)
+      let beneficiaryDiff = beneficiaryAfterBalance.sub(beneficiaryBeforeBalance)
       assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 1))
+      let registeredAfterBalance = await getBalance(registered)
+      let registeredDiff = registeredAfterBalance.sub(registeredBeforeBalance)
+      assert.isOk(beneficiaryDiff.eq( new EthVal(donation) ))
+      let leftOver = new EthVal(deposit).sub(new EthVal(donation))
+      assert.isOk(registeredDiff.gt(leftOver.mul(0.9)))
     })
 
     it('more addresses than values or viceversa', async function(){
