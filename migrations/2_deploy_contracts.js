@@ -31,7 +31,7 @@ module.exports = function(deployer) {
   if (config.limitOfParticipants){
     limitOfParticipants = config.limitOfParticipants;
   }
-
+  console.log(deployer.network)
   return deployer.then(async () => {
     if (deployer.network == 'development'){
       await deployer.deploy(Token);
@@ -44,6 +44,9 @@ module.exports = function(deployer) {
     await deployer.deploy(Deployer, ethDeployer.address, erc20Deployer.address);
     const mainDeployer = await Deployer.deployed();
     console.log([name, deposit,limitOfParticipants, coolingPeriod].join(','));
-    // return deployer.deploy(Conference, name, deposit,limitOfParticipants, coolingPeriod, emptyAddress);
+    if(deployer.network == 'docker' || deployer.network == 'development'){
+      console.log('deploying a party', {name, deposit,limitOfParticipants, coolingPeriod, emptyAddress})
+      await mainDeployer.deploy(name, deposit,limitOfParticipants, coolingPeriod, emptyAddress);
+    }
   });
 }

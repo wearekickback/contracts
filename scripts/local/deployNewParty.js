@@ -23,10 +23,12 @@ async function waitTx (promise) {
   return txReceipt
 }
 
+// Example
+// yarn seed:party -p 299 -r 280 -d 0.02 -a $ADDRESS
 async function init() {
   program
     .usage('[options]')
-    .option('-i, --id <id>', 'Id of party (obtain from UI /create page)')
+    .option('-a, --address <address>', 'Address of party (obtain from UI /create page)')
     .option('--ropsten', 'Use Ropsten instead of local development network')
     .option('--rinkeby', 'Use Rinkeby instead of local development network')
     .option('--kovan',   'Use Kovan instead of local development network')
@@ -57,10 +59,10 @@ async function init() {
     )
     .parse(process.argv)
 
-  const id = program.id
+  const address = program.address
 
-  if (!id) {
-    throw new Error('Id not given')
+  if (!address) {
+    throw new Error('Address not given')
   }
 
   const cancelled = !!program.cancelled
@@ -81,7 +83,7 @@ async function init() {
 Config
 ------
 Network:                ${ropsten ? 'ropsten' : (mainnet ? 'mainnet' : (rinkeby ? 'rinkeby' : (kovan ? 'kovan' : 'development')))}
-Party id:               ${id}
+Party address:          ${address}
 Deposit level:          ${deposit.toFixed(3)} ETH
 Cooling Period:         ${coolingPeriod} seconds
 Extra admins:           ${numAdmins}
@@ -93,7 +95,7 @@ Payout withdrawals:     ${numWithdrawals}
 `
   )
 
-  const maxAccountsNeeded = parseInt(Math.max(numRegistrations, numAdmins + 1), 10)
+  const maxAccountsNeeded = parseInt(Math.max(numRegistrations || numFinalized || numWithdrawals , numAdmins + 1), 10)
 
   let provider = new Web3.providers.HttpProvider(
     `http://${networks.development.host}:${networks.development.port}`
@@ -116,106 +118,45 @@ Payout withdrawals:     ${numWithdrawals}
 
   const networkId = await web3.eth.net.getId()
 
-  const { address: deployerAddress } = Deployer.networks[networkId] || deployedAddresses[networkId]
-  if (!deployerAddress) {
-    throw new Error('Unable to find address of Deployer contract on this network!')
-  }
-
-  console.log(`Deployer: ${deployerAddress}`)
-
   const accounts = await web3.eth.getAccounts()
 
-  if (numAdmins + 1 > accounts.length) {
-    throw new Error(
-      `Not enough web3 accounts to register ${numAdmins} additional party admins!`
-    )
-  }
-
-  if (numRegistrations > accounts.length) {
-    throw new Error(
-      `Not enough web3 accounts to register ${numRegistrations} attendees!`
-    )
-  }
-
-  if (numRegistrations > maxParticipants) {
-    throw new Error(`Cannot register more attendees than the limit!`)
-  }
-
-  if (numFinalized > numRegistrations) {
-    throw new Error(`Cannot have more attendees than there are registrations!`)
-  }
-
-  if (numWithdrawals > numFinalized) {
-    throw new Error(
-      `Cannot have more deposits withdrawn than there are people who showed up!`
-    )
-  }
-
-  if (numWithdrawals && !(numFinalized || cancelled)) {
-    throw new Error(
-      `Cannot withdraw deposits unless party is finalized or cancelled!`
-    )
-  }
-
   const [account] = accounts
-
   console.log(`Owner: ${account}`)
 
-  const deployer = new web3.eth.Contract(Deployer.abi, deployerAddress)
+  const party = new web3.eth.Contract(Conference.abi, address)
+  if(numRegistrations){
+    console.log(`
 
-  console.log(`
-
-Deploying new party
--------------------`
-)
-
-  const tx = await waitTx(deployer.methods
-    .deploy(
-      id,
-      deposit.toWei().toString(16),
-      toHex(maxParticipants),
-      toHex(coolingPeriod)
+    Ensuring accounts have enough ETH in them
+    ------------------------------------------`
     )
-    .send({ from: account, gas: 4000000 }))
-
-  const { deployedAddress: partyAddress } = tx.events.NewParty.returnValues
-
-  console.log(`New party: ${partyAddress}`)
-
-  const party = new web3.eth.Contract(Conference.abi, partyAddress)
-
-  console.log(`
-
-Ensuring accounts have enough ETH in them
-------------------------------------------`
-)
-
-  const minEthNeededPerAccount = deposit.toWei().add(new EthVal(0.05, 'eth') /* assume 0.1 ETH for total gas cost */)
-  // check main account
-  const ownerBalance = new EthVal(await web3.eth.getBalance(accounts[0]))
-  if (ownerBalance.lt(minEthNeededPerAccount)) {
-    throw new Error(`Main account ${owner} only has ${ownerBalance.toEth().toFixed(4)} ETH but ${minEthNeededPerAccount.toFixed(4)} is needed.` )
-  }
-  for (let i = 1; maxAccountsNeeded > i; ++i) {
-    const balance = new EthVal(await web3.eth.getBalance(accounts[i]))
-
-    if (balance.lt(minEthNeededPerAccount)) {
-      const rem = minEthNeededPerAccount.sub(balance)
-      if (ownerBalance.sub(rem).lt(minEthNeededPerAccount)) {
-        throw new Error(`Main account ${owner} does not enough ETH to share with ${accounts[i]}.` )
+      const minEthNeededPerAccount = deposit.toWei().add(new EthVal(0.03, 'eth') /* assume 0.1 ETH for total gas cost */)
+      // check main account
+      const ownerBalance = new EthVal(await web3.eth.getBalance(accounts[0]))
+      if (ownerBalance.lt(minEthNeededPerAccount)) {
+        throw new Error(`Main account ${owner} only has ${ownerBalance.toEth().toFixed(4)} ETH but ${minEthNeededPerAccount.toFixed(4)} is needed.` )
       }
-
-      console.log(`${accounts[0]} -> ${accounts[i]} (${i}): ${rem.toEth().toFixed(4)} ETH`)
-
-      await waitTx(web3.eth.sendTransaction({
-        from: accounts[0],
-        to: accounts[i],
-        value: rem.toWei().toString(16)
-      }))
-    }
+      for (let i = 1; maxAccountsNeeded > i; ++i) {
+        console.log(i, accounts[i])
+        const balance = new EthVal(await web3.eth.getBalance(accounts[i]))
+    
+        if (balance.lt(minEthNeededPerAccount)) {
+          const rem = minEthNeededPerAccount.sub(balance)
+          if (ownerBalance.sub(rem).lt(minEthNeededPerAccount)) {
+            throw new Error(`Main account ${owner} does not enough ETH to share with ${accounts[i]}.` )
+          }
+    
+          console.log(`${accounts[0]} -> ${accounts[i]} (${i}): ${rem.toEth().toFixed(4)} ETH`)
+    
+          await waitTx(web3.eth.sendTransaction({
+            from: accounts[0],
+            to: accounts[i],
+            value: rem.toWei().toString(16)
+          }))
+        }
+      }
+      console.log('Done.')
   }
-  console.log('Done.')
-
 
   if (numAdmins) {
     console.log(
@@ -252,20 +193,19 @@ Register participants
 -----------------------`
     )
 
-    const promises = []
     for (let i = 0; numRegistrations > i; i += 1) {
       console.log(`${accounts[i]} (${i})`)
-
-      promises.push(
-        waitTx(party.methods.register().send({
+      try{
+        let tx = await party.methods.register().send({
           value: deposit.toWei().toString(16),
           from: accounts[i],
           gas: 200000
-        }))
-      )
+        })
+        console.log(`SUCCESS ${accounts[i]} (${i}), ${tx.blockNumber}, ${tx.status}, ${tx.blockHash}`)
+      }catch(e){
+        console.log(`FAIL ${accounts[i]} (${i})`, e)
+      }
     }
-
-    const tx = await Promise.all(promises)
     console.log('Done.')
   }
 
@@ -289,7 +229,8 @@ Mark as finalized (${numFinalized} attendees)
       maps[maps.length - 1] = maps[maps.length - 1].bincn(i)
     }
 
-    await waitTx(party.methods.finalize(maps).send({ from: accounts[0], gas: 200000 }))
+    let finalizeTx = await waitTx(party.methods.finalize(maps).send({ from: accounts[0], gas: 200000 }))
+    console.log(`SUCCESS ${finalizeTx.blockNumber}, ${finalizeTx.status}, ${finalizeTx.blockHash}`)
     console.log('Done.')
   }
 
@@ -315,16 +256,14 @@ Withdraw payout - ${payout.toEth().toFixed(4)} ETH
 -----------------------------`
     )
 
-    const promises = []
-    for (let i = 0; numWithdrawals > i; i += 1) {
-      console.log(`${accounts[i]} (${i})`)
-
-      promises.push(
-        waitTx(party.methods.withdraw().send({ from: accounts[i], gas: 200000 }))
-      )
+    for (let i = 0; numWithdrawals > i; i += 1) {      
+      try{
+        let tx = await party.methods.withdraw().send({ from: accounts[i], gas: 200000 })
+        console.log(`SUCCESS ${accounts[i]} (${i}), ${tx.blockNumber}, ${tx.status}, ${tx.blockHash}`)
+      }catch(e){
+        console.log(`FAIL ${accounts[i]} (${i})`, e)
+      }
     }
-
-    await Promise.all(promises)
     console.log('Done.')
   }
 }

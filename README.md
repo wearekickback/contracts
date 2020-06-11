@@ -92,6 +92,114 @@ This will also call a script to update the `app` and `server` repo clones if
 you've checked them out as sibling folders.
 
 
+## Docker
+
+### Pre-requisite
+
+- Start ganache with `ganache-cli -m mnemonic`
+- Clear data dir with `rm -rf data`
+
+### Run
+
+
+- `docker-compose up`
+
+Once you show message like this, then it was abile to create contract and deploy the graph successfully.
+
+`
+Deployed to http://graph:8000/subgraphs/name/wearekickback/kickback/graphql
+`
+
+Then followed by these graph-node messages actually indexing
+
+```
+graph        | Apr 08 22:12:12.170 INFO 1 trigger found in this block for this subgraph, block_hash: 0x6b457bafbafb78566c519e6f30b00890836144d1afc687f9cdf147c7164c4c1a, block_number: 4, subgraph_id: QmeYWpZq5Ujkg4dKo6YJbBXSt5L36U4jGG9KMh9o7LpfYi, component: SubgraphInstanceManager
+graph        | Apr 08 22:12:12.173 WARN *** handleNewParty, data_source: Deployer, block_hash: 0x6b457bafbafb78566c519e6f30b00890836144d1afc687f9cdf147c7164c4c1a, block_number: 4, subgraph_id: QmeYWpZq5Ujkg4dKo6YJbBXSt5L36U4jGG9KMh9o7LpfYi, component: SubgraphInstanceManager
+graph        | Apr 08 22:12:12.176 WARN *** 1 Address: 0xbc4bac580b299e1a141df02b2bbe6ea80b03f41f, Block number: 4, block hash: 0x6b457bafbafb78566c519e6f30b00890836144d1afc687f9cdf147c7164c4c1a, transaction hash: 0xeabbfcd5663ddf17792490eae887832c2c81250786e85e77da27335fef61dad2, data_source: Deployer, block_hash: 0x6b457bafbafb78566c519e6f30b00890836144d1afc687f9cdf147c7164c4c1a, block_number: 4, subgraph_id: QmeYWpZq5Ujkg4dKo6YJbBXSt5L36U4jGG9KMh9o7LpfYi, component: SubgraphInstanceManager
+graph        | Apr 08 22:12:12.179 WARN ****2 , data_source: Deployer, block_hash: 0x6b457bafbafb78566c519e6f30b00890836144d1afc687f9cdf147c7164c4c1a, block_number: 4, subgraph_id: QmeYWpZq5Ujkg4dKo6YJbBXSt5L36U4jGG9KMh9o7LpfYi, component: SubgraphInstanceManager
+graph        | Apr 08 22:12:12.181 INFO Create data source, params: 0xbc4bac580b299e1a141df02b2bbe6ea80b03f41f, name: Party, block_hash: 0x6b457bafbafb78566c519e6f30b00890836144d1afc687f9cdf147c7164c4c1a, block_number: 4, subgraph_id: QmeYWpZq5Ujkg4dKo6YJbBXSt5L36U4jGG9KMh9o7LpfYi, component: SubgraphInstanceManager
+graph        | Apr 08 22:12:12.181 WARN ****3 , data_source: Deployer, block_hash: 0x6b457bafbafb78566c519e6f30b00890836144d1afc687f9cdf147c7164c4c1a, block_number: 4, subgraph_id: QmeYWpZq5Ujkg4dKo6YJbBXSt5L36U4jGG9KMh9o7LpfYi, component: SubgraphInstanceManager
+graph        | Apr 08 22:12:12.182 WARN ****4 , data_source: Deployer, block_hash: 0x6b457bafbafb78566c519e6f30b00890836144d1afc687f9cdf147c7164c4c1a, block_number: 4, subgraph_id: QmeYWpZq5Ujkg4dKo6YJbBXSt5L36U4jGG9KMh9o7LpfYi, component: SubgraphInstanceManager
+graph        | Apr 08 22:12:12.210 WARN ****5 , data_source: Deployer, block_hash: 0x6b457bafbafb78566c519e6f30b00890836144d1afc687f9cdf147c7164c4c1a, block_number: 4, subgraph_id: QmeYWpZq5Ujkg4dKo6YJbBXSt5L36U4jGG9KMh9o7LpfYi, component: SubgraphInstanceManager
+graph        | Apr 08 22:12:12.211 WARN ****6 , data_source: Deployer, block_hash: 0x6b457bafbafb78566c519e6f30b00890836144d1afc687f9cdf147c7164c4c1a, block_number: 4, subgraph_id: QmeYWpZq5Ujkg4dKo6YJbBXSt5L36U4jGG9KMh9o7LpfYi, component: SubgraphInstanceManager
+graph        | Apr 08 22:12:12.211 WARN ****7 , data_source: Deployer, block_hash: 0x6b457bafbafb78566c519e6f30b00890836144d1afc687f9cdf147c7164c4c1a, block_number: 4, subgraph_id: QmeYWpZq5Ujkg4dKo6YJbBXSt5L36U4jGG9KMh9o7LpfYi, component: SubgraphInstanceManager
+graph        | Apr 08 22:12:12.235 WARN ****9 0x0000000000000000000000000000000000000000 0xbc4bac580b299e1a141df02b2bbe6ea80b03f41f, data_source: Deployer, block_hash: 0x6b457bafbafb78566c519e6f30b00890836144d1afc687f9cdf147c7164c4c1a, block_number: 4, subgraph_id: QmeYWpZq5Ujkg4dKo6YJbBXSt5L36U4jGG9KMh9o7LpfYi, component: SubgraphInstanceManager
+graph        | Apr 08 22:12:12.237 WARN ****000203 0x0000000000000000000000000000000000000000 , 0xbc4bac580b299e1a141df02b2bbe6ea80b03f41f, data_source: Deployer, block_hash: 0x6b457bafbafb78566c519e6f30b00890836144d1afc687f9cdf147c7164c4c1a, block_number: 4, subgraph_id: QmeYWpZq5Ujkg4dKo6YJbBXSt5L36U4jGG9KMh9o7LpfYi, component: SubgraphInstanceManager
+graph        | Apr 08 22:12:12.260 INFO Done processing Ethereum trigger, waiting_ms: 0, handler: handleNewParty, total_ms: 90, trigger_type: Log, address: 0xd8f3…3dbe, signature: NewParty(indexed address,indexed address), block_hash: 0x6b457bafbafb78566c519e6f30b00890836144d1afc687f9cdf147c7164c4c1a, block_number: 4, subgraph_id: QmeYWpZq5Ujkg4dKo6YJbBXSt5L36U4jGG9KMh9o7LpfYi, component: SubgraphInstanceManager
+graph        | Apr 08 22:12:12.305 INFO Applying 12 entity operation(s), block_hash: 0x6b457bafbafb78566c519e6f30b00890836144d1afc687f9cdf147c7164c4c1a, block_number: 4, subgraph_id: QmeYWpZq5Ujkg4dKo6YJbBXSt5L36U4jGG9KMh9o7LpfYi, component: SubgraphInstanceManager
+graph        | Apr 08 22:12:26.999 WARN Possible contention in DB connection pool, wait_ms: 10, component: Store
+
+```
+
+`http://graph:8000` is hostname only used within docker. To access from your machine, just connect via http://localhost:8000/subgraphs/name/wearekickback/kickback/graphql
+
+The deployment will create a dummy event. If you run the following query and returns an entry, then indexing should have worked.
+
+```
+query{
+  partyEntities(first:5){
+    id
+  }
+}
+```
+
+After this, you have to manually update deployer address at `app` and `server` to `0xD8F3257ea8E50bf78B2d950A1949f5d94d613DBe`(this will be always the same as long as you start up ganache with `-m mnemonic`)
+
+#### Creating and pushing new docker image.
+
+When you update `contract` or `kickback-subgraph` you should update new images.
+
+```
+yarn docker:deploy
+```
+
+Once this is pushed, remove the existing image with `docker image rm $IMAGEID` and try `docker-compose up` again 
+
+
+### Troubleshoot
+
+#### no such image
+
+If the following message appears, simply press "Y"
+
+```
+ERROR: for contracts  no such image: sha256:da60023afedd7dc105eaa927ee47ca761c850be205b869c9986ed047f9603354: No such image: sha256:da60023afedd7dc105eaa927ee47ca761c850be205b869c9986ed047f9603354
+Creating graph                ... done
+
+ERROR: for contracts  no such image: sha256:da60023afedd7dc105eaa927ee47ca761c850be205b869c9986ed047f9603354: No such image: sha256:da60023afedd7dc105eaa927ee47ca761c850be205b869c9986ed047f9603354
+ERROR: The image for the service you're trying to recreate has been removed. If you continue, volume data could be lost. Consider backing up your data before continuing.
+
+Continue with the new image? [yN]y
+```
+
+#### timeout occurred after waiting 15 seconds for graph:8020
+
+```
+contracts    | wait-for-it.sh: waiting 15 seconds for graph:8020
+contracts    | wait-for-it.sh: timeout occurred after waiting 15 seconds for graph:8020
+```
+
+This means graph-node is not properly up and running.
+
+If you scroll up the log, you may see the following error.
+
+```
+graph        | Apr 07 20:43:52.131 INFO Connected to Ethereum, network_version: 1586292225353, network: mainnet
+graph        | Apr 07 20:43:52.151 INFO Waiting for other graph-node instances to finish migrating, component: Store
+graph        | Apr 07 20:43:52.153 INFO Running migrations, component: Store
+graph        | Apr 07 20:43:52.215 INFO Migrations finished, component: Store
+graph        | Apr 07 20:43:52.215 INFO Completed pending Postgres schema migrations, component: Store
+graph        | thread 'tokio-runtime-worker' panicked at 'Ethereum node provided net_version 1586292225353, but we expected 1586291081321. Did you change networks without changing the network name?', store/postgres/src/store.rs:245:21
+```
+
+When this happens, do the following
+
+- Stop the service (CMD+C)
+- `rm -rf data`
+- Restart ganache with some random network id (eg: `ganache-cli -m mnemonic -i 12345`). This actually happened quite a lot to me so you may have to retry a couple of times.
+- Start again with `docker-compose up`
+
+
 ## Simulation
 
 ** NOTE: This is currently not up to date so more likely not working **
