@@ -10,7 +10,7 @@ interface Conference {
     event RegisterEvent(address addr, uint256 index);
     event FinalizeEvent(uint256[] maps, uint256 payout, uint256 endedAt);
     event WithdrawEvent(address addr, uint256 payout);
-    event SendAndWithdraw(address payable[] addresses, uint256[] values, address addr, uint256 payoutLeft);
+    event SendAndWithdrawEvent(address payable[] addresses, uint256[] values, address addr, uint256 payoutLeft);
     event CancelEvent(uint256 endedAt);
     event ClearEvent(address addr, uint256 leftOver);
     event UpdateParticipantLimit(uint256 limit);

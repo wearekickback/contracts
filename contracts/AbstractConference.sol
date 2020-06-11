@@ -122,7 +122,7 @@ contract AbstractConference is Conference, GroupAdmin {
     * _values_ contains the value of eth/dai to give to addresses
     * 
     * addresses[i] will receive values[i]
-    * The function emits the event SendAndWithdraw with the following informations:
+    * The function emits the event SendAndWithdrawEvent with the following informations:
     * (addresses, values, participant address, payoutAmount - sum(values), payoutAmount)
     */
     function sendAndWithdraw(address payable[] calldata addresses, uint256[] calldata values) external canWithdraw onlyEnded {
@@ -143,7 +143,7 @@ contract AbstractConference is Conference, GroupAdmin {
         uint256 amountLeft = payoutAmount.sub(sumOfValues);
         doWithdraw(msg.sender, amountLeft);
         emit WithdrawEvent(msg.sender, payoutAmount);
-        emit SendAndWithdraw(addresses, values, msg.sender, amountLeft);
+        emit SendAndWithdrawEvent(addresses, values, msg.sender, amountLeft);
     }
 
     /* Constants */
