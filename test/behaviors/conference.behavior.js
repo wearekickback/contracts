@@ -597,18 +597,9 @@ function shouldBehaveLikeConference () {
       await conference.withdraw({from:accounts[11]})
       await conference.withdraw({from:accounts[12]})
       await conference.withdraw({from:accounts[13]})
-
-      let previousBalance = (await getBalance(owner))
-
-      let conferenceBalance = (await getBalance(conference.address))
-      assert.isOk(conferenceBalance.gt(0))
-
+      assert.isOk((await getBalance(conference.address)).gt(0))
       await conference.clear({from:owner})
-
-      let diff = previousBalance.sub((await getBalance(owner)));
-      assert.isOk(conferenceBalance.eq(conferenceBalance));
-
-      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 0))
+      assert.isOk((await getBalance(conference.address)).eq(0))
     })
   })
 

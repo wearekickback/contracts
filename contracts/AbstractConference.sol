@@ -116,7 +116,7 @@ contract AbstractConference is Conference, GroupAdmin {
     }
 
     /**
-    * @dev sendAndWithDraw function allows to split _payoutAmount_ among addresses in _addresses_.
+    * @dev sendAndWithdraw function allows to split _payoutAmount_ among addresses in _addresses_.
     * 
     * _addresses_ contains ethereum addresses
     * _values_ contains the value of eth/dai to give to addresses
@@ -134,8 +134,7 @@ contract AbstractConference is Conference, GroupAdmin {
         for(uint i = 0; i < addresses.length; i++) {
             sumOfValues = sumOfValues.add(values[i]);
             
-            if(sumOfValues > payoutAmount)
-                revert('payout amount is less than sum of values');
+            require(sumOfValues <= payoutAmount, 'payout amount is less than sum of values');
 
             doWithdraw(addresses[i], values[i]);
         }
