@@ -471,8 +471,8 @@ function shouldBehaveLikeConference () {
       conference = await createConference({});
       deposit = await conference.deposit(); // should be 0.02 ether (2*10e16 wei)
       registered = accounts[1];
-      donation = toWei('0.015', "ether");
-      donationTwo = toWei('0.005', "ether");
+      donation = toWei('0.013', "ether");
+      donationTwo = toWei('0.004', "ether");
       beneficiary = accounts[2];
       await register({conference, deposit, user:owner, owner});
       await register({conference, deposit, user:registered, owner});
@@ -523,17 +523,21 @@ function shouldBehaveLikeConference () {
     it('splits correctly', async function(){
       await conference.cancel({from:owner});
 
+      let previousBalanceRegistered = await getBalance(registered)
       let previousBalanceOne = await getBalance(accounts[10]);
       let previousBalanceTwo = await getBalance(accounts[20]);
 
       await conference.sendAndWithdraw([accounts[10], accounts[20]], [donation, donationTwo], {from:registered});
       
+      let diffRegistered = (await getBalance(registered)).sub(previousBalanceRegistered);
       let diffOne = (await getBalance(accounts[10])).sub(previousBalanceOne);
       let diffTwo = (await getBalance(accounts[20])).sub(previousBalanceTwo);
       
       assert.isOk(diffOne.eq(donation));
       assert.isOk(diffTwo.eq(donationTwo));
 
+      let leftOver = new EthVal(deposit).sub(donation).sub(donationTwo)
+      assert.isOk(diffRegistered.gt(mulBN(leftOver, 0.9)));
       assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 1))
     })
 
