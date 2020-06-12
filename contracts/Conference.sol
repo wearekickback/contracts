@@ -58,8 +58,6 @@ interface Conference {
     function clearAndSend() external;
     function clearAndSend(uint256 _num) external;
     function setLimitOfParticipants(uint256 _limitOfParticipants) external;
-    function changeName(string calldata _name) external;
-    function changeDeposit(uint256 _deposit) external;
     function finalize(uint256[] calldata _maps) external;
     function tokenAddress() external view returns (address);
 }

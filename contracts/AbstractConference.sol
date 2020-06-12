@@ -244,21 +244,6 @@ contract AbstractConference is Conference, GroupAdmin {
         emit UpdateParticipantLimit(limitOfParticipants);
     }
 
-    /**
-     * @dev Change the name of the event. The owner can change it as long as no one has registered yet.
-     * @param _name the name of the event.
-     */
-    function changeName(string calldata _name) external onlyAdmin noOneRegistered{
-        name = _name;
-    }
-
-    /**
-     * @dev Change the deposit. The owner can change it as long as no one has registered yet.
-     * @param _deposit the deposit amount for the event.
-     */
-    function changeDeposit(uint256 _deposit) external onlyAdmin noOneRegistered{
-        deposit = _deposit;
-    }
 
     /**
      * @dev Mark participants as attended and enable payouts. The attendance cannot be undone.
