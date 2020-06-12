@@ -241,7 +241,7 @@ contract AbstractConference is Conference, GroupAdmin {
         require(registered <= _limitOfParticipants, 'cannot lower than already registered');
         limitOfParticipants = _limitOfParticipants;
 
-        emit UpdateParticipantLimit(limitOfParticipants);
+        emit UpdateParticipantLimitEvent(limitOfParticipants);
     }
 
 
