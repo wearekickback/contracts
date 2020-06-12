@@ -36,6 +36,6 @@ module.exports = {
     /* when ownership gets tranferred */
     ChangeOwner: Conference.abi.find(({ type, name }) => type === 'event' && name === 'OwnershipTransferred'),
     /* when participant limit changes */
-    UpdateParticipantLimitEvent: Conference.abi.find(({ type, name }) => type === 'event' && name === 'UpdateParticipantLimitEvent'),
+    UpdateParticipantLimit: Conference.abi.find(({ type, name }) => type === 'event' && name === 'UpdateParticipantLimit'),    
   }
 }

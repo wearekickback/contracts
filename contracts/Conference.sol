@@ -13,7 +13,7 @@ interface Conference {
     event SendAndWithdrawEvent(address payable[] addresses, uint256[] values, address addr, uint256 payoutLeft);
     event CancelEvent(uint256 endedAt);
     event ClearEvent(address addr, uint256 leftOver);
-    event UpdateParticipantLimitEvent(uint256 limit);
+    event UpdateParticipantLimit(uint256 limit);
 
     // Variables
     // Ownable
