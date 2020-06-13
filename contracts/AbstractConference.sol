@@ -81,6 +81,7 @@ contract AbstractConference is Conference, GroupAdmin {
         uint256 _clearFee
     ) public {
         require(_owner != address(0), 'owner address is required');
+        require(_deposit >= _clearFee.mul(10), 'clearFee should be less than 10% of deposit');
         owner = _owner;
         name = _name;
         deposit = _deposit;

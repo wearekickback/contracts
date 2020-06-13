@@ -76,6 +76,14 @@ function shouldBehaveLikeConference () {
       }).should.be.rejected;
     })
 
+    it('clearFee should not be more than 10% of deposit', async function(){
+      const deposit = toWei('3', 'ether')
+      const clearFee = toWei('0.31', 'ether')
+      await createConference({
+        deposit, clearFee
+      }).should.be.rejected;
+    })
+
     it('can set config values', async function(){
       const name = 'Test event'
       const deposit = toWei('3', 'ether')
