@@ -44,7 +44,7 @@ contract('ERC20 Conference', function(accounts) {
       if(approve){
         await token.approve(conference.address, deposit, { from: user, gasPrice });
       }
-      return await conference.register({ from: user, gasPrice, value });
+      return await conference.register(user, { from: user, gasPrice, value });
     }
   })
 

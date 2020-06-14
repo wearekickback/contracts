@@ -33,7 +33,7 @@ contract('ETH Conference - stress tests', function(accounts) {
       return new EthVal(await getBalance(account))
     }
     this.register = async function({conference, deposit, user, gasPrice = toWei('1', 'gwei')}){
-      return await conference.register({value:deposit, from: user, gasPrice});
+      return await conference.register(user, {value:deposit, from: user, gasPrice});
     }
   })
 

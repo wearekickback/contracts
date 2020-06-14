@@ -93,16 +93,17 @@ contract AbstractConference is Conference, GroupAdmin {
     /**
      * @dev Register for the event
      */
-    function register() external payable onlyActive {
+    function register(address payable _participant) external payable onlyActive {
         require(registered < limitOfParticipants, 'participant limit reached');
-        require(!isRegistered(msg.sender), 'already registered');
-        doDeposit(msg.sender, deposit);
+        address payable participant = _participant;
+        require(!isRegistered(participant), 'already registered');
+        doDeposit(participant, deposit);
 
         registered = registered.add(1);
-        participantsIndex[registered] = msg.sender;
-        participants[msg.sender] = Participant(registered, msg.sender, false);
+        participantsIndex[registered] = participant;
+        participants[participant] = Participant(registered, participant, false);
 
-        emit RegisterEvent(msg.sender, registered);
+        emit RegisterEvent(participant, registered);
     }
 
     /**

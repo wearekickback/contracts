@@ -46,7 +46,7 @@ interface Conference {
     function isAdmin(address admin) external view returns(bool);
 
     // AbstractConference
-    function register() external payable;
+    function register(address payable _participant) external payable;
     function withdraw() external;
     function sendAndWithdraw(address payable[] calldata, uint256[] calldata) external;
     function totalBalance() view external returns (uint256);
