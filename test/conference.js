@@ -1,6 +1,7 @@
 const { toWei } = require('web3-utils')
 const EthVal = require('ethval')
 const Conference = artifacts.require("./EthConference.sol");
+const DummyProxy = artifacts.require("./DummyProxy.sol");
 
 const { getBalance } = require('./utils')
 const { shouldBehaveLikeConference } = require('./behaviors/conference.behavior');
@@ -8,9 +9,10 @@ const { shouldBehaveLikeConference } = require('./behaviors/conference.behavior'
 web3.currentProvider.sendAsync = web3.currentProvider.send
 
 contract('ETH Conference', function(accounts) {
-
+  let dummyProxy
   beforeEach(async function(){
     this.accounts = accounts
+    dummyProxy = await DummyProxy.new();
     this.createConference = ({
       name = '',
       deposit = toWei('0.02', "ether"),
@@ -33,8 +35,15 @@ contract('ETH Conference', function(accounts) {
     this.getBalance =  async (account) => {
       return new EthVal(await getBalance(account))
     }
-    this.register = async function({conference, deposit, user, gasPrice = toWei('1', 'gwei')}){
-      return await conference.register(user, {value:deposit, from: user, gasPrice});
+    this.register = async function({
+      conference, deposit, user,
+      gasPrice = toWei('1', 'gwei'), proxy = false
+    }){
+      if(proxy){
+        return await dummyProxy.registerParticipant(conference.address, user, { from: user, gasPrice, value:deposit });
+      }else{
+        return await conference.register(user, { from: user, gasPrice, value:deposit });
+      }
     }
   })
 

@@ -2,16 +2,18 @@ const { toWei } = require('web3-utils')
 const Conference = artifacts.require("ERC20Conference.sol");
 const Token = artifacts.require("MyToken.sol");
 const EthVal = require('ethval')
+const DummyProxy = artifacts.require("./DummyProxy.sol");
 
 web3.currentProvider.sendAsync = web3.currentProvider.send
 
 const { shouldBehaveLikeConference } = require('./behaviors/conference.behavior');
 
 contract('ERC20 Conference', function(accounts) {
-  let token;
+  let token, dummyProxy;
 
   beforeEach(async function(){
     token = await Token.new();
+    dummyProxy = await DummyProxy.new();
     this.accounts = accounts
     this.createConference = ({
       name = '',
@@ -37,14 +39,21 @@ contract('ERC20 Conference', function(accounts) {
     this.getBalance = async (account) => {
       return new EthVal(await token.balanceOf(account));
     }
-    this.register = async function({conference, deposit, user, owner, approve = true, gasPrice = toWei('1', "gwei"), value = 0}){
+    this.register = async function({
+      conference, deposit, user, owner,
+      approve = true, gasPrice = toWei('1', "gwei"), value = 0, proxy = false
+    }){
       if(owner){
         token.transfer(user, deposit, {from:owner, gasPrice});
       }
       if(approve){
         await token.approve(conference.address, deposit, { from: user, gasPrice });
       }
-      return await conference.register(user, { from: user, gasPrice, value });
+      if(proxy){
+        return await dummyProxy.registerParticipant(conference.address, user, { from: user, gasPrice, value });
+      }else{
+        return await conference.register(user, { from: user, gasPrice, value });
+      }
     }
   })
 
