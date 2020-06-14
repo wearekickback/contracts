@@ -37,7 +37,7 @@ contract('ETH Conference', function(accounts) {
     }
     this.register = async function({
       conference, deposit, user,
-      gasPrice = toWei('1', 'gwei'), proxy = false
+      gasPrice = toWei('1', 'gwei'), proxy = true
     }){
       if(proxy){
         return await dummyProxy.registerParticipant(conference.address, user, { from: user, gasPrice, value:deposit });

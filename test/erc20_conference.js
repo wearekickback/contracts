@@ -41,7 +41,7 @@ contract('ERC20 Conference', function(accounts) {
     }
     this.register = async function({
       conference, deposit, user, owner,
-      approve = true, gasPrice = toWei('1', "gwei"), value = 0, proxy = false
+      approve = true, gasPrice = toWei('1', "gwei"), value = 0, proxy = true
     }){
       if(owner){
         token.transfer(user, deposit, {from:owner, gasPrice});

@@ -98,7 +98,7 @@ function shouldBehaveLikeConference () {
     })
   })
 
-  describe('on using proxy contract', function(){
+  describe('on not using proxy contract', function(){
     let beforeContractBalance, beforeAccountBalance,
     beforeOwnerBalance, conference, deposit
 
@@ -107,7 +107,7 @@ function shouldBehaveLikeConference () {
       deposit = await conference.deposit();
       beforeContractBalance = await getBalance(conference.address)
       beforeOwnerBalance = await getBalance(owner);
-      await register({conference, deposit, user:owner, proxy:true});
+      await register({conference, deposit, user:owner, proxy:false});
       let isRegistered = await conference.isRegistered(owner)
       isRegistered.should.eq(true)
     })
