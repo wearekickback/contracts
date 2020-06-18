@@ -12,10 +12,15 @@ contract('Deployer', accounts => {
   let deployer, ethDeployer, erc20Deployer;
   let emptyAddress = '0x0000000000000000000000000000000000000000'
   let clearFee = 10
+  let newFee = 100
   beforeEach(async () => {
     ethDeployer = await EthDeployer.new();
     erc20Deployer = await ERC20Deployer.new();
-    deployer = await Deployer.new(ethDeployer.address, erc20Deployer.address)
+    deployer = await Deployer.new(
+      ethDeployer.address,
+      erc20Deployer.address,
+      clearFee
+    )
   })
 
   it('does not accept ETH', async () => {
@@ -34,14 +39,27 @@ contract('Deployer', accounts => {
     await Deployer.at(address).should.be.rejected
   })
 
+  it('can set clearFee', async() => {
+    await deployer.clearFee().should.eventually.eq(clearFee)
+    await deployer.changeClearFee(newFee, { from: accounts[0]})
+    await deployer.clearFee().should.eventually.eq(newFee)
+  })
+
+  it('can set admins', async() => {
+    await deployer.changeClearFee(newFee, { from: accounts[1]}).should.be.rejected
+    await deployer.clearFee().should.eventually.eq(clearFee)
+    await deployer.grant([accounts[1]], { from: accounts[0]})
+    await deployer.changeClearFee(newFee, { from: accounts[1]}).should.be.fulfilled
+    await deployer.clearFee().should.eventually.eq(newFee)
+  })
+
   it('can deploy a EthConference', async () => {
     const result = await deployer.deploy(
       'test',
       toHex(toWei('0.02')),
       toHex(2),
       toHex(60 * 60 * 24 * 7),
-      emptyAddress,
-      clearFee
+      emptyAddress
     )
 
     const events = await getEvents(result, 'NewParty')
@@ -66,8 +84,7 @@ contract('Deployer', accounts => {
       toHex(10),
       toHex(2),
       toHex(60 * 60 * 24 * 7),
-      token.address,
-      clearFee
+      token.address
     )
 
     const events = await getEvents(result, 'NewParty')
@@ -93,8 +110,7 @@ contract('Deployer', accounts => {
       toHex(toWei('0.02')),
       toHex(2),
       toHex(60 * 60 * 24 * 7),
-      emptyAddress,
-      clearFee
+      emptyAddress
     )
 
     const [ { args: { deployedAddress} } ] = (await getEvents(result, 'NewParty'))
