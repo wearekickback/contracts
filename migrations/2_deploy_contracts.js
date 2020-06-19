@@ -14,8 +14,8 @@ let config = {};
 let token;
 let name = ''; // empty name falls back to the contract default
 let deposit = 0; // 0 falls back to the contract default
-let tld = 'eth';
 let limitOfParticipants = 0; // 0 falls back to the contract default
+let clearFee = 50; // 5%
 const emptyAddress = '0x0000000000000000000000000000000000000000';
 // eg: truffle migrate --config '{"name":"CodeUp No..", "limitOfParticipants":15}'
 if (yargs.argv.config) {
@@ -27,7 +27,6 @@ module.exports = function(deployer) {
   if (config.name){
     name = config.name;
   }
-
   if (config.limitOfParticipants){
     limitOfParticipants = config.limitOfParticipants;
   }
@@ -43,7 +42,7 @@ module.exports = function(deployer) {
     const erc20Deployer = await ERC20Deployer.deployed();
     await deployer.deploy(Deployer, ethDeployer.address, erc20Deployer.address);
     const mainDeployer = await Deployer.deployed();
-    console.log([name, deposit,limitOfParticipants, coolingPeriod].join(','));
+    console.log([name, deposit,limitOfParticipants, coolingPeriod, clearFee].join(','));
     if(deployer.network == 'docker' || deployer.network == 'development'){
       console.log('deploying a party', {name, deposit,limitOfParticipants, coolingPeriod, emptyAddress})
       await mainDeployer.deploy(name, deposit,limitOfParticipants, coolingPeriod, emptyAddress);
