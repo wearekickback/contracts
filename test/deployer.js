@@ -5,7 +5,7 @@ import { getEvents } from './utils'
 const Deployer = artifacts.require("Deployer.sol")
 const EthDeployer = artifacts.require("EthDeployer.sol")
 const ERC20Deployer = artifacts.require("ERC20Deployer.sol")
-const Conference = artifacts.require("AbstractConference.sol")
+const Conference = artifacts.require("Conference.sol")
 const Token = artifacts.require("MyToken.sol");
 
 contract('Deployer', accounts => {

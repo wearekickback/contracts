@@ -1,9 +1,11 @@
-pragma solidity ^0.5.11;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.6.10;
 
 import './AbstractConference.sol';
-import 'openzeppelin-solidity/contracts/token/ERC20/IERC20.sol';
+import './Conference.sol';
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
-contract ERC20Conference is AbstractConference {
+contract ERC20Conference is AbstractConference, Conference{
 
     IERC20 public token; // @todo use a safe transfer proxy
 
@@ -27,20 +29,20 @@ contract ERC20Conference is AbstractConference {
      * @dev Returns total balance of the contract. This function can be deprecated when refactroing front end code.
      * @return The total balance of the contract.
      */
-    function totalBalance() view public returns (uint256){
+    function totalBalance() public view override returns (uint256){
         return token.balanceOf(address(this));
     }
 
-    function doWithdraw(address payable participant, uint256 amount) internal {
+    function doWithdraw(address payable participant, uint256 amount) internal override{
         token.transfer(participant, amount);
     }
 
-    function doDeposit(address participant, uint256 amount) internal {
+    function doDeposit(address participant, uint256 amount) internal override {
         require(msg.value == 0, 'ERC20Conference can not receive ETH');
         token.transferFrom(participant, address(this), amount);
     }
 
-    function tokenAddress() public view returns (address){
+    function tokenAddress() public override view returns (address){
         return address(token);
     }
 }

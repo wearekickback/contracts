@@ -1,5 +1,5 @@
-pragma solidity ^0.5.11;
-
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.6.10;
 import './zeppelin/ownership/Ownable.sol';
 
 /**
@@ -36,7 +36,7 @@ contract GroupAdmin is Ownable {
             for (uint idx = 0; idx < admins.length; idx++) {
                 if (admins[idx] == oldAdmins[oldIdx]) {
                     admins[idx] = admins[admins.length - 1];
-                    admins.length--;
+                    admins.pop();
                     emit AdminRevoked(oldAdmins[oldIdx]);
                     break;
                 }

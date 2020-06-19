@@ -1,10 +1,24 @@
-pragma solidity ^0.5.11;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.6.10;
 
 import './GroupAdmin.sol';
-import './Conference.sol';
-import 'openzeppelin-solidity/contracts/math/SafeMath.sol';
+import '@openzeppelin/contracts/math/SafeMath.sol';
 
-contract AbstractConference is Conference, GroupAdmin {
+abstract contract AbstractConference is GroupAdmin {
+    // GroupAdmin
+    event AdminGranted(address indexed grantee);
+    event AdminRevoked(address indexed grantee);
+    // Ownable
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+    // AbstractConference
+    event RegisterEvent(address addr, uint256 index);
+    event FinalizeEvent(uint256[] maps, uint256 payout, uint256 endedAt);
+    event WithdrawEvent(address addr, uint256 payout);
+    event SendAndWithdrawEvent(address payable[] addresses, uint256[] values, address addr, uint256 payoutLeft);
+    event CancelEvent(uint256 endedAt);
+    event ClearEvent(address addr, uint256 leftOver);
+    event UpdateParticipantLimit(uint256 limit);
+
     using SafeMath for uint256;
 
     string public name;
@@ -150,9 +164,7 @@ contract AbstractConference is Conference, GroupAdmin {
      * @dev Returns total balance of the contract. This function can be deprecated when refactroing front end code.
      * @return The total balance of the contract.
      */
-    function totalBalance() view public returns (uint256){
-        revert('totalBalance must be impelmented in the child class');
-    }
+    function totalBalance() view public virtual returns (uint256){ }
 
     /**
      * @dev Returns true if the given user is registered.
@@ -311,16 +323,10 @@ contract AbstractConference is Conference, GroupAdmin {
         emit ClearEvent(msg.sender, toSender);
     }
 
-    function doDeposit(address /* participant */, uint256 /* amount */ ) internal {
-        revert('doDeposit must be impelmented in the child class');
-    }
+    function doDeposit(address /* participant */, uint256 /* amount */ ) virtual internal {}
 
-    function doWithdraw(address payable /* participant */ , uint256 /* amount */ ) internal {
-        revert('doWithdraw must be impelmented in the child class');
-    }
+    function doWithdraw(address payable /* participant */ , uint256 /* amount */ ) virtual internal {}
 
-    function tokenAddress() public view returns (address){
-        revert('tokenAddress must be impelmented in the child class');
-    }
+    function tokenAddress() virtual public view returns (address){}
 
 }

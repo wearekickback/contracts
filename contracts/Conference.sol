@@ -1,4 +1,5 @@
-pragma solidity ^0.5.11;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.6.10;
 
 interface Conference {
     // GroupAdmin
@@ -17,24 +18,27 @@ interface Conference {
 
     // Variables
     // Ownable
-    function owner() view external returns (address);
+    function owner() external view returns (address);
      // AbstractConference
-    function name() view external returns (string memory);
-    function deposit() view external returns (uint256);
-    function limitOfParticipants() view external returns (uint256);
-    function registered() view external returns (uint256);
-    function ended() view external returns (bool);
-    function cancelled() view external returns (bool);
-    function endedAt() view external returns (uint256);
-    function totalAttended() view external returns (uint256);
-    function coolingPeriod() view external returns (uint256);
-    function payoutAmount() view external returns (uint256);
-    function participants(address participant) view external returns (
+    function name() external view returns (string memory);
+    function deposit() external view returns (uint256);
+    function limitOfParticipants() external view returns (uint256);
+    function registered() external view returns (uint256);
+    function ended() external view returns (bool);
+    function cancelled() external view returns (bool);
+    function endedAt() external view returns (uint256);
+    function totalAttended() external view returns (uint256);
+    function coolingPeriod() external view returns (uint256);
+    function payoutAmount() external view returns (uint256);
+    function clearFee() external view returns (uint256);
+    function lastSent() external view returns (uint256);
+    function withdrawn() external view returns (uint256);
+    function participants(address participant) external view returns (
         uint256 index,
         address payable addr,
         bool paid
     );
-    function participantsIndex(uint256) view external returns(address);
+    function participantsIndex(uint256) external view returns(address);
     // Functions
     // Ownable
     function transferOwnership(address payable newOwner) external;
@@ -49,8 +53,8 @@ interface Conference {
     function register() external payable;
     function withdraw() external;
     function sendAndWithdraw(address payable[] calldata, uint256[] calldata) external;
-    function totalBalance() view external returns (uint256);
-    function isRegistered(address _addr) view external returns (bool);
+    function totalBalance() external view returns (uint256);
+    function isRegistered(address _addr) external view returns (bool);
     function isAttended(address _addr) external view returns (bool);
     function isPaid(address _addr) external view returns (bool);
     function cancel() external;

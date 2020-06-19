@@ -1,4 +1,6 @@
-pragma solidity ^0.5.11;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.6.10;
+
 import './EthConference.sol';
 import './Conference.sol';
 import './DeployerInterface.sol';
@@ -12,7 +14,7 @@ contract EthDeployer is DeployerInterface{
         address payable _ownerAddress,
         address /* _tokenAddress */,
         uint256 _clearFee
-    )external returns(Conference c){
+    ) external override returns(Conference c){
         c = new EthConference(
             _name,
             _deposit,

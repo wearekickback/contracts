@@ -68,7 +68,7 @@
     "moment": "^2.18.1",
     "prompt": "^1.0.0",
     "sol-merger": "^0.1.2",
-    "solc": "^0.5.11",
+    "solc": "^0.6.10",
     "solgraph": "^0.3.2",
     "solhint": "^2.0.0",
     "solidity-coverage": "^0.6.4",
@@ -81,8 +81,8 @@
     "yargs": "^9.0.1"
   },
   "dependencies": {
-    "@wearekickback/shared": "^1.14.1",
-    "openzeppelin-solidity": "^2.3.0"
+    "@openzeppelin/contracts": "^3.0.2",
+    "@wearekickback/shared": "^1.14.1"
   },
   "engines": {
     "node": ">=8"
