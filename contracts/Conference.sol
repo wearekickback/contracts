@@ -29,6 +29,8 @@ interface Conference {
     function totalAttended() view external returns (uint256);
     function coolingPeriod() view external returns (uint256);
     function payoutAmount() view external returns (uint256);
+    function clearFee() view external returns (uint256);
+    function withdrawn() view external returns (uint256);
     function participants(address participant) view external returns (
         uint256 index,
         address payable addr,
