@@ -40,7 +40,7 @@ module.exports = function(deployer) {
     await deployer.deploy(ERC20Deployer);
     const ethDeployer   = await EthDeployer.deployed();
     const erc20Deployer = await ERC20Deployer.deployed();
-    await deployer.deploy(Deployer, ethDeployer.address, erc20Deployer.address);
+    await deployer.deploy(Deployer, ethDeployer.address, erc20Deployer.address, clearFee);
     const mainDeployer = await Deployer.deployed();
     console.log([name, deposit,limitOfParticipants, coolingPeriod, clearFee].join(','));
     if(deployer.network == 'docker' || deployer.network == 'development'){
