@@ -19,6 +19,8 @@ module.exports = {
   events: {
     /* when new party gets deployed */
     NewParty: Deployer.abi.find(({ type, name }) => type === 'event' && name === 'NewParty'),
+    /* when fee is changed */
+    ChangeClearFee: Deployer.abi.find(({ type, name }) => type === 'event' && name === 'ChangeClearFee'),
     /* when someone registers for a party */
     Register: Conference.abi.find(({ type, name }) => type === 'event' && name === 'RegisterEvent'),
     /* when party attendance is finalized and payout is enabled */

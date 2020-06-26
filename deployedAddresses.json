@@ -80,11 +80,25 @@
         "name": "OwnershipTransferred",
         "type": "event",
         "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+      },
+      "0x89647a1f1f6a05858771bb562d6b7849da7863b3e2e0ae034f0ffebd8f0dfb97": {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "uint256",
+            "name": "clearFee",
+            "type": "uint256"
+          }
+        ],
+        "name": "ChangeClearFee",
+        "type": "event",
+        "signature": "0x89647a1f1f6a05858771bb562d6b7849da7863b3e2e0ae034f0ffebd8f0dfb97"
       }
     },
     "links": {},
-    "address": "0x472E36a5fefa52EAA9e4b4a33B961DC2372AB9F1",
-    "transactionHash": "0xbae7da17b4f42e3e7799d1a708886c8642b2911317c8f67fa360aa5732beebd1"
+    "address": "0xa2497BD6C469638d092Bd0dD3bb3a88304489F22",
+    "transactionHash": "0xff7d58d5759000a4eb92493dae8569f05b9f1b04c9daee652eb9094b1832bd92"
   },
   "42": {
     "events": {},
