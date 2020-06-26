@@ -13,3 +13,4 @@ tmp
 log/*.log
 .deployment.js
 data
+.admins.js
