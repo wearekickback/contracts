@@ -25,13 +25,13 @@ contract Deployer is Destructible, GroupAdmin {
         address indexed deployer
     );
 
-    event ChangeClearFee(
+    event ClearFeeChanged(
         uint indexed clearFee
     );
 
     function changeClearFee(uint _clearFee) external onlyAdmin {
         clearFee = _clearFee;
-        emit ChangeClearFee(clearFee);
+        emit ClearFeeChanged(clearFee);
     }
 
     /**

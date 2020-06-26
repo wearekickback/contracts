@@ -94,11 +94,25 @@
         "name": "ChangeClearFee",
         "type": "event",
         "signature": "0x89647a1f1f6a05858771bb562d6b7849da7863b3e2e0ae034f0ffebd8f0dfb97"
+      },
+      "0xc2802121e9239e612e9e568ba6f77d1fb6a93b7c717366bd73ec2be342d1f0f6": {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "uint256",
+            "name": "clearFee",
+            "type": "uint256"
+          }
+        ],
+        "name": "ClearFeeChanged",
+        "type": "event",
+        "signature": "0xc2802121e9239e612e9e568ba6f77d1fb6a93b7c717366bd73ec2be342d1f0f6"
       }
     },
     "links": {},
-    "address": "0xa2497BD6C469638d092Bd0dD3bb3a88304489F22",
-    "transactionHash": "0xff7d58d5759000a4eb92493dae8569f05b9f1b04c9daee652eb9094b1832bd92"
+    "address": "0xDA396a2Fc5f0e3A87a874757f1317102f49da5B0",
+    "transactionHash": "0x68a88758cd93c9858b2f193156547b218e4823f3255a5f7d115424e2cd0ce164"
   },
   "42": {
     "events": {},
