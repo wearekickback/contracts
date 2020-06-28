@@ -119,5 +119,94 @@
     "links": {},
     "address": "0x14b0b6580F1eFc23208cFB68aA810F82aECc0347",
     "transactionHash": "0x5ad9910eeaade4c937c92925693e5c1de88155844afd4a055c66213fcc6fc743"
+  },
+  "100": {
+    "events": {
+      "0x57d380dbcddc47e0e592a9fd9ac9ab20c72572944143ef72b0e201536e0174f9": {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "deployedAddress",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "deployer",
+            "type": "address"
+          }
+        ],
+        "name": "NewParty",
+        "type": "event",
+        "signature": "0x57d380dbcddc47e0e592a9fd9ac9ab20c72572944143ef72b0e201536e0174f9"
+      },
+      "0xc2802121e9239e612e9e568ba6f77d1fb6a93b7c717366bd73ec2be342d1f0f6": {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "uint256",
+            "name": "clearFee",
+            "type": "uint256"
+          }
+        ],
+        "name": "ClearFeeChanged",
+        "type": "event",
+        "signature": "0xc2802121e9239e612e9e568ba6f77d1fb6a93b7c717366bd73ec2be342d1f0f6"
+      },
+      "0x1c4e23de8d72c94b22992bd4d7b6786b215ba876af214ff63e6a0ca38fc97af4": {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "grantee",
+            "type": "address"
+          }
+        ],
+        "name": "AdminGranted",
+        "type": "event",
+        "signature": "0x1c4e23de8d72c94b22992bd4d7b6786b215ba876af214ff63e6a0ca38fc97af4"
+      },
+      "0x631ff1c4e1a02c54b480a34b810e03bcee61fe38efcb243930a7f820914923e2": {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "grantee",
+            "type": "address"
+          }
+        ],
+        "name": "AdminRevoked",
+        "type": "event",
+        "signature": "0x631ff1c4e1a02c54b480a34b810e03bcee61fe38efcb243930a7f820914923e2"
+      },
+      "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "previousOwner",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "newOwner",
+            "type": "address"
+          }
+        ],
+        "name": "OwnershipTransferred",
+        "type": "event",
+        "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+      }
+    },
+    "links": {},
+    "address": "0x05E9AE465727AAa78De8F761E44D78b43a5d9697",
+    "transactionHash": "0x5e0cdfddb0b13e03d642a555eaf0805a86b72a716926413ae69b85d3282c984f"
   }
 }
