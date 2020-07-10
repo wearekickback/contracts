@@ -19,6 +19,7 @@ Object.keys(deployedAddresses).forEach(key => {
     case '3':  // ropsten
     case '4':  // rinkeby
     case '42': // kovan
+    case '100': // poa-xdai
       break
     default:
       delete deployedAddresses[key]
