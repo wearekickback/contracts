@@ -12,5 +12,6 @@ coverage.json
 tmp
 log/*.log
 .deployment.js
+.deployment.*
 data
 .admins.js
