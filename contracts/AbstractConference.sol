@@ -141,7 +141,7 @@ contract AbstractConference is Conference, GroupAdmin {
                 
         uint256 amountLeft = payoutAmount.sub(sumOfValues);
         doWithdraw(msg.sender, amountLeft);
-        emit WithdrawEvent(msg.sender, payoutAmount);
+        emit WithdrawEvent(msg.sender, amountLeft);
         emit SendAndWithdrawEvent(addresses, values, msg.sender, amountLeft);
     }
 
@@ -300,6 +300,7 @@ contract AbstractConference is Conference, GroupAdmin {
                     participant.paid = true;
                     totalSent = totalSent.add(1);
                     doWithdraw(participant.addr, toAttenders);
+                    emit WithdrawEvent(participant.addr, toAttenders);
                 }
             }
         }
