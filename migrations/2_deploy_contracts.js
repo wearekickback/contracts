@@ -16,7 +16,7 @@ let token;
 let name = ''; // empty name falls back to the contract default
 let deposit = 0; // 0 falls back to the contract default
 let limitOfParticipants = 0; // 0 falls back to the contract default
-let clearFee = 50; // 5%
+let clearFee = 10; // 1%
 let admins
 const emptyAddress = '0x0000000000000000000000000000000000000000';
 // eg: truffle migrate --config '{"name":"CodeUp No..", "limitOfParticipants":15}'
