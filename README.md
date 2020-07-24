@@ -399,3 +399,6 @@ For all the latest deployed deployer contracts, see refer to `deployedAddresses.
 - npm version 1.2.0 "0x5cD26E6DC8200630508672fF5C726478e08Da52B" (contained a bug so aborted)
 - npm version 1.0.x "0x0F84461931866cFB2796E09B20520847D49F80F2"
 
+### xDai deployer contract versions
+
+- npm version @wearekickback/contracts-integration 1.4.0 "0x05E9AE465727AAa78De8F761E44D78b43a5d9697"
