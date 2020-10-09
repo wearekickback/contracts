@@ -1,6 +1,6 @@
 {
-  "name": "@wearekickback/contracts",
-  "version": "1.2.9",
+  "name": "@wearekickback/contracts-integration",
+  "version": "1.4.5",
   "description": "Kickback smart contracts",
   "main": "index.js",
   "publishConfig": {
@@ -21,6 +21,7 @@
     "deploy:ropsten": "yarn truffle migrate --network ropsten && scripts/local/extractDeployedAddresses.js",
     "deploy:kovan": "yarn truffle migrate --network kovan && scripts/local/extractDeployedAddresses.js",
     "deploy:rinkeby": "yarn truffle migrate --network rinkeby && scripts/local/extractDeployedAddresses.js",
+    "deploy:xdai": "yarn truffle migrate --network xdai && scripts/local/extractDeployedAddresses.js",
     "deploy:local": "yarn truffle migrate && scripts/local/updateOtherReposWithDeployerAddress.js",
     "docker:network": "docker network create kickback",
     "docker:contracts:run": "docker run -it --name contracts --net kickback wearekickback/contracts bash",

@@ -1,5 +1,6 @@
 pragma solidity ^0.5.11;
 
+import './GroupAdmin.sol';
 import './zeppelin/lifecycle/Destructible.sol';
 import './DeployerInterface.sol';
 
@@ -7,13 +8,14 @@ import './DeployerInterface.sol';
  * This is responsible for deploying a new Party.
  */
 
-contract Deployer is Destructible {
+contract Deployer is Destructible, GroupAdmin {
     DeployerInterface ethDeployer;
     DeployerInterface erc20Deployer;
-
-    constructor(address _ethDeployer, address _erc20Deployer) public {
+    uint public clearFee;
+    constructor(address _ethDeployer, address _erc20Deployer, uint _clearFee) public {
         ethDeployer = DeployerInterface(_ethDeployer);
         erc20Deployer = DeployerInterface(_erc20Deployer);
+        clearFee = _clearFee;
     }
     /**
      * Notify that a new party has been deployed.
@@ -22,6 +24,15 @@ contract Deployer is Destructible {
         address indexed deployedAddress,
         address indexed deployer
     );
+
+    event ClearFeeChanged(
+        uint indexed clearFee
+    );
+
+    function changeClearFee(uint _clearFee) external onlyAdmin {
+        clearFee = _clearFee;
+        emit ClearFeeChanged(clearFee);
+    }
 
     /**
      * Deploy a new contract.
@@ -46,7 +57,8 @@ contract Deployer is Destructible {
                 _limitOfParticipants,
                 _coolingPeriod,
                 msg.sender,
-                _tokenAddress
+                _tokenAddress,
+                clearFee
             );
         }else{
             c = ethDeployer.deploy(
@@ -55,7 +67,8 @@ contract Deployer is Destructible {
                 _limitOfParticipants,
                 _coolingPeriod,
                 msg.sender,
-                address(0)
+                address(0),
+                clearFee
             );
         }
         emit NewParty(address(c), msg.sender);

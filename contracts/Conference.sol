@@ -10,6 +10,7 @@ interface Conference {
     event RegisterEvent(address addr, uint256 index);
     event FinalizeEvent(uint256[] maps, uint256 payout, uint256 endedAt);
     event WithdrawEvent(address addr, uint256 payout);
+    event SendAndWithdrawEvent(address payable[] addresses, uint256[] values, address addr, uint256 payoutLeft);
     event CancelEvent(uint256 endedAt);
     event ClearEvent(address addr, uint256 leftOver);
     event UpdateParticipantLimit(uint256 limit);
@@ -28,6 +29,8 @@ interface Conference {
     function totalAttended() view external returns (uint256);
     function coolingPeriod() view external returns (uint256);
     function payoutAmount() view external returns (uint256);
+    function clearFee() view external returns (uint256);
+    function withdrawn() view external returns (uint256);
     function participants(address participant) view external returns (
         uint256 index,
         address payable addr,
@@ -47,15 +50,16 @@ interface Conference {
     // AbstractConference
     function register() external payable;
     function withdraw() external;
+    function sendAndWithdraw(address payable[] calldata, uint256[] calldata) external;
     function totalBalance() view external returns (uint256);
     function isRegistered(address _addr) view external returns (bool);
     function isAttended(address _addr) external view returns (bool);
     function isPaid(address _addr) external view returns (bool);
     function cancel() external;
     function clear() external;
+    function clearAndSend() external;
+    function clearAndSend(uint256 _num) external;
     function setLimitOfParticipants(uint256 _limitOfParticipants) external;
-    function changeName(string calldata _name) external;
-    function changeDeposit(uint256 _deposit) external;
     function finalize(uint256[] calldata _maps) external;
     function tokenAddress() external view returns (address);
 }

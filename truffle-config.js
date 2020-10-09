@@ -45,6 +45,11 @@ module.exports = {
       gasPrice: 10000000000, // 10 gwei,
       network_id: 42
     },
+    xdai: {
+      provider: (num_addresses = 1) => new HDWalletProvider(mnemonic, `https://dai.poa.network`, 0, num_addresses),
+      gasPrice: 0x01, // <-- Use this low gas price
+      network_id: 100
+    },
     mainnet: {
       // gas: 5000000,
       provider: (num_addresses = 1) => new HDWalletProvider(mnemonic, `https://mainnet.infura.io/v3/${infuraKey}`, 0, num_addresses),

@@ -1,7 +1,6 @@
-
 const { toBN, toWei } = require('web3-utils')
 const EthVal = require('ethval')
-const { mulBN } = require('./../utils')
+const { mulBN, outputBNs } = require('./../utils')
 const { wait, waitUntilBlock } = require('@digix/tempo')(web3);
 
 const emptyAddress = '0x0000000000000000000000000000000000000000'
@@ -31,58 +30,6 @@ function shouldBehaveLikeConference () {
     non_owner = this.accounts[1];
     non_registered = this.accounts[4];
     admin = this.accounts[5];
-  })
-
-  describe('on changeName', function(){
-    let conference, deposit;
-
-    beforeEach(async function(){
-      conference = await createConference({});
-      deposit = await conference.deposit();
-    })
-
-    it('owner can rename the event', async function(){
-      await conference.changeName('new name', {from:owner});
-
-      await conference.name().should.eventually.eq('new name')
-    })
-
-    it('non owner cannot rename the event', async function(){
-      await conference.changeName('new name', {from:non_owner}).should.be.rejected;
-      await conference.name().should.not.eventually.eq('new name')
-    })
-
-    it('cannot rename the event once someone registered', async function(){
-      await register({conference, deposit, user:owner});
-      await conference.changeName('new name', {from:owner}).should.be.rejected;
-      await conference.name().should.not.eventually.eq('new name')
-    })
-  })
-
-  describe('on changeDeposit', function(){
-    let newDeposit, conference, deposit;
-
-    beforeEach(async function(){
-      conference = await createConference({})
-      deposit = await conference.deposit()
-      newDeposit = mulBN(deposit, 2)
-    })
-
-    it('owner can change the deposit', async function(){
-      await conference.changeDeposit(newDeposit, {from:owner});
-      await conference.deposit().should.eventually.eq(newDeposit)
-    })
-
-    it('non owner cannot change the deposit', async function(){
-      await conference.changeDeposit(newDeposit, {from:non_owner}).should.be.rejected;
-      await conference.deposit().should.not.eventually.eq(newDeposit)
-    })
-
-    it('cannot change the deposit once someone registered', async function(){
-      await register({conference, deposit, user:owner});
-      await conference.changeDeposit(newDeposit, {from:owner}).should.be.rejected;
-      await conference.deposit().should.not.eventually.eq(newDeposit)
-    })
   })
 
   describe('on setLimitOfParticipants', function(){
@@ -466,6 +413,84 @@ function shouldBehaveLikeConference () {
     })
   })
 
+  describe('on send and withdraw', function(){
+    let conference, deposit, registered, donation, donationTwo, beneficiary;
+    beforeEach(async function(){
+      conference = await createConference({});
+      deposit = await conference.deposit(); // should be 0.02 ether (2*10e16 wei)
+      registered = accounts[1];
+      donation = toWei('0.013', "ether");
+      donationTwo = toWei('0.004', "ether");
+      beneficiary = accounts[2];
+      await register({conference, deposit, user:owner, owner});
+      await register({conference, deposit, user:registered, owner});
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 2))
+    })
+
+    it('should take only `deposit` value', async function() {
+      await conference.cancel({from:owner});
+      let registeredBeforeBalance = await getBalance(registered)
+      let beneficiaryBeforeBalance = await getBalance(beneficiary)
+      await conference.sendAndWithdraw([beneficiary], [donation], {from:registered});
+      let beneficiaryAfterBalance = await getBalance(beneficiary)
+      let beneficiaryDiff = beneficiaryAfterBalance.sub(beneficiaryBeforeBalance)
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 1))
+      let registeredAfterBalance = await getBalance(registered)
+      let registeredDiff = registeredAfterBalance.sub(registeredBeforeBalance)
+      assert.isOk(beneficiaryDiff.eq( new EthVal(donation) ))
+      let leftOver = new EthVal(deposit).sub(new EthVal(donation))
+      assert.isOk(registeredDiff.gt(leftOver.mul(0.9)))
+    })
+
+    it('more addresses than values or viceversa', async function(){
+      await conference.cancel({from:owner});
+      await conference.sendAndWithdraw([accounts[2]], [donation, donation], {from:registered}).should.be.rejected;
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 2))
+    })
+
+    it('payout amount is less than sum of values', async function(){
+      await conference.cancel({from:owner});
+      await conference.sendAndWithdraw([accounts[2]], [toWei('1', "ether")], {from:registered}).should.be.rejected;
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 2))
+    })
+
+    it('send and withdraw with empty arrays should send funds to sender', async function(){
+      await conference.cancel({from:owner});
+
+      let previousBalance = await getBalance(registered);
+
+      await conference.sendAndWithdraw([], [], {from:registered});
+      
+      let diff = (await getBalance(registered)).sub(previousBalance);
+      assert.isOk(diff.gt( mulBN(deposit, 0.9) ))
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 1))
+    })
+
+    it('splits correctly', async function(){
+      await conference.cancel({from:owner});
+
+      let previousBalanceRegistered = await getBalance(registered)
+      let previousBalanceOne = await getBalance(accounts[10]);
+      let previousBalanceTwo = await getBalance(accounts[20]);
+
+      await conference.sendAndWithdraw([accounts[10], accounts[20]], [donation, donationTwo], {from:registered});
+      
+      let diffRegistered = (await getBalance(registered)).sub(previousBalanceRegistered);
+      let diffOne = (await getBalance(accounts[10])).sub(previousBalanceOne);
+      let diffTwo = (await getBalance(accounts[20])).sub(previousBalanceTwo);
+      
+      assert.isOk(diffOne.eq(donation));
+      assert.isOk(diffTwo.eq(donationTwo));
+
+      let leftOver = new EthVal(deposit).sub(donation).sub(donationTwo)
+      assert.isOk(diffRegistered.gt(mulBN(leftOver, 0.9)));
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 1))
+    })
+
+  })
+
   describe('on clear', function(){
     let conference, deposit, registered, notRegistered
     beforeEach(async function(){
@@ -513,26 +538,186 @@ function shouldBehaveLikeConference () {
       assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 1))
     })
 
-    it('owner receives the remaining if cooling period is passed', async function(){
-      conference = await createConference({coolingPeriod:0});
-      deposit = await conference.deposit();
+    it('owner receives the remaining if cooling period is passed and everyone called withdraw', async function(){
+      conference = await createConference({coolingPeriod:0})
+      deposit = await conference.deposit()
 
-      await register({conference, deposit, user:owner, owner});
-      await conference.cancel({from:owner});
+      await register({conference, deposit, user:accounts[10], owner})
+      await register({conference, deposit, user:accounts[11], owner})
+      await register({conference, deposit, user:accounts[12], owner})
+      await register({conference, deposit, user:accounts[13], owner})
 
+      const maps = [ toBN(0).bincn(1).bincn(2).bincn(3) ]
+      await conference.finalize(maps, {from:owner})
       await conference.ended().should.eventually.eq(true)
-      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 1))
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 4))
 
-      let previousBalance = await getBalance(owner);
       await wait(20, 1);
-      await conference.clear({from:owner});
+      await conference.clear({from:owner}).should.be.rejected
 
-      let diff = (await getBalance(owner)).sub(previousBalance)
-      assert.isOk(diff.gt( mulBN(deposit, 0.9) ))
-
-      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 0))
+      await conference.withdraw({from:accounts[11]})
+      await conference.withdraw({from:accounts[12]})
+      await conference.withdraw({from:accounts[13]})
+      assert.isOk((await getBalance(conference.address)).gt(0))
+      await conference.clear({from:owner})
+      assert.isOk((await getBalance(conference.address)).eq(0))
     })
   })
+
+  describe('on clear and send', function(){
+    let conference, deposit, attended, payoutAmount, clearFee, fees;
+
+    beforeEach(async function(){
+      conference = await createConference({coolingPeriod:0})
+      deposit = await conference.deposit()
+      
+      let numRegistered = 4;
+      for (let i = 0; i < numRegistered; i++) {
+          await register({conference, deposit, user:accounts[10 + i], owner})
+      } 
+
+      // [ 110 ], accounts[11], accounts[12]
+      const maps = [ toBN(0).bincn(1).bincn(2) ];
+
+
+      await conference.finalize(maps, {from:owner});
+      await conference.ended().should.eventually.eq(true)
+      
+      payoutAmount = new EthVal(await conference.payoutAmount());
+      clearFee = await conference.clearFee();
+      fees = payoutAmount.mul(clearFee).div(1000).toString(10);
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, numRegistered))
+    })
+
+    it('fees calculation works correctly', async function(){
+      let previousBalanceOne = await getBalance(accounts[11]);
+      let previousBalanceTwo = await getBalance(accounts[12]);
+      let previousBalanceOwner = await getBalance(owner);
+
+      await wait(20, 1);
+      await conference.clearAndSend({from:owner});
+
+      let diffOne = new EthVal(await getBalance(accounts[11])).sub(previousBalanceOne)
+      let diffTwo = new EthVal(await getBalance(accounts[12])).sub(previousBalanceTwo)
+      let diffOwner = new EthVal(await getBalance(owner)).sub(previousBalanceOwner)
+
+      assert.isOk(diffOne.eq(payoutAmount.sub(fees)))
+      assert.isOk(diffTwo.eq(payoutAmount.sub(fees)))
+      assert.isOk(diffOwner.gt(new EthVal(fees).mul(2).mul(0.9))) // greater than ((fees * 2) * 0.9) due to gas consumption
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), 0)
+    })
+
+    it('calling with a number of attenders', async function() {
+      let previousBalanceOne = await getBalance(accounts[11]);
+      let previousBalanceTwo = await getBalance(accounts[12]);
+
+      await wait(20, 1);
+      await conference.clearAndSend(1);
+      
+      let diffOne = new EthVal(await getBalance(accounts[11])).sub(previousBalanceOne)
+      let diffTwo = new EthVal(await getBalance(accounts[12])).sub(previousBalanceTwo)
+      
+      assert.isOk(diffOne.eq(payoutAmount.sub(fees)))
+      assert.isOk(diffTwo.lt(payoutAmount.sub(fees)))
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(payoutAmount, 1))
+    })
+
+    it('calling with a number of attendees greater than the contract\'s one', async function() {
+      let previousBalanceOne = await getBalance(accounts[11]);
+      let previousBalanceTwo = await getBalance(accounts[12]);
+
+      await wait(20, 1);
+      await conference.clearAndSend(5);
+
+      let paidOne = await conference.isPaid(accounts[11]);
+      let paidTwo = await conference.isPaid(accounts[12]);
+      paidOne.should.eq(true);
+      paidTwo.should.eq(true);
+
+      let diffOne = new EthVal(await getBalance(accounts[11])).sub(previousBalanceOne)
+      let diffTwo = new EthVal(await getBalance(accounts[12])).sub(previousBalanceTwo)
+      
+      assert.isOk(diffOne.eq(payoutAmount.sub(fees)))
+      assert.isOk(diffTwo.eq(payoutAmount.sub(fees)))
+
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(payoutAmount, 0))
+    })
+
+    it('consecutive calls', async function() {
+      let previousBalanceOne = await getBalance(accounts[11]);
+      let previousBalanceTwo = await getBalance(accounts[12]);
+
+      await wait(20, 1);
+      await conference.clearAndSend(1);
+      await conference.clearAndSend(1);
+      await conference.clearAndSend(1).should.be.rejected;
+
+      let diffOne = new EthVal(await getBalance(accounts[11])).sub(previousBalanceOne)
+      let diffTwo = new EthVal(await getBalance(accounts[12])).sub(previousBalanceTwo)
+      
+      assert.isOk(diffOne.eq(payoutAmount.sub(fees)))
+      assert.isOk(diffTwo.eq(payoutAmount.sub(fees)))
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(payoutAmount, 0))
+    })
+
+    it('paid users are not refunded', async function() {
+      await wait(20, 1);
+
+      await conference.withdraw({from:accounts[11]});
+
+      let previousBalanceOne = await getBalance(accounts[11]);
+      let previousBalanceTwo = await getBalance(accounts[12]);
+      await conference.clearAndSend();
+
+      let diffOne = new EthVal(await getBalance(accounts[11])).sub(previousBalanceOne)
+      let diffTwo = new EthVal(await getBalance(accounts[12])).sub(previousBalanceTwo)
+      
+      assert.isOk(diffOne.eq(0))
+      assert.isOk(diffTwo.eq(payoutAmount.sub(fees)))
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(payoutAmount, 0))
+    })
+
+    it('users can\'t withdraw after clear and send is called', async function() {
+      await wait(20, 1);
+      let previousBalanceOne = await getBalance(accounts[11]);
+      await conference.clearAndSend();
+      await conference.withdraw({from:accounts[11]}).should.be.rejected;
+      let diffOne = new EthVal(await getBalance(accounts[11])).sub(previousBalanceOne)
+      assert.isOk(diffOne.lte(payoutAmount.sub(fees))) // for eth: due to gas
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(payoutAmount, 0))
+    })
+
+    it('user can withdraw even after clearAndSend is called as long as the user is not withdrawn', async function() {
+      await wait(20, 1);
+      let previousBalanceOne = await getBalance(accounts[11]);
+      let previousBalanceTwo = await getBalance(accounts[12]);
+
+      await conference.clearAndSend(1);
+      await conference.withdraw({from:accounts[11]}).should.be.rejected;
+
+      let paidOne = await conference.isPaid(accounts[11]);
+      let paidTwo = await conference.isPaid(accounts[12]);
+      paidOne.should.eq(true);
+      paidTwo.should.eq(false);
+
+      await conference.withdraw({from:accounts[12]});
+      
+      let diffOne = new EthVal(await getBalance(accounts[11])).sub(previousBalanceOne)
+      let diffTwo = new EthVal(await getBalance(accounts[12])).sub(previousBalanceTwo)
+      assert.isOk(diffOne.lte(payoutAmount.sub(fees))) // for eth: due to gas
+      assert.isOk(diffTwo.gt(payoutAmount.mul(0.9))) // for eth: due to gas
+      
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(payoutAmount, 0))
+    })
+
+  })
+
 };
 
 module.exports = {

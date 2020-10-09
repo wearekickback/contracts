@@ -2,8 +2,11 @@ pragma solidity ^0.5.11;
 
 import './GroupAdmin.sol';
 import './Conference.sol';
+import 'openzeppelin-solidity/contracts/math/SafeMath.sol';
 
 contract AbstractConference is Conference, GroupAdmin {
+    using SafeMath for uint256;
+
     string public name;
     uint256 public deposit;
     uint256 public limitOfParticipants;
@@ -16,6 +19,10 @@ contract AbstractConference is Conference, GroupAdmin {
     uint256 public coolingPeriod;
     uint256 public payoutAmount;
     uint256[] public attendanceMaps;
+
+    uint256 public clearFee;
+    uint256 public lastSent = 0;
+    uint256 public withdrawn = 0;
 
     mapping (address => Participant) public participants;
     mapping (uint256 => address) public participantsIndex;
@@ -42,6 +49,19 @@ contract AbstractConference is Conference, GroupAdmin {
         _;
     }
 
+    modifier afterCoolingPeriod {
+        require(now > endedAt + coolingPeriod, 'still in cooling period');
+        _;
+    }
+    modifier canWithdraw {
+        require(payoutAmount > 0, 'payout is 0');
+        Participant storage participant = participants[msg.sender];
+        require(participant.addr == msg.sender, 'forbidden access');
+        require(cancelled || isAttended(msg.sender), 'event still active or you did not attend');
+        require(participant.paid == false, 'already withdrawn');
+        _;
+    }
+
     /* Public functions */
     /**
      * @dev Construcotr.
@@ -50,13 +70,15 @@ contract AbstractConference is Conference, GroupAdmin {
      * @param _limitOfParticipants The number of participant. The default is set to 20. The number can be changed by the owner of the event.
      * @param _coolingPeriod The period participants should withdraw their deposit after the event ends. After the cooling period, the event owner can claim the remining deposits.
      * @param _owner The owner of the event
+     * @param _clearFee the fee for _clearAndSend function in per-mille (e.g. _clearFee = 10 means 1% fees, _clearFee = 1 means 0.1% fees) 
      */
     constructor (
         string memory _name,
         uint256 _deposit,
         uint256 _limitOfParticipants,
         uint256 _coolingPeriod,
-        address payable _owner
+        address payable _owner,
+        uint256 _clearFee
     ) public {
         require(_owner != address(0), 'owner address is required');
         owner = _owner;
@@ -64,18 +86,19 @@ contract AbstractConference is Conference, GroupAdmin {
         deposit = _deposit;
         limitOfParticipants = _limitOfParticipants;
         coolingPeriod = _coolingPeriod;
+        clearFee = _clearFee;
     }
 
 
     /**
      * @dev Register for the event
      */
-    function register() external payable onlyActive{
+    function register() external payable onlyActive {
         require(registered < limitOfParticipants, 'participant limit reached');
         require(!isRegistered(msg.sender), 'already registered');
         doDeposit(msg.sender, deposit);
 
-        registered++;
+        registered = registered.add(1);
         participantsIndex[registered] = msg.sender;
         participants[msg.sender] = Participant(registered, msg.sender, false);
 
@@ -85,16 +108,41 @@ contract AbstractConference is Conference, GroupAdmin {
     /**
      * @dev Withdraws deposit after the event is over.
      */
-    function withdraw() external onlyEnded {
-        require(payoutAmount > 0, 'payout is 0');
-        Participant storage participant = participants[msg.sender];
-        require(participant.addr == msg.sender, 'forbidden access');
-        require(cancelled || isAttended(msg.sender), 'event still active or you did not attend');
-        require(participant.paid == false, 'already withdrawn');
-
-        participant.paid = true;
+    function withdraw() external onlyEnded canWithdraw {
+        participants[msg.sender].paid = true;
+        withdrawn = withdrawn.add(1);
         doWithdraw(msg.sender, payoutAmount);
         emit WithdrawEvent(msg.sender, payoutAmount);
+    }
+
+    /**
+    * @dev sendAndWithdraw function allows to split _payoutAmount_ among addresses in _addresses_.
+    * 
+    * _addresses_ contains ethereum addresses
+    * _values_ contains the value of eth/dai to give to addresses
+    * 
+    * addresses[i] will receive values[i]
+    * The function emits the event SendAndWithdrawEvent with the following informations:
+    * (addresses, values, participant address, payoutAmount - sum(values), payoutAmount)
+    */
+    function sendAndWithdraw(address payable[] calldata addresses, uint256[] calldata values) external canWithdraw onlyEnded {
+        require(addresses.length == values.length, 'more addresses than values or viceversa');
+
+        participants[msg.sender].paid = true;
+
+        uint256 sumOfValues = 0;
+        for(uint i = 0; i < addresses.length; i++) {
+            sumOfValues = sumOfValues.add(values[i]);
+            
+            require(sumOfValues <= payoutAmount, 'payout amount is less than sum of values');
+
+            doWithdraw(addresses[i], values[i]);
+        }
+                
+        uint256 amountLeft = payoutAmount.sub(sumOfValues);
+        doWithdraw(msg.sender, amountLeft);
+        emit WithdrawEvent(msg.sender, amountLeft);
+        emit SendAndWithdrawEvent(addresses, values, msg.sender, amountLeft);
     }
 
     /* Constants */
@@ -127,9 +175,10 @@ contract AbstractConference is Conference, GroupAdmin {
         // check the attendance maps
         else {
             Participant storage p = participants[_addr];
-            uint256 pIndex = p.index - 1;
-            uint256 map = attendanceMaps[uint256(pIndex / 256)];
-            return (0 < (map & (2 ** (pIndex % 256))));
+            uint256 pIndex = p.index.sub(1);
+            uint256 map = attendanceMaps[uint256(pIndex.div(256))];
+            // Check to see if bit number "pIndex" is set
+            return (0 < (map & (2 ** (pIndex.mod(256)))));
         }
     }
 
@@ -147,7 +196,7 @@ contract AbstractConference is Conference, GroupAdmin {
     /**
      * @dev Cancels the event by owner. When the event is canceled each participant can withdraw their deposit back.
      */
-    function cancel() external onlyAdmin onlyActive{
+    function cancel() external onlyAdmin onlyActive {
         payoutAmount = deposit;
         cancelled = true;
         ended = true;
@@ -156,14 +205,33 @@ contract AbstractConference is Conference, GroupAdmin {
     }
 
     /**
-    * @dev The event owner transfer the outstanding deposits  if there are any unclaimed deposits after cooling period
+    * @dev The event owner transfer the outstanding deposits if there are any unclaimed deposits after cooling period
     */
-    function clear() external onlyAdmin onlyEnded{
-        require(now > endedAt + coolingPeriod, 'still in cooling period');
+    function clear() external onlyAdmin onlyEnded afterCoolingPeriod {
+        require(withdrawn == totalAttended, 'You can clear the contract only when everybody withdraw!');
         uint256 leftOver = totalBalance();
         doWithdraw(owner, leftOver);
         emit ClearEvent(owner, leftOver);
     }
+
+    /**
+    * @dev Anyone that calls the function clear the contract sending 
+    * (_payoutAmount_ - fee) to *all* the unpaid attenders. 
+    * Fees are aggregated and sent to msg.sender
+    */
+    function clearAndSend() external onlyEnded afterCoolingPeriod {
+        _clearAndSend(totalAttended);
+    }
+
+    /**
+    * @dev Anyone that calls the function clear the contract sending 
+    * (_payoutAmount_ - fee) to the first *_num* unpaid attenders. 
+    * Fees are aggregated and sent to msg.sender.
+    */
+    function clearAndSend(uint256 _num) external onlyEnded afterCoolingPeriod {
+        _clearAndSend(_num);
+    }
+
 
     /**
      * @dev Change the capacity of the event. The owner can change it until event is over.
@@ -176,29 +244,14 @@ contract AbstractConference is Conference, GroupAdmin {
         emit UpdateParticipantLimit(limitOfParticipants);
     }
 
-    /**
-     * @dev Change the name of the event. The owner can change it as long as no one has registered yet.
-     * @param _name the name of the event.
-     */
-    function changeName(string calldata _name) external onlyAdmin noOneRegistered{
-        name = _name;
-    }
-
-    /**
-     * @dev Change the deposit. The owner can change it as long as no one has registered yet.
-     * @param _deposit the deposit amount for the event.
-     */
-    function changeDeposit(uint256 _deposit) external onlyAdmin noOneRegistered{
-        deposit = _deposit;
-    }
 
     /**
      * @dev Mark participants as attended and enable payouts. The attendance cannot be undone.
      * @param _maps The attendance status of participants represented by uint256 values.
      */
     function finalize(uint256[] calldata _maps) external onlyAdmin onlyActive {
-        uint256 totalBits = _maps.length * 256;
-        require(totalBits >= registered && totalBits - registered < 256, 'incorrect no. of bitmaps provided');
+        uint256 totalBits = _maps.length.mul(256);
+        require(totalBits.sub(registered) < 256, 'incorrect no. of bitmaps provided');
         attendanceMaps = _maps;
         ended = true;
         endedAt = now;
@@ -208,18 +261,55 @@ contract AbstractConference is Conference, GroupAdmin {
             uint256 map = attendanceMaps[i];
             // brian kerninghan bit-counting method - O(log(n))
             while (map != 0) {
-                map &= (map - 1);
-                _totalAttended++;
+                map &= (map.sub(1));
+                _totalAttended = _totalAttended.add(1);
             }
         }
         require(_totalAttended <= registered, 'should not have more attendees than registered');
         totalAttended = _totalAttended;
 
         if (totalAttended > 0) {
-            payoutAmount = uint256(totalBalance()) / totalAttended;
+            payoutAmount = uint256(totalBalance()).div(totalAttended);
         }
 
         emit FinalizeEvent(attendanceMaps, payoutAmount, endedAt);
+    }
+
+    /**
+    * @dev The function clear the contract sending 
+    * (_payoutAmount_ - fee) to the first *_num* unpaid attenders.
+    * Fees are calculated in this way: (payAmount * clearFee / 1000)
+    * Fees are aggregated as (fee * _num) and sent to msg.sender.
+    */ 
+    function _clearAndSend(uint256 _num) internal onlyEnded afterCoolingPeriod {
+        require(withdrawn < totalAttended, 'No more users to clear!');
+
+        uint256 remain = totalAttended - withdrawn;
+        _num = (_num < remain) ? _num : remain;
+
+        uint256 fee = payoutAmount.mul(clearFee).div(1000);
+        uint256 toAttenders = payoutAmount.sub(fee);
+
+        uint256 totalSent = 0;
+        for(uint256 j = lastSent.div(256); totalSent < _num && j < attendanceMaps.length; j++) {
+            uint256 map = attendanceMaps[j];
+            for(uint256 i = 0; totalSent < _num && i < 256; i++) {
+                Participant storage participant = participants[participantsIndex[(j.mul(256).add(i).add(1))]];
+                // Check to see if bit number "i" is set but participant has not been paid back
+                if(0 < (map & (2 ** i)) && !participant.paid) {
+                    participant.paid = true;
+                    totalSent = totalSent.add(1);
+                    doWithdraw(participant.addr, toAttenders);
+                    emit WithdrawEvent(participant.addr, toAttenders);
+                }
+            }
+        }
+        lastSent = lastSent.add(totalSent);
+        withdrawn = withdrawn.add(totalSent);
+        
+        uint256 toSender = fee.mul(totalSent);
+        doWithdraw(msg.sender, toSender);
+        emit ClearEvent(msg.sender, toSender);
     }
 
     function doDeposit(address /* participant */, uint256 /* amount */ ) internal {

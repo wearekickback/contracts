@@ -19,12 +19,17 @@ module.exports = {
   events: {
     /* when new party gets deployed */
     NewParty: Deployer.abi.find(({ type, name }) => type === 'event' && name === 'NewParty'),
+    /* when fee is changed */
+    ClearFeeChanged: Deployer.abi.find(({ type, name }) => type === 'event' && name === 'ClearFeeChanged'),
     /* when someone registers for a party */
     Register: Conference.abi.find(({ type, name }) => type === 'event' && name === 'RegisterEvent'),
     /* when party attendance is finalized and payout is enabled */
     Finalize: Conference.abi.find(({ type, name }) => type === 'event' && name === 'FinalizeEvent'),
     /* when someone withdraws their payout */
     Withdraw: Conference.abi.find(({ type, name }) => type === 'event' && name === 'WithdrawEvent'),
+    /* when someone sends and withdraws their payout */
+    SendAndWithdrawEvent: Conference.abi.find(({ type, name }) => type === 'event' && name === 'SendAndWithdrawEvent'),
+    Clear: Conference.abi.find(({ type, name }) => type === 'event' && name === 'ClearEvent'),
     /* when the party gets cancelled */
     CancelParty: Conference.abi.find(({ type, name }) => type === 'event' && name === 'CancelEvent'),
     /* when a new admin gets added */
