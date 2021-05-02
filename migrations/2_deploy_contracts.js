@@ -9,7 +9,6 @@ const coolingPeriod = 1 * 60 * 60 * 24 * 7;
 const yargs = require('yargs');
 const crypto = require('crypto');
 const fs = require('fs');
-const { sha3 }  = require('web3-utils')
 
 let config = {};
 let token;

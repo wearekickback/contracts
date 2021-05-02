@@ -1,6 +1,6 @@
-import { toHex, toWei } from 'web3-utils'
-
-import { getEvents } from './utils'
+const toHex = require('web3-utils').toHex
+const toWei = require('web3-utils').toWei
+const getEvents = require('./utils').getEvents
 
 const Deployer = artifacts.require("Deployer.sol")
 const EthDeployer = artifacts.require("EthDeployer.sol")

@@ -15,3 +15,5 @@ log/*.log
 .deployment.*
 data
 .admins.js
+artifacts/
+cache/

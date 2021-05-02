@@ -8,7 +8,7 @@
   },
   "directories": {
     "doc": "doc",
-    "test": "test"
+    "test": "npx hardhat test"
   },
   "files": [
     "build/**",
@@ -35,7 +35,7 @@
     "prepublishOnly": "yarn truffle compile && yarn cleanup && scripts/local/injectDeployedAddresses.js",
     "setup": "[[ -f .deployment.js ]] || cp .deployment-sample.js .deployment.js",
     "lint": "solhint contracts/**/*.sol",
-    "test": "yarn truffle migrate --network test && yarn truffle test --network test",
+    "test": "npx hardhat test",
     "coverage": "solidity-coverage",
     "sol-merger": "sol-merger './contracts/*.sol' ./build",
     "solgraph": "solgraph contracts/Conference.sol  > doc/Conference.dot && dot -Tpng doc/Conference.dot -o doc/Conference.png",
@@ -51,41 +51,38 @@
     "url": "https://github.com/wearekickback/contracts/issues"
   },
   "homepage": "https://github.com/wearekickback/contracts#readme",
+  "dependencies": {},
   "devDependencies": {
     "@digix/tempo": "^0.2.0",
-    "axios": "^0.18.1",
+    "@nomiclabs/hardhat-truffle5": "^2.0.0",
+    "@nomiclabs/hardhat-web3": "^2.0.0",
+    "@truffle/hdwallet-provider": "^1.3.0",
+    "@wearekickback/shared": "^1.14.1",
+    "axios": "^0.21.1",
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.7.0",
-    "chai": "^4.1.2",
+    "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
-    "commander": "^2.18.0",
-    "coveralls": "^3.0.2",
-    "eth-gas-reporter": "^0.1.9",
-    "ethereum-input-data-decoder": "0.0.3",
-    "etherscan-api": "^3.0.11",
-    "ethval": "^1.2.0",
-    "faker": "^4.1.0",
-    "js-yaml": "^3.14.0",
-    "moment": "^2.18.1",
-    "prompt": "^1.0.0",
-    "sol-merger": "^0.1.2",
-    "solc": "^0.5.11",
-    "solgraph": "^0.3.2",
-    "solhint": "^2.0.0",
-    "solidity-coverage": "^0.6.4",
-    "truffle": "^5.1.0",
-    "truffle-hdwallet-provider": "^1.0.0-web3one.0",
-    "truffle-plugin-verify": "^0.3.3",
-    "uuid": "^3.0.1",
-    "web3": "1.0.0-beta.33",
-    "web3-utils": "^1.0.0-beta.36",
-    "yargs": "^9.0.1"
-  },
-  "dependencies": {
-    "@wearekickback/shared": "^1.14.1",
-    "openzeppelin-solidity": "^2.3.0"
+    "commander": "^7.2.0",
+    "coveralls": "^3.1.0",
+    "eth-gas-reporter": "^0.2.22",
+    "ethereum-input-data-decoder": "^0.3.2",
+    "etherscan-api": "^10.0.5",
+    "ethval": "^2.1.1",
+    "faker": "^5.5.3",
+    "hardhat": "^2.2.1",
+    "moment": "^2.29.1",
+    "openzeppelin-solidity": "^2.3.0",
+    "prompt": "^1.1.0",
+    "sol-merger": "^3.1.0",
+    "solhint": "^3.3.4",
+    "solidity-coverage": "^0.7.16",
+    "truffle-plugin-verify": "^0.5.7",
+    "uuid": "^8.3.2",
+    "web3": "^1.3.5",
+    "yargs": "^17.0.0"
   },
   "engines": {
-    "node": ">=8"
+    "node": "v14"
   }
 }
