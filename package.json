@@ -37,7 +37,7 @@
     "setup": "[[ -f .deployment.js ]] || cp .deployment-sample.js .deployment.js",
     "lint": "solhint contracts/**/*.sol",
     "test": "npx hardhat test",
-    "coverage": "solidity-coverage",
+    "coverage": "npx hardhat coverage",
     "sol-merger": "sol-merger './contracts/*.sol' ./build",
     "solgraph": "solgraph contracts/Conference.sol  > doc/Conference.dot && dot -Tpng doc/Conference.dot -o doc/Conference.png",
     "verify": "yarn prepublishOnly && yarn truffle run verify"

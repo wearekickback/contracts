@@ -1,5 +1,6 @@
 require("@nomiclabs/hardhat-truffle5");
 require("@nomiclabs/hardhat-ethers");
+require("solidity-coverage")
 
 module.exports = {
   networks: {
