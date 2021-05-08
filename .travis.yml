@@ -5,11 +5,12 @@ node_js: 14
 cache: yarn
 install:
 - yarn
+- yarn global add truffle
 before_script:
 - cp .deployment-sample.js .deployment.js
 script:
+- truffle compile
 - yarn lint
-- yarn compile
 - yarn test
 - yarn coverage && cat coverage/lcov.info | coveralls
 notifications:
