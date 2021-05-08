@@ -36,6 +36,7 @@
     "prepublishOnly": "yarn truffle compile && yarn cleanup && scripts/local/injectDeployedAddresses.js",
     "setup": "[[ -f .deployment.js ]] || cp .deployment-sample.js .deployment.js",
     "lint": "solhint contracts/**/*.sol",
+    "compile": "npx truffe compile",
     "test": "npx hardhat test",
     "coverage": "npx hardhat coverage",
     "sol-merger": "sol-merger './contracts/*.sol' ./build",

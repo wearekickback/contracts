@@ -9,7 +9,7 @@ before_script:
 - cp .deployment-sample.js .deployment.js
 script:
 - yarn lint
-- yarn truffe compile
+- yarn compile
 - yarn test
 - yarn coverage && cat coverage/lcov.info | coveralls
 notifications:
