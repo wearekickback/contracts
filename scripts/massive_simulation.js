@@ -2,7 +2,7 @@
 let Conference = artifacts.require("./Conference.sol");
 var providerURL = 'http://localhost:8545';
 // var providerURL = 'https://rinkeby.infura.io';
-var HDWalletProvider = require('truffle-hdwallet-provider');
+var HDWalletProvider = require('@truffle/hdwallet-provider');
 var mnemonic = 'one two three four five six seven eight nine ten foo bar baz foobar';
 let participants = 200;
 provider = new HDWalletProvider(mnemonic, providerURL,  address_index=0, num_addresses=participants);

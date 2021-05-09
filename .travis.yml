@@ -1,16 +1,15 @@
 language: node_js
 git:
   depth: 1
-node_js: 10
+node_js: 14
 cache: yarn
 install:
 - yarn
-- yarn global add ganache-cli@6.7.0
+- yarn global add truffle
 before_script:
 - cp .deployment-sample.js .deployment.js
-- ganache-cli --defaultBalanceEther 2000000 --accounts 500 >ganache.log 2>&1 &
-- sleep 5
 script:
+- truffle compile
 - yarn lint
 - yarn test
 - yarn coverage && cat coverage/lcov.info | coveralls

@@ -1,5 +1,5 @@
 const { mnemonic, infuraKey, etherscanApiKey } = require('./.deployment.js')
-const HDWalletProvider = require('truffle-hdwallet-provider')
+const HDWalletProvider = require('@truffle/hdwallet-provider')
 
 module.exports = {
   networks: {
