@@ -402,3 +402,7 @@ For all the latest deployed deployer contracts, see refer to `deployedAddresses.
 ### xDai deployer contract versions
 
 - npm version @wearekickback/contracts-integration 1.4.0 "0x05E9AE465727AAa78De8F761E44D78b43a5d9697"
+
+### Polygon deployer contract versions
+
+- "0xc1d24FB1a9c6b5051c28b0e963473D3cE3EB3491"
