@@ -1,5 +1,5 @@
 {
-  "name": "@wearekickback/contracts-integration",
+  "name": "@wearekickback/contracts",
   "version": "1.4.5",
   "description": "Kickback smart contracts",
   "main": "index.js",
