@@ -2,7 +2,7 @@ pragma solidity ^0.5.11;
 
 import './GroupAdmin.sol';
 import './Conference.sol';
-import 'openzeppelin-solidity/contracts/math/SafeMath.sol';
+import './zeppelin/math/SafeMath.sol';
 
 contract AbstractConference is Conference, GroupAdmin {
     using SafeMath for uint256;
@@ -26,6 +26,13 @@ contract AbstractConference is Conference, GroupAdmin {
 
     mapping (address => Participant) public participants;
     mapping (uint256 => address) public participantsIndex;
+
+    enum YIELDRECEIVER {DISABLED,OWNER,DESIGNEE,ATTENDEE}
+    YIELDRECEIVER yieldReceiver;
+    uint256 public totalDeposit;
+    bool public banked;
+    uint256 public yieldDifference;
+    address payable designeeAddress;
 
     struct Participant {
         uint256 index;
@@ -53,6 +60,10 @@ contract AbstractConference is Conference, GroupAdmin {
         require(now > endedAt + coolingPeriod, 'still in cooling period');
         _;
     }
+    modifier canYield{
+        require(yieldReceiver != YIELDRECEIVER.DISABLED,'Yield not available');
+        _;
+    }
     modifier canWithdraw {
         require(payoutAmount > 0, 'payout is 0');
         Participant storage participant = participants[msg.sender];
@@ -70,7 +81,9 @@ contract AbstractConference is Conference, GroupAdmin {
      * @param _limitOfParticipants The number of participant. The default is set to 20. The number can be changed by the owner of the event.
      * @param _coolingPeriod The period participants should withdraw their deposit after the event ends. After the cooling period, the event owner can claim the remining deposits.
      * @param _owner The owner of the event
-     * @param _clearFee the fee for _clearAndSend function in per-mille (e.g. _clearFee = 10 means 1% fees, _clearFee = 1 means 0.1% fees) 
+     * @param _clearFee the fee for _clearAndSend function in per-mille (e.g. _clearFee = 10 means 1% fees, _clearFee = 1 means 0.1% fees)
+     * @param _yieldReceiver The EOA who will recieve the yield 0 for no yield 1 for owner 2 for a designated address 3 for spliting yield to attendees 
+     * @param _designee If the _yieldReceiver is 2 then you must specify a non zero designee address
      */
     constructor (
         string memory _name,
@@ -78,15 +91,22 @@ contract AbstractConference is Conference, GroupAdmin {
         uint256 _limitOfParticipants,
         uint256 _coolingPeriod,
         address payable _owner,
-        uint256 _clearFee
+        uint256 _clearFee,
+        uint8 _yieldReceiver,
+        address payable _designee
     ) public {
         require(_owner != address(0), 'owner address is required');
+        if(_yieldReceiver == uint(YIELDRECEIVER.DESIGNEE)){
+            require(_designee != address(0),'designee not set');
+            designeeAddress = _designee;
+        }
         owner = _owner;
         name = _name;
         deposit = _deposit;
         limitOfParticipants = _limitOfParticipants;
         coolingPeriod = _coolingPeriod;
         clearFee = _clearFee;
+        yieldReceiver = YIELDRECEIVER(_yieldReceiver);
     }
 
 
@@ -97,6 +117,8 @@ contract AbstractConference is Conference, GroupAdmin {
         require(registered < limitOfParticipants, 'participant limit reached');
         require(!isRegistered(msg.sender), 'already registered');
         doDeposit(msg.sender, deposit);
+
+        totalDeposit = totalDeposit.add(deposit);
 
         registered = registered.add(1);
         participantsIndex[registered] = msg.sender;
@@ -252,6 +274,11 @@ contract AbstractConference is Conference, GroupAdmin {
     function finalize(uint256[] calldata _maps) external onlyAdmin onlyActive {
         uint256 totalBits = _maps.length.mul(256);
         require(totalBits.sub(registered) < 256, 'incorrect no. of bitmaps provided');
+        if (yieldReceiver != YIELDRECEIVER.DISABLED){
+            doBankWithdraw(); //Convert amWMatic to Matic
+        }
+        yieldDifference = totalBalance().sub(totalDeposit);//calculate the difference in yeild 
+        
         attendanceMaps = _maps;
         ended = true;
         endedAt = now;
@@ -268,8 +295,18 @@ contract AbstractConference is Conference, GroupAdmin {
         require(_totalAttended <= registered, 'should not have more attendees than registered');
         totalAttended = _totalAttended;
 
-        if (totalAttended > 0) {
-            payoutAmount = uint256(totalBalance()).div(totalAttended);
+        if(yieldReceiver == YIELDRECEIVER.ATTENDEE){//split the yield among the attendees
+            totalDeposit = totalBalance();
+        }
+        if(yieldReceiver == YIELDRECEIVER.OWNER){//send the yield to the owner of the event
+            doWithdraw(owner,yieldDifference);
+        }
+        if(yieldReceiver == YIELDRECEIVER.DESIGNEE){//send the yield to a designated address
+            doWithdraw(designeeAddress,yieldDifference);
+        }
+
+        if (totalAttended > 0) {//calculate the amount to be snet back to the participants
+            payoutAmount = totalDeposit.div(totalAttended);
         }
 
         emit FinalizeEvent(attendanceMaps, payoutAmount, endedAt);
@@ -323,5 +360,21 @@ contract AbstractConference is Conference, GroupAdmin {
     function tokenAddress() public view returns (address){
         revert('tokenAddress must be impelmented in the child class');
     }
+    function doBankDeposit() internal canYield {//convert matic to amWMatic
+        revert('doBank impelmented child class');
+    }
+    
+    function doBankWithdraw() internal canYield onlyAdmin {//convert amWMatic to matic
+        revert('deBank impelmented child class');
+    }
+
+    function bank() public canYield onlyAdmin onlyActive {
+        doBankDeposit();
+    }
+
+    function setBanked(bool input)internal{
+        banked = input;
+    }
+
 
 }

@@ -7,6 +7,7 @@ import './DeployerInterface.sol';
 /**
  * This is responsible for deploying a new Party.
  */
+ //Deployed at 0x42a0f7C4015bC49668f181b91bBCB1609631479e Polygon testnet
 
 contract Deployer is Destructible, GroupAdmin {
     DeployerInterface ethDeployer;
@@ -47,7 +48,11 @@ contract Deployer is Destructible, GroupAdmin {
         uint256 _deposit,
         uint _limitOfParticipants,
         uint _coolingPeriod,
-        address _tokenAddress
+        address _tokenAddress,
+        uint8 _yieldReceiver,
+        address payable _designee,
+        address _provider,
+        address _wethGateway
     ) external {
         Conference c;
         if(_tokenAddress != address(0)){
@@ -58,7 +63,11 @@ contract Deployer is Destructible, GroupAdmin {
                 _coolingPeriod,
                 msg.sender,
                 _tokenAddress,
-                clearFee
+                clearFee,
+                _yieldReceiver,
+                _designee,
+                _provider,
+                _wethGateway
             );
         }else{
             c = ethDeployer.deploy(
@@ -68,7 +77,11 @@ contract Deployer is Destructible, GroupAdmin {
                 _coolingPeriod,
                 msg.sender,
                 address(0),
-                clearFee
+                clearFee,
+                _yieldReceiver,
+                _designee,
+                _provider,
+                _wethGateway
             );
         }
         emit NewParty(address(c), msg.sender);
