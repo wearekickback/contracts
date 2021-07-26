@@ -4,6 +4,7 @@ const EthConference = require('./build/contracts/EthConference.json')
 const ERC20Conference = require('./build/contracts/ERC20Conference.json')
 const AbstractConference = require('./build/contracts/AbstractConference.json')
 const Conference = require('./build/contracts/Conference.json')
+const ConferenceTicket = require('./build/contracts/ConferenceTicket.json')
 const EthDeployer = require('./build/contracts/EthDeployer.json')
 const ERC20Deployer = require('./build/contracts/ERC20Deployer.json')
 
@@ -14,6 +15,7 @@ module.exports = {
   EthConference,
   ERC20Conference,
   AbstractConference,
+  ConferenceTicket,
   EthDeployer,
   ERC20Deployer,
   events: {
