@@ -4,8 +4,7 @@ import './Conference.sol';
 import './GroupAdmin.sol';
 import './IConferenceTicket.sol';
 import {Utils} from './Utils.sol';
-import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
-//import './zeppelin/ownership/Ownable.sol';
+import 'openzeppelin-solidity/contracts/token/ERC721/ERC721.sol';
 
 contract ConferenceTicket is IConferenceTicket, ERC721, GroupAdmin {
     // Base Token URI

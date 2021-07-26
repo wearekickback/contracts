@@ -7,7 +7,7 @@ library Utils {
         returns (string memory _uintAsString)
     {
         if (_i == 0) {
-            return "0";
+            return '0';
         }
         uint256 j = _i;
         uint256 len;
