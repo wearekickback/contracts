@@ -11,7 +11,8 @@ contract EthDeployer is DeployerInterface{
         uint _coolingPeriod,
         address payable _ownerAddress,
         address /* _tokenAddress */,
-        uint256 _clearFee
+        uint256 _clearFee,
+        address _ticketAddress
     )external returns(Conference c){
         c = new EthConference(
             _name,
@@ -19,7 +20,8 @@ contract EthDeployer is DeployerInterface{
             _limitOfParticipants,
             _coolingPeriod,
             _ownerAddress,
-            _clearFee
+            _clearFee,
+            _ticketAddress
         );
     }   
 }

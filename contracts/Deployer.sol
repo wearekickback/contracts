@@ -3,6 +3,7 @@ pragma solidity ^0.5.11;
 import './GroupAdmin.sol';
 import './zeppelin/lifecycle/Destructible.sol';
 import './DeployerInterface.sol';
+import './ConferenceTicket.sol';
 
 /**
  * This is responsible for deploying a new Party.
@@ -12,10 +13,12 @@ contract Deployer is Destructible, GroupAdmin {
     DeployerInterface ethDeployer;
     DeployerInterface erc20Deployer;
     uint public clearFee;
-    constructor(address _ethDeployer, address _erc20Deployer, uint _clearFee) public {
+    string public baseTokenUri;
+    constructor(address _ethDeployer, address _erc20Deployer, uint _clearFee, string memory _baseTokenUri) public {
         ethDeployer = DeployerInterface(_ethDeployer);
         erc20Deployer = DeployerInterface(_erc20Deployer);
         clearFee = _clearFee;
+        baseTokenUri = _baseTokenUri;
     }
     /**
      * Notify that a new party has been deployed.
@@ -29,10 +32,19 @@ contract Deployer is Destructible, GroupAdmin {
         uint indexed clearFee
     );
 
+    event BaseTokenUriChanged(
+        string indexed uri
+    );
+
     function changeClearFee(uint _clearFee) external onlyAdmin {
         clearFee = _clearFee;
         emit ClearFeeChanged(clearFee);
     }
+
+    function changeBaseTokenUri(string calldata _baseTokenUri) external onlyAdmin{
+        baseTokenUri = _baseTokenUri;
+        emit BaseTokenUriChanged(baseTokenUri);
+    } 
 
     /**
      * Deploy a new contract.
@@ -49,6 +61,7 @@ contract Deployer is Destructible, GroupAdmin {
         uint _coolingPeriod,
         address _tokenAddress
     ) external {
+        ConferenceTicket ct = new ConferenceTicket(baseTokenUri);
         Conference c;
         if(_tokenAddress != address(0)){
             c = erc20Deployer.deploy(
@@ -58,7 +71,8 @@ contract Deployer is Destructible, GroupAdmin {
                 _coolingPeriod,
                 msg.sender,
                 _tokenAddress,
-                clearFee
+                clearFee,
+                address(ct)
             );
         }else{
             c = ethDeployer.deploy(
@@ -68,9 +82,11 @@ contract Deployer is Destructible, GroupAdmin {
                 _coolingPeriod,
                 msg.sender,
                 address(0),
-                clearFee
+                clearFee,
+                address(ct)
             );
         }
+        ct.setConferenceAddress(address(c));
         emit NewParty(address(c), msg.sender);
     }
 }

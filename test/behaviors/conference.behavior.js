@@ -18,16 +18,18 @@ const assertBalanceWithDeposit = function(balance, deposit){
 }
 
 function shouldBehaveLikeConference () {
-  let deposit, owner, non_owner
+  let ct, deposit, owner, non_owner
     ,createConference, getBalance
     ,register, accounts, non_registered, admin;
   beforeEach(async function(){
+    ct = this.ct;
     accounts = this.accounts;
     createConference = this.createConference;
     getBalance = this.getBalance;
     register = this.register;
     owner = this.accounts[0];
     non_owner = this.accounts[1];
+    recipient = this.accounts[2];
     non_registered = this.accounts[4];
     admin = this.accounts[5];
   })
@@ -129,6 +131,15 @@ function shouldBehaveLikeConference () {
     it('isRegistered for the different account is not true', async function(){
       await conference.isRegistered(non_owner).should.eventually.eq(false)
     })
+
+    it('sets the owner of the ticket', async function(){
+      let registered = await conference.registered()
+      await ct.ownerOf(registered).should.eventually.eq(owner)
+    })
+
+    it('owner of non-existing ticket is rejected', async function(){
+      await ct.ownerOf(2).should.be.rejected
+    })
   })
 
   describe('on failed registration', function(){
@@ -155,6 +166,58 @@ function shouldBehaveLikeConference () {
       afterContractBalance.should.eq(depositVal.toEth().toFixed(9));
       await conference.registered().should.eventually.eq(1)
       await conference.isRegistered(owner).should.eventually.eq(true)
+    })
+  })
+
+  describe('on transfer', function(){
+    let beforeContractBalance, beforeOwnerBalance, 
+        conference, deposit
+    beforeEach(async function(){
+      conference = await createConference({});
+      deposit = await conference.deposit();
+      beforeContractBalance = await getBalance(conference.address)
+      beforeOwnerBalance = await getBalance(owner);
+      await register({conference, deposit, user:owner});
+    })
+
+    it('transfers the ticket to the new recipient', async function(){
+      let expectedRegistered = 1
+      await conference.registered().should.eventually.eq(expectedRegistered)
+      await conference.isRegistered(owner).should.eventually.eq(true)
+      await ct.ownerOf(expectedRegistered).should.eventually.eq(owner)
+
+      await ct.safeTransferFrom(owner, recipient, expectedRegistered).should.be.fulfilled
+      await conference.registered().should.eventually.eq(expectedRegistered)
+      await conference.isRegistered(owner).should.eventually.eq(false)
+      await conference.isRegistered(recipient).should.eventually.eq(true)
+      await ct.ownerOf(expectedRegistered).should.eventually.eq(recipient)
+    })
+
+    it('allows the previous owner to register again', async function(){
+      await register({conference, deposit, user:owner}).should.be.rejected
+      await ct.safeTransferFrom(owner, recipient, 1).should.be.fulfilled
+      await register({conference, deposit, user:owner}).should.be.fulfilled
+
+      await conference.registered().should.eventually.eq(2)
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 2))
+    })
+
+    it('prevents the new recipient to register again', async function(){
+      await ct.safeTransferFrom(owner, recipient, 1).should.be.fulfilled
+      await register({conference, deposit, user:recipient}).should.be.rejected
+      await conference.registered().should.eventually.eq(1)      
+    })
+
+    it('fails if the new recipient is already registered', async function(){
+      await register({conference, deposit, user:recipient, owner}).should.be.fulfilled
+      await ct.safeTransferFrom(owner, recipient, 1).should.be.rejected
+      await conference.registered().should.eventually.eq(2)      
+    })
+
+    it('fails if event ended', async function(){
+      await conference.finalize([1], {from:owner});
+      await ct.safeTransferFrom(owner, recipient, 1).should.be.rejected
+      await conference.registered().should.eventually.eq(1)      
     })
   })
 
@@ -411,6 +474,13 @@ function shouldBehaveLikeConference () {
       await conference.finalize([3], { from: owner });
       await conference.withdraw({from:registered});
     })
+
+    it('new recipient can withdraw after transfer', async function(){
+      await ct.safeTransferFrom(registered, recipient, 2, { from: registered }).should.be.fulfilled
+      await conference.finalize([3], { from: owner });
+      await conference.withdraw({from:registered}).should.be.rejected;
+      await conference.withdraw({from:recipient});
+    })
   })
 
   describe('on send and withdraw', function(){
@@ -568,7 +638,7 @@ function shouldBehaveLikeConference () {
       let numRegistered = 4;
       for (let i = 0; i < numRegistered; i++) {
           await register({conference, deposit, user:accounts[10 + i], owner})
-      } 
+      }
 
       // [ 110 ], accounts[11], accounts[12]
       const maps = [ toBN(0).bincn(1).bincn(2) ];
@@ -708,6 +778,64 @@ function shouldBehaveLikeConference () {
       assert.isOk(diffTwo.gt(payoutAmount.mul(0.9))) // for eth: due to gas
       
       assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(payoutAmount, 0))
+    })
+
+  })
+
+  describe('on clear and send + transfer', function(){
+    let conference, deposit, attended, payoutAmount, clearFee, fees;
+
+    beforeEach(async function(){
+      conference = await createConference({coolingPeriod:0})
+      deposit = await conference.deposit()
+      
+      let numRegistered = 4;
+      for (let i = 0; i < numRegistered; i++) {
+          await register({conference, deposit, user:accounts[10 + i], owner})
+      }
+      
+      await ct.ownerOf(3).should.eventually.eq(accounts[12])
+      await ct.safeTransferFrom(accounts[12], recipient, 3, {from:accounts[12]})
+      await ct.ownerOf(3).should.eventually.eq(recipient)
+      await conference.isAttended(recipient).should.eventually.eq(false)
+      await conference.isPaid(recipient).should.eventually.eq(false)      
+
+      const maps = [ toBN(0).bincn(1).bincn(2) ];
+
+      await conference.finalize(maps, {from:owner});
+      await conference.ended().should.eventually.eq(true)
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 4))
+      
+      payoutAmount = new EthVal(await conference.payoutAmount());
+      clearFee = await conference.clearFee();
+      fees = payoutAmount.mul(clearFee).div(1000).toString(10);
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, numRegistered))
+    })
+
+    it('fees calculation works correctly', async function(){
+      let previousBalanceOne = await getBalance(accounts[11]);
+      let previousBalanceTwo = await getBalance(accounts[12]);
+      let previousBalanceOwner = await getBalance(owner);
+      let previousBalanceRecipient = await getBalance(recipient);
+
+      await wait(20, 1);
+      await conference.clearAndSend({from:owner});
+
+      let diffOne = new EthVal(await getBalance(accounts[11])).sub(previousBalanceOne)
+      let diffTwo = new EthVal(await getBalance(accounts[12])).sub(previousBalanceTwo)
+      let diffOwner = new EthVal(await getBalance(owner)).sub(previousBalanceOwner)
+      let diffRecipient = new EthVal(await getBalance(recipient)).sub(previousBalanceRecipient)
+
+      assert.isOk(diffOne.eq(payoutAmount.sub(fees)))
+      assert.isOk(diffTwo.eq(0))
+      assert.isOk(diffOwner.gt(new EthVal(fees).mul(2).mul(0.9))) // greater than ((fees * 2) * 0.9) due to gas consumption
+      assert.isOk(diffRecipient.eq(payoutAmount.sub(fees)))
+
+      assertBalanceWithDeposit((await getBalance(conference.address)), 0)
+
+      await conference.isAttended(recipient).should.eventually.eq(true)
+      await conference.isPaid(recipient).should.eventually.eq(true)
     })
 
   })

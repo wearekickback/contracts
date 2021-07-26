@@ -2,6 +2,8 @@ pragma solidity ^0.5.11;
 
 import './GroupAdmin.sol';
 import './Conference.sol';
+import './IConferenceTicket.sol';
+import {Utils} from './Utils.sol';
 import 'openzeppelin-solidity/contracts/math/SafeMath.sol';
 
 contract AbstractConference is Conference, GroupAdmin {
@@ -23,6 +25,9 @@ contract AbstractConference is Conference, GroupAdmin {
     uint256 public clearFee;
     uint256 public lastSent = 0;
     uint256 public withdrawn = 0;
+
+    address public ticketAddress;
+    IConferenceTicket public ct;
 
     mapping (address => Participant) public participants;
     mapping (uint256 => address) public participantsIndex;
@@ -62,6 +67,11 @@ contract AbstractConference is Conference, GroupAdmin {
         _;
     }
 
+    modifier onlyTicketContract() {
+        require(msg.sender == ticketAddress, 'must be ticket contract');
+        _;
+    }
+
     /* Public functions */
     /**
      * @dev Construcotr.
@@ -70,7 +80,8 @@ contract AbstractConference is Conference, GroupAdmin {
      * @param _limitOfParticipants The number of participant. The default is set to 20. The number can be changed by the owner of the event.
      * @param _coolingPeriod The period participants should withdraw their deposit after the event ends. After the cooling period, the event owner can claim the remining deposits.
      * @param _owner The owner of the event
-     * @param _clearFee the fee for _clearAndSend function in per-mille (e.g. _clearFee = 10 means 1% fees, _clearFee = 1 means 0.1% fees) 
+     * @param _clearFee the fee for _clearAndSend function in per-mille (e.g. _clearFee = 10 means 1% fees, _clearFee = 1 means 0.1% fees)
+     * @param _ticketAddress The address of the ticket contract. 
      */
     constructor (
         string memory _name,
@@ -78,15 +89,19 @@ contract AbstractConference is Conference, GroupAdmin {
         uint256 _limitOfParticipants,
         uint256 _coolingPeriod,
         address payable _owner,
-        uint256 _clearFee
+        uint256 _clearFee,
+        address _ticketAddress
     ) public {
         require(_owner != address(0), 'owner address is required');
+        require(_ticketAddress != address(0), 'ticket address is not set');
         owner = _owner;
         name = _name;
         deposit = _deposit;
         limitOfParticipants = _limitOfParticipants;
         coolingPeriod = _coolingPeriod;
         clearFee = _clearFee;
+        ticketAddress = _ticketAddress;
+        ct = IConferenceTicket(ticketAddress);
     }
 
 
@@ -101,6 +116,8 @@ contract AbstractConference is Conference, GroupAdmin {
         registered = registered.add(1);
         participantsIndex[registered] = msg.sender;
         participants[msg.sender] = Participant(registered, msg.sender, false);
+
+        ct.mint(msg.sender, registered);
 
         emit RegisterEvent(msg.sender, registered);
     }
@@ -273,6 +290,15 @@ contract AbstractConference is Conference, GroupAdmin {
         }
 
         emit FinalizeEvent(attendanceMaps, payoutAmount, endedAt);
+    }
+
+    function transferTicket(address from, address to) external onlyTicketContract onlyActive {
+        require(!isRegistered(to), 'already registered');
+
+        Participant memory participant = participants[from];
+        participantsIndex[participant.index] = to;
+        participants[from] = Participant(0, address(0), participant.paid);
+        participants[to] = Participant(participant.index, Utils.toPayable(to), participant.paid);
     }
 
     /**

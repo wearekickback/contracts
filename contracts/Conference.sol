@@ -62,4 +62,5 @@ interface Conference {
     function setLimitOfParticipants(uint256 _limitOfParticipants) external;
     function finalize(uint256[] calldata _maps) external;
     function tokenAddress() external view returns (address);
+    function transferTicket(address from, address to) external;
 }

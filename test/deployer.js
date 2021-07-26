@@ -10,6 +10,8 @@ const Token = artifacts.require("MyToken.sol");
 
 contract('Deployer', accounts => {
   let deployer, ethDeployer, erc20Deployer;
+  let baseTokenUri = 'https://kickback.events/test/'
+  let newBaseTokenUri = 'http://localhost'
   let emptyAddress = '0x0000000000000000000000000000000000000000'
   let clearFee = 10
   let newFee = 100
@@ -19,7 +21,8 @@ contract('Deployer', accounts => {
     deployer = await Deployer.new(
       ethDeployer.address,
       erc20Deployer.address,
-      clearFee
+      clearFee,
+      baseTokenUri
     )
   })
 
@@ -45,12 +48,22 @@ contract('Deployer', accounts => {
     await deployer.clearFee().should.eventually.eq(newFee)
   })
 
+  it('can set baseTokenUri', async() => {
+    await deployer.baseTokenUri().should.eventually.eq(baseTokenUri)
+    await deployer.changeBaseTokenUri(newBaseTokenUri, { from: accounts[0]})
+    await deployer.baseTokenUri().should.eventually.eq(newBaseTokenUri)
+  })
+
   it('can set admins', async() => {
     await deployer.changeClearFee(newFee, { from: accounts[1]}).should.be.rejected
     await deployer.clearFee().should.eventually.eq(clearFee)
+    await deployer.changeBaseTokenUri(newBaseTokenUri, { from: accounts[1]}).should.be.rejected
+    await deployer.baseTokenUri().should.eventually.eq(baseTokenUri)
     await deployer.grant([accounts[1]], { from: accounts[0]})
     await deployer.changeClearFee(newFee, { from: accounts[1]}).should.be.fulfilled
     await deployer.clearFee().should.eventually.eq(newFee)
+    await deployer.changeBaseTokenUri(newBaseTokenUri, { from: accounts[1]}).should.be.fulfilled
+    await deployer.baseTokenUri().should.eventually.eq(newBaseTokenUri)
   })
 
   it('can deploy a EthConference', async () => {
