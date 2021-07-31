@@ -23,12 +23,4 @@ library Utils {
         }
         return string(bstr);
     }
-
-    function toPayable(address _a)
-        internal
-        pure
-        returns (address payable _addressAsPayable)
-    {
-        return address(uint160(_a));
-    }
 }

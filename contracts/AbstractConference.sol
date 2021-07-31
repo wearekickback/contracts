@@ -298,7 +298,7 @@ contract AbstractConference is Conference, GroupAdmin {
         Participant memory participant = participants[from];
         participantsIndex[participant.index] = to;
         participants[from] = Participant(0, address(0), participant.paid);
-        participants[to] = Participant(participant.index, Utils.toPayable(to), participant.paid);
+        participants[to] = Participant(participant.index, address(uint160(to)), participant.paid);
     }
 
     /**
