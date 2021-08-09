@@ -1,5 +1,6 @@
 const toBN = require('web3-utils').toBN
 const chai = require('chai')
+const chaiString = require('chai-string')
 const chaiAsPromised = require('chai-as-promised')
 
 chai.use((_chai, utils) => {
@@ -30,6 +31,7 @@ chai.use((_chai, utils) => {
   })
 })
 
+chai.use(chaiString)
 chai.use(chaiAsPromised)
 
 chai.should()

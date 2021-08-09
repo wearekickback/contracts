@@ -2,11 +2,11 @@ pragma solidity ^0.5.11;
 
 import './GroupAdmin.sol';
 import './Conference.sol';
-import './IConferenceTicket.sol';
-import {Utils} from './Utils.sol';
+import { Utils } from './Utils.sol';
 import 'openzeppelin-solidity/contracts/math/SafeMath.sol';
+import 'openzeppelin-solidity/contracts/token/ERC721/ERC721.sol';
 
-contract AbstractConference is Conference, GroupAdmin {
+contract AbstractConference is Conference, GroupAdmin, ERC721 {
     using SafeMath for uint256;
 
     string public name;
@@ -26,8 +26,8 @@ contract AbstractConference is Conference, GroupAdmin {
     uint256 public lastSent = 0;
     uint256 public withdrawn = 0;
 
-    address public ticketAddress;
-    IConferenceTicket public ct;
+    string public baseTokenURI;
+    mapping(uint256 => string) private _tokenURIs;
 
     mapping (address => Participant) public participants;
     mapping (uint256 => address) public participantsIndex;
@@ -67,11 +67,6 @@ contract AbstractConference is Conference, GroupAdmin {
         _;
     }
 
-    modifier onlyTicketContract() {
-        require(msg.sender == ticketAddress, 'must be ticket contract');
-        _;
-    }
-
     /* Public functions */
     /**
      * @dev Construcotr.
@@ -81,7 +76,7 @@ contract AbstractConference is Conference, GroupAdmin {
      * @param _coolingPeriod The period participants should withdraw their deposit after the event ends. After the cooling period, the event owner can claim the remining deposits.
      * @param _owner The owner of the event
      * @param _clearFee the fee for _clearAndSend function in per-mille (e.g. _clearFee = 10 means 1% fees, _clearFee = 1 means 0.1% fees)
-     * @param _ticketAddress The address of the ticket contract. 
+     * @param _baseTokenUri The base URI used for tokens.
      */
     constructor (
         string memory _name,
@@ -90,18 +85,16 @@ contract AbstractConference is Conference, GroupAdmin {
         uint256 _coolingPeriod,
         address payable _owner,
         uint256 _clearFee,
-        address _ticketAddress
+        string memory _baseTokenUri
     ) public {
         require(_owner != address(0), 'owner address is required');
-        require(_ticketAddress != address(0), 'ticket address is not set');
         owner = _owner;
         name = _name;
         deposit = _deposit;
         limitOfParticipants = _limitOfParticipants;
         coolingPeriod = _coolingPeriod;
         clearFee = _clearFee;
-        ticketAddress = _ticketAddress;
-        ct = IConferenceTicket(ticketAddress);
+        baseTokenURI = _baseTokenUri;
     }
 
 
@@ -117,7 +110,7 @@ contract AbstractConference is Conference, GroupAdmin {
         participantsIndex[registered] = msg.sender;
         participants[msg.sender] = Participant(registered, msg.sender, false);
 
-        ct.mint(msg.sender, registered);
+        mint(msg.sender, registered);
 
         emit RegisterEvent(msg.sender, registered);
     }
@@ -292,15 +285,6 @@ contract AbstractConference is Conference, GroupAdmin {
         emit FinalizeEvent(attendanceMaps, payoutAmount, endedAt);
     }
 
-    function transferTicket(address from, address to) external onlyTicketContract onlyActive {
-        require(!isRegistered(to), 'already registered');
-
-        Participant memory participant = participants[from];
-        participantsIndex[participant.index] = to;
-        participants[from] = Participant(0, address(0), participant.paid);
-        participants[to] = Participant(participant.index, address(uint160(to)), participant.paid);
-    }
-
     /**
     * @dev The function clear the contract sending 
     * (_payoutAmount_ - fee) to the first *_num* unpaid attenders.
@@ -350,4 +334,50 @@ contract AbstractConference is Conference, GroupAdmin {
         revert('tokenAddress must be impelmented in the child class');
     }
 
+    /* ERC721 implementation start */
+
+    function tokenURI(uint256 tokenId) public view returns (string memory) { 
+        return string(abi.encodePacked(baseTokenURI, Utils.addr2str(address(this)), '/', _tokenURI(tokenId)));
+    }
+    
+    /**
+     * @dev Internal returns an URI for a given token ID.
+     * Throws if the token ID does not exist. May return an empty string.
+     * @param tokenId uint256 ID of the token to query
+     */
+    function _tokenURI(uint256 tokenId) internal view returns (string memory) { 
+        require(_exists(tokenId), 'ERC721Metadata: URI query for nonexistent token');
+        return _tokenURIs[tokenId];
+    }
+
+    /**
+     * @dev Mints a new token.
+     * @param to The address that will own the minted token
+     * @param tokenId uint256 ID of the token to be minted
+     */
+    function mint(address to, uint256 tokenId) internal {
+        _mint(to, tokenId);
+        _tokenURIs[tokenId] = Utils.uint2str(tokenId);
+    }
+
+    function transferFrom(address from, address to, uint256 tokenId) public onlyActive {
+        require(!isRegistered(to), 'already registered');
+        super.transferFrom(from, to, tokenId);
+
+        Participant memory participant = participants[from];
+        participantsIndex[participant.index] = to;
+        participants[from] = Participant(0, address(0), participant.paid);
+        participants[to] = Participant(participant.index, address(uint160(to)), participant.paid);
+    }
+
+    function safeTransferFrom(address from, address to, uint256 tokenId) public {
+        safeTransferFrom(from, to, tokenId, '');
+    }
+
+    function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory _data) public {
+        transferFrom(from, to, tokenId);
+        require(super._checkOnERC721Received(from, to, tokenId, _data), 'ERC721: transfer to non ERC721Receiver implementer');
+    }
+
+    /* ERC721 implementation end */
 }

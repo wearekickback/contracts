@@ -1,6 +1,5 @@
 const { toWei } = require('web3-utils')
 const Conference = artifacts.require("ERC20Conference.sol");
-const ConferenceTicket = artifacts.require("./ConferenceTicket.sol");
 const Token = artifacts.require("MyToken.sol");
 const EthVal = require('ethval')
 
@@ -13,9 +12,8 @@ contract('ERC20 Conference', function(accounts) {
 
   beforeEach(async function(){
     token = await Token.new();
-    this.ct = await ConferenceTicket.new('');
     this.accounts = accounts
-    this.createConference = async ({
+    this.createConference = ({
       name = '',
       deposit = toWei('0.02', "ether"),
       limitOfParticipants = 20,
@@ -23,10 +21,10 @@ contract('ERC20 Conference', function(accounts) {
       ownerAddress = accounts[0],
       tokenAdderss = token.address,
       clearFee = 10,
-      ticketAddress = this.ct.address,
+      baseTokenUri = '',
       gasPrice = toWei('1', 'gwei')
     }) => {
-      let conference = await Conference.new(
+      return Conference.new(
         name,
         deposit,
         limitOfParticipants,
@@ -34,11 +32,9 @@ contract('ERC20 Conference', function(accounts) {
         ownerAddress,
         tokenAdderss,
         clearFee,
-        ticketAddress
+        baseTokenUri
         , {gasPrice:gasPrice}
       );
-      await this.ct.setConferenceAddress(conference.address);
-      return conference;
     }
     this.getBalance = async (account) => {
       return new EthVal(await token.balanceOf(account));

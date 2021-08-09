@@ -4,7 +4,6 @@ contract('NPM exports', () => {
   it('exports contracts', () => {
     assert.isOk(packageExport.Deployer)
     assert.isOk(packageExport.Conference)
-    assert.isOk(packageExport.ConferenceTicket)
   })
 
   it('exports valid events', () => {

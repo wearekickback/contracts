@@ -20,6 +20,8 @@ Object.keys(deployedAddresses).forEach(key => {
     case '4':  // rinkeby
     case '42': // kovan
     case '100': // poa-xdai
+    case '137': // polygon
+    case '80001': // mumbai
       break
     default:
       delete deployedAddresses[key]

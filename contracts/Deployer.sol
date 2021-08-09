@@ -3,7 +3,6 @@ pragma solidity ^0.5.11;
 import './GroupAdmin.sol';
 import './zeppelin/lifecycle/Destructible.sol';
 import './DeployerInterface.sol';
-import './ConferenceTicket.sol';
 
 /**
  * This is responsible for deploying a new Party.
@@ -61,7 +60,6 @@ contract Deployer is Destructible, GroupAdmin {
         uint _coolingPeriod,
         address _tokenAddress
     ) external {
-        ConferenceTicket ct = new ConferenceTicket(baseTokenUri);
         Conference c;
         if(_tokenAddress != address(0)){
             c = erc20Deployer.deploy(
@@ -72,7 +70,7 @@ contract Deployer is Destructible, GroupAdmin {
                 msg.sender,
                 _tokenAddress,
                 clearFee,
-                address(ct)
+                baseTokenUri
             );
         }else{
             c = ethDeployer.deploy(
@@ -83,10 +81,9 @@ contract Deployer is Destructible, GroupAdmin {
                 msg.sender,
                 address(0),
                 clearFee,
-                address(ct)
+                baseTokenUri
             );
         }
-        ct.setConferenceAddress(address(c));
         emit NewParty(address(c), msg.sender);
     }
 }

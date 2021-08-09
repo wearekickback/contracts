@@ -12,7 +12,7 @@ contract ERC20Deployer is DeployerInterface{
         address payable _ownerAddress,
         address _tokenAddress,
         uint256 _clearFee,
-        address _ticketAddres
+        string calldata _baseTokenUri
     )external returns(Conference c){
         c = new ERC20Conference(
             _name,
@@ -22,7 +22,7 @@ contract ERC20Deployer is DeployerInterface{
             _ownerAddress,
             _tokenAddress,
             _clearFee,
-            _ticketAddres
+            _baseTokenUri
         );
     }   
 }

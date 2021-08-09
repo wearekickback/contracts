@@ -18,11 +18,10 @@ const assertBalanceWithDeposit = function(balance, deposit){
 }
 
 function shouldBehaveLikeConference () {
-  let ct, deposit, owner, non_owner
+  let deposit, owner, non_owner
     ,createConference, getBalance
     ,register, accounts, non_registered, admin;
   beforeEach(async function(){
-    ct = this.ct;
     accounts = this.accounts;
     createConference = this.createConference;
     getBalance = this.getBalance;
@@ -100,6 +99,18 @@ function shouldBehaveLikeConference () {
     })
   })
 
+  describe('after creation', function(){
+    let conference;
+
+    beforeEach(async function(){
+      conference = await createConference({});
+    })
+
+    it('base token uri is empty', async function(){
+      await conference.baseTokenURI().should.eventually.eq('')
+    })
+  })
+
   describe('on registration', function(){
     let beforeContractBalance, beforeAccountBalance,
         beforeOwnerBalance, conference, deposit
@@ -134,11 +145,25 @@ function shouldBehaveLikeConference () {
 
     it('sets the owner of the ticket', async function(){
       let registered = await conference.registered()
-      await ct.ownerOf(registered).should.eventually.eq(owner)
+      await conference.ownerOf(registered).should.eventually.eq(owner)
     })
 
     it('owner of non-existing ticket is rejected', async function(){
-      await ct.ownerOf(2).should.be.rejected
+      await conference.ownerOf(2).should.be.rejected
+    })
+
+    it('tokenURI is set without baseTokenURI', async function(){
+      let registered = await conference.registered()
+      await conference.tokenURI(registered).should.eventually.equalIgnoreCase(conference.address + '/' + registered)
+    })
+
+    it('tokenURI is set with baseTokenURI', async function(){
+      let conference = await createConference({
+        baseTokenUri: 'https://kickback.events/test/'
+      });
+      await register({conference, deposit, user:owner});
+      let registered = await conference.registered()
+      await conference.tokenURI(registered).should.eventually.equalIgnoreCase('https://kickback.events/test/' + conference.address + '/' + registered)
     })
   })
 
@@ -184,18 +209,18 @@ function shouldBehaveLikeConference () {
       let expectedRegistered = 1
       await conference.registered().should.eventually.eq(expectedRegistered)
       await conference.isRegistered(owner).should.eventually.eq(true)
-      await ct.ownerOf(expectedRegistered).should.eventually.eq(owner)
+      await conference.ownerOf(expectedRegistered).should.eventually.eq(owner)
 
-      await ct.safeTransferFrom(owner, recipient, expectedRegistered).should.be.fulfilled
+      await conference.safeTransferFrom(owner, recipient, expectedRegistered).should.be.fulfilled
       await conference.registered().should.eventually.eq(expectedRegistered)
       await conference.isRegistered(owner).should.eventually.eq(false)
       await conference.isRegistered(recipient).should.eventually.eq(true)
-      await ct.ownerOf(expectedRegistered).should.eventually.eq(recipient)
+      await conference.ownerOf(expectedRegistered).should.eventually.eq(recipient)
     })
 
     it('allows the previous owner to register again', async function(){
       await register({conference, deposit, user:owner}).should.be.rejected
-      await ct.safeTransferFrom(owner, recipient, 1).should.be.fulfilled
+      await conference.safeTransferFrom(owner, recipient, 1).should.be.fulfilled
       await register({conference, deposit, user:owner}).should.be.fulfilled
 
       await conference.registered().should.eventually.eq(2)
@@ -203,21 +228,47 @@ function shouldBehaveLikeConference () {
     })
 
     it('prevents the new recipient to register again', async function(){
-      await ct.safeTransferFrom(owner, recipient, 1).should.be.fulfilled
+      await conference.safeTransferFrom(owner, recipient, 1).should.be.fulfilled
       await register({conference, deposit, user:recipient}).should.be.rejected
       await conference.registered().should.eventually.eq(1)      
     })
 
     it('fails if the new recipient is already registered', async function(){
       await register({conference, deposit, user:recipient, owner}).should.be.fulfilled
-      await ct.safeTransferFrom(owner, recipient, 1).should.be.rejected
+      await conference.safeTransferFrom(owner, recipient, 1).should.be.rejected
       await conference.registered().should.eventually.eq(2)      
     })
 
     it('fails if event ended', async function(){
       await conference.finalize([1], {from:owner});
-      await ct.safeTransferFrom(owner, recipient, 1).should.be.rejected
+      await conference.safeTransferFrom(owner, recipient, 1).should.be.rejected
       await conference.registered().should.eventually.eq(1)      
+    })
+
+    it('success if owner', async function(){
+      let from = owner
+      let to = accounts[2]
+      let tokenId = 1
+      await conference.ownerOf(tokenId).should.eventually.eq(from)
+      await conference.safeTransferFrom(from, to, tokenId, { from: from}).should.be.fulfilled
+      await conference.ownerOf(tokenId).should.eventually.eq(to)
+    })
+
+    it('success if approved', async function(){
+      let from = owner
+      let to = accounts[2]
+      let tokenId = 1
+      await conference.approve(to, tokenId, { from: from}).should.be.fulfilled
+      await conference.safeTransferFrom(from, to, tokenId, { from: to}).should.be.fulfilled
+      await conference.ownerOf(tokenId).should.eventually.eq(to)
+    })
+
+    it('fail if not owner', async function(){
+      let from = owner
+      let to = accounts[2]
+      let tokenId = 1
+      await conference.safeTransferFrom(from, to, tokenId, { from: to}).should.be.rejected
+      await conference.ownerOf(tokenId).should.eventually.eq(from)
     })
   })
 
@@ -476,7 +527,7 @@ function shouldBehaveLikeConference () {
     })
 
     it('new recipient can withdraw after transfer', async function(){
-      await ct.safeTransferFrom(registered, recipient, 2, { from: registered }).should.be.fulfilled
+      await conference.safeTransferFrom(registered, recipient, 2, { from: registered }).should.be.fulfilled
       await conference.finalize([3], { from: owner });
       await conference.withdraw({from:registered}).should.be.rejected;
       await conference.withdraw({from:recipient});
@@ -638,7 +689,7 @@ function shouldBehaveLikeConference () {
       let numRegistered = 4;
       for (let i = 0; i < numRegistered; i++) {
           await register({conference, deposit, user:accounts[10 + i], owner})
-      }
+      } 
 
       // [ 110 ], accounts[11], accounts[12]
       const maps = [ toBN(0).bincn(1).bincn(2) ];
@@ -788,15 +839,15 @@ function shouldBehaveLikeConference () {
     beforeEach(async function(){
       conference = await createConference({coolingPeriod:0})
       deposit = await conference.deposit()
-      
+
       let numRegistered = 4;
       for (let i = 0; i < numRegistered; i++) {
           await register({conference, deposit, user:accounts[10 + i], owner})
       }
-      
-      await ct.ownerOf(3).should.eventually.eq(accounts[12])
-      await ct.safeTransferFrom(accounts[12], recipient, 3, {from:accounts[12]})
-      await ct.ownerOf(3).should.eventually.eq(recipient)
+
+      await conference.ownerOf(3).should.eventually.eq(accounts[12])
+      await conference.safeTransferFrom(accounts[12], recipient, 3, {from:accounts[12]})
+      await conference.ownerOf(3).should.eventually.eq(recipient)
       await conference.isAttended(recipient).should.eventually.eq(false)
       await conference.isPaid(recipient).should.eventually.eq(false)      
 
@@ -805,7 +856,7 @@ function shouldBehaveLikeConference () {
       await conference.finalize(maps, {from:owner});
       await conference.ended().should.eventually.eq(true)
       assertBalanceWithDeposit((await getBalance(conference.address)), mulBN(deposit, 4))
-      
+
       payoutAmount = new EthVal(await conference.payoutAmount());
       clearFee = await conference.clearFee();
       fees = payoutAmount.mul(clearFee).div(1000).toString(10);

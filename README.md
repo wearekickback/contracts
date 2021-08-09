@@ -220,11 +220,8 @@ Usage: deployNewParty [options]
 
 Options:
 
-  -i, --id <id>            Id of party (obtain from UI /create page)
-  --ropsten                Use Ropsten instead of local development network
-  --rinkeby                Use Rinkeby instead of local development network
-  --kovan                  Use Rinkeby instead of local development network
-  --mainnet                Use Mainnet instead of local development network
+  -a, --address <address>  Address of party (obtain from UI /create page)
+  -n, --network <network>  Name of the network (e.g. ropsten, mainnet, etc.)
   --admins <n>             Number of additional party admins to have
   -c, --cancelled          Whether to mark the party as cancelled
   -t, --coolingPeriod [n]  How long the cooling period is in seconds (default: 604800)
@@ -402,3 +399,7 @@ For all the latest deployed deployer contracts, see refer to `deployedAddresses.
 ### xDai deployer contract versions
 
 - npm version @wearekickback/contracts-integration 1.4.0 "0x05E9AE465727AAa78De8F761E44D78b43a5d9697"
+
+### Polygon deployer contract versions
+
+- "0xc1d24FB1a9c6b5051c28b0e963473D3cE3EB3491"

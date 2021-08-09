@@ -1,4 +1,4 @@
-const { mnemonic, infuraKey, etherscanApiKey } = require('./.deployment.js')
+const { mnemonic, infuraKey, maticKey, etherscanApiKey } = require('./.deployment.js')
 const HDWalletProvider = require('@truffle/hdwallet-provider')
 
 module.exports = {
@@ -49,6 +49,16 @@ module.exports = {
       provider: (num_addresses = 1) => new HDWalletProvider(mnemonic, `https://dai.poa.network`, 0, num_addresses),
       gasPrice: 0x01, // <-- Use this low gas price
       network_id: 100
+    },
+    polygon: {
+      provider: (num_addresses = 1) => new HDWalletProvider(mnemonic, `https://rpc-mainnet.maticvigil.com/v1/${maticKey}`, 0, num_addresses),
+      gasPrice: 1000000000, // 1 gwei
+      network_id: 137
+    },
+    mumbai:{
+      provider: (num_addresses = 1) => new HDWalletProvider(mnemonic, `https://rpc-mumbai.maticvigil.com/v1/${maticKey}`, 0, num_addresses),
+      gasPrice: 1000000000, // 1 gwei
+      network_id: 80001
     },
     mainnet: {
       // gas: 5000000,
