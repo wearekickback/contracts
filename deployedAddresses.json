@@ -208,5 +208,17 @@
     "links": {},
     "address": "0x779051814b0D1C6714a484a24ba65185ED310139",
     "transactionHash": "0xed49348bd031c5eefd91f48114430cede9b6b389540e300623e92d0970b17d32"
+  },
+  "137": {
+    "events": {},
+    "links": {},
+    "address": "0xC5ddF439194f84AF79db7d7cd534aD01cC58910d",
+    "transactionHash": "0x666fe195281dd361995a88786b4534824beafb46852c3a16e8016cabe5e2cb0c"
+  },
+  "80001": {
+    "events": {},
+    "links": {},
+    "address": "0xc1d24FB1a9c6b5051c28b0e963473D3cE3EB3491",
+    "transactionHash": "0xb85a097a92e729c9b83fea2263a8e2fd227a295c349cfbe866421c333625b1e6"
   }
 }
