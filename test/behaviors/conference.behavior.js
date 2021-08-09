@@ -151,6 +151,10 @@ function shouldBehaveLikeConference () {
     it('owner of non-existing ticket is rejected', async function(){
       await conference.ownerOf(2).should.be.rejected
     })
+	
+    it('tokenURI fails for nonexistent token', async function(){
+      await conference.tokenURI(0).should.be.rejected
+    })	
 
     it('tokenURI is set without baseTokenURI', async function(){
       let registered = await conference.registered()
