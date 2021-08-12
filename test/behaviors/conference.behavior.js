@@ -105,10 +105,6 @@ function shouldBehaveLikeConference () {
     beforeEach(async function(){
       conference = await createConference({});
     })
-
-    it('base token uri is empty', async function(){
-      await conference.baseTokenURI().should.eventually.eq('')
-    })
   })
 
   describe('on registration', function(){
@@ -150,24 +146,6 @@ function shouldBehaveLikeConference () {
 
     it('owner of non-existing ticket is rejected', async function(){
       await conference.ownerOf(2).should.be.rejected
-    })
-	
-    it('tokenURI fails for nonexistent token', async function(){
-      await conference.tokenURI(0).should.be.rejected
-    })	
-
-    it('tokenURI is set without baseTokenURI', async function(){
-      let registered = await conference.registered()
-      await conference.tokenURI(registered).should.eventually.equalIgnoreCase(conference.address + '/' + registered)
-    })
-
-    it('tokenURI is set with baseTokenURI', async function(){
-      let conference = await createConference({
-        baseTokenUri: 'https://kickback.events/test/'
-      });
-      await register({conference, deposit, user:owner});
-      let registered = await conference.registered()
-      await conference.tokenURI(registered).should.eventually.equalIgnoreCase('https://kickback.events/test/' + conference.address + '/' + registered)
     })
   })
 

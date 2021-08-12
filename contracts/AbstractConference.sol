@@ -2,6 +2,7 @@ pragma solidity ^0.5.11;
 
 import './GroupAdmin.sol';
 import './Conference.sol';
+import './Deployer.sol';
 import { Utils } from './Utils.sol';
 import 'openzeppelin-solidity/contracts/math/SafeMath.sol';
 import 'openzeppelin-solidity/contracts/token/ERC721/ERC721.sol';
@@ -26,8 +27,7 @@ contract AbstractConference is Conference, GroupAdmin, ERC721 {
     uint256 public lastSent = 0;
     uint256 public withdrawn = 0;
 
-    string public baseTokenURI;
-    mapping(uint256 => string) private _tokenURIs;
+    Deployer public deployer;
 
     mapping (address => Participant) public participants;
     mapping (uint256 => address) public participantsIndex;
@@ -76,7 +76,7 @@ contract AbstractConference is Conference, GroupAdmin, ERC721 {
      * @param _coolingPeriod The period participants should withdraw their deposit after the event ends. After the cooling period, the event owner can claim the remining deposits.
      * @param _owner The owner of the event
      * @param _clearFee the fee for _clearAndSend function in per-mille (e.g. _clearFee = 10 means 1% fees, _clearFee = 1 means 0.1% fees)
-     * @param _baseTokenUri The base URI used for tokens.
+     * @param _deployerAddress The address of the Deployer contract.
      */
     constructor (
         string memory _name,
@@ -85,7 +85,7 @@ contract AbstractConference is Conference, GroupAdmin, ERC721 {
         uint256 _coolingPeriod,
         address payable _owner,
         uint256 _clearFee,
-        string memory _baseTokenUri
+        address _deployerAddress
     ) public {
         require(_owner != address(0), 'owner address is required');
         owner = _owner;
@@ -94,7 +94,7 @@ contract AbstractConference is Conference, GroupAdmin, ERC721 {
         limitOfParticipants = _limitOfParticipants;
         coolingPeriod = _coolingPeriod;
         clearFee = _clearFee;
-        baseTokenURI = _baseTokenUri;
+        deployer = Deployer(_deployerAddress);
     }
 
 
@@ -337,7 +337,7 @@ contract AbstractConference is Conference, GroupAdmin, ERC721 {
     /* ERC721 implementation start */
 
     function tokenURI(uint256 tokenId) public view returns (string memory) { 
-        return string(abi.encodePacked(baseTokenURI, Utils.addr2str(address(this)), '/', _tokenURI(tokenId)));
+        return string(abi.encodePacked(deployer.baseTokenUri(), Utils.addr2str(address(this)), '/', _tokenURI(tokenId)));
     }
     
     /**
@@ -347,7 +347,7 @@ contract AbstractConference is Conference, GroupAdmin, ERC721 {
      */
     function _tokenURI(uint256 tokenId) internal view returns (string memory) { 
         require(_exists(tokenId), 'ERC721Metadata: URI query for nonexistent token');
-        return _tokenURIs[tokenId];
+        return Utils.uint2str(tokenId);
     }
 
     /**
@@ -357,7 +357,6 @@ contract AbstractConference is Conference, GroupAdmin, ERC721 {
      */
     function mint(address to, uint256 tokenId) internal {
         _mint(to, tokenId);
-        _tokenURIs[tokenId] = Utils.uint2str(tokenId);
     }
 
     function transferFrom(address from, address to, uint256 tokenId) public onlyActive {
@@ -366,12 +365,8 @@ contract AbstractConference is Conference, GroupAdmin, ERC721 {
 
         Participant memory participant = participants[from];
         participantsIndex[participant.index] = to;
-        participants[from] = Participant(0, address(0), participant.paid);
+        participants[from] = Participant(0, address(0), false);
         participants[to] = Participant(participant.index, address(uint160(to)), participant.paid);
-    }
-
-    function safeTransferFrom(address from, address to, uint256 tokenId) public {
-        safeTransferFrom(from, to, tokenId, '');
     }
 
     function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory _data) public {

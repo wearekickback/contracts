@@ -18,8 +18,8 @@ contract('ETH Conference', function(accounts) {
       coolingPeriod = 0,
       ownerAddress = accounts[0],
       clearFee = 10,
-      gasPrice = toWei('1', 'gwei'),
-      baseTokenUri = ''
+      deployerAddress = '0x0000000000000000000000000000000000000000',
+      gasPrice = toWei('1', 'gwei')
     }) => {
       return Conference.new(
         name,
@@ -28,7 +28,7 @@ contract('ETH Conference', function(accounts) {
         coolingPeriod,
         ownerAddress,
         clearFee,
-        baseTokenUri
+        deployerAddress
         , {gasPrice:gasPrice}
       );
     }

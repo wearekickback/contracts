@@ -15,9 +15,9 @@ contract ERC20Conference is AbstractConference {
         address payable _owner,
         address  _tokenAddress,
         uint256 _clearFee,
-        string memory _baseTokenUri
+        address _deployerAddress
     )
-        AbstractConference(_name, _deposit, _limitOfParticipants, _coolingPeriod, _owner, _clearFee, _baseTokenUri)
+        AbstractConference(_name, _deposit, _limitOfParticipants, _coolingPeriod, _owner, _clearFee, _deployerAddress)
         public
     {
         require(_tokenAddress != address(0), 'token address is not set');

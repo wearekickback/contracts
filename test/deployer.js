@@ -117,19 +117,49 @@ contract('Deployer', accounts => {
     await conference.tokenAddress().should.eventually.eq(token.address)
   })
 
-  it('when it deploys a Conference the owner is the caller', async () => {
-    const result = await deployer.deploy(
-      'test',
-      toHex(toWei('0.02')),
-      toHex(2),
-      toHex(60 * 60 * 24 * 7),
-      emptyAddress
-    )
+  describe('on Conference deployment', function() {
+    let caller, conference, deposit;
 
-    const [ { args: { deployedAddress} } ] = (await getEvents(result, 'NewParty'))
+    beforeEach(async function(){
+      caller = accounts[0];
+      const result = await deployer.deploy(
+        'test',
+        toHex(toWei('0.02')),
+        toHex(2),
+        toHex(60 * 60 * 24 * 7),
+        emptyAddress
+      )
+  
+      const [ { args: { deployedAddress} } ] = (await getEvents(result, 'NewParty'))
+  
+      conference = await Conference.at(deployedAddress)
+      deposit = await conference.deposit()
 
-    const conference = await Conference.at(deployedAddress)
+      this.register = async function({conference, deposit, user, gasPrice = toWei('1', 'gwei')}){
+        return await conference.register({value:deposit, from: user, gasPrice});
+      }
+    })
 
-    await conference.owner().should.eventually.eq(accounts[0])
+
+    it('the owner is the caller', async () => {
+      await conference.owner().should.eventually.eq(caller)
+    })
+
+    it('tokenURI fails for nonexistent token', async function(){
+      await conference.tokenURI(0).should.be.rejected
+    })
+
+    it('tokenURI is set without baseTokenURI', async function(){
+      await this.register({conference, deposit, user:caller})
+      let registered = await conference.registered()
+      await deployer.changeBaseTokenUri('', { from: accounts[0]})
+      await conference.tokenURI(registered).should.eventually.equalIgnoreCase(conference.address + '/' + registered)
+    })
+
+    it('tokenURI is set with baseTokenURI', async function(){
+      await this.register({conference, deposit, user:caller})
+      let registered = await conference.registered()
+      await conference.tokenURI(registered).should.eventually.equalIgnoreCase(baseTokenUri + conference.address + '/' + registered)
+    })
   })
 })

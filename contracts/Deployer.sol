@@ -43,7 +43,7 @@ contract Deployer is Destructible, GroupAdmin {
     function changeBaseTokenUri(string calldata _baseTokenUri) external onlyAdmin{
         baseTokenUri = _baseTokenUri;
         emit BaseTokenUriChanged(baseTokenUri);
-    } 
+    }
 
     /**
      * Deploy a new contract.
@@ -70,7 +70,7 @@ contract Deployer is Destructible, GroupAdmin {
                 msg.sender,
                 _tokenAddress,
                 clearFee,
-                baseTokenUri
+                address(this)
             );
         }else{
             c = ethDeployer.deploy(
@@ -81,7 +81,7 @@ contract Deployer is Destructible, GroupAdmin {
                 msg.sender,
                 address(0),
                 clearFee,
-                baseTokenUri
+                address(this)
             );
         }
         emit NewParty(address(c), msg.sender);

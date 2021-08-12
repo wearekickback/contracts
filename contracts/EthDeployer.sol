@@ -12,7 +12,7 @@ contract EthDeployer is DeployerInterface{
         address payable _ownerAddress,
         address /* _tokenAddress */,
         uint256 _clearFee,
-        string calldata _baseTokenUri
+        address _deployerAddress
     )external returns(Conference c){
         c = new EthConference(
             _name,
@@ -21,7 +21,7 @@ contract EthDeployer is DeployerInterface{
             _coolingPeriod,
             _ownerAddress,
             _clearFee,
-            _baseTokenUri
+            _deployerAddress
         );
     }   
 }

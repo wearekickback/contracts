@@ -17,6 +17,7 @@ contract('ETH Conference - stress tests', function(accounts) {
       coolingPeriod = 0,
       ownerAddress = accounts[0],
       clearFee = 1000,
+      deployerAddress = '0x0000000000000000000000000000000000000000',
       gasPrice = toWei('1', 'gwei')
     }) => {
       return Conference.new(
@@ -25,7 +26,8 @@ contract('ETH Conference - stress tests', function(accounts) {
         limitOfParticipants,
         coolingPeriod,
         ownerAddress,
-        clearFee
+        clearFee,
+        deployerAddress
         , {gasPrice:gasPrice}
       );
     }

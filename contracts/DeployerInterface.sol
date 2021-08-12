@@ -10,6 +10,6 @@ interface DeployerInterface {
         address payable _ownerAddress,
         address _tokenAddress,
         uint256 _clearFee,
-        string calldata _baseTokenUri
+        address _deployerAddress
     )external returns(Conference c);
 }
