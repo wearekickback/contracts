@@ -243,12 +243,6 @@ function shouldBehaveLikeConference () {
       await conference.registered().should.eventually.eq(2)      
     })
 
-    it('fails if event ended', async function(){
-      await conference.finalize([1], {from:owner});
-      await conference.safeTransferFrom(owner, recipient, 1).should.be.rejected
-      await conference.registered().should.eventually.eq(1)      
-    })
-
     it('success if owner', async function(){
       let from = owner
       let to = accounts[2]

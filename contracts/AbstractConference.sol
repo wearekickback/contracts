@@ -363,7 +363,7 @@ contract AbstractConference is Conference, GroupAdmin, ERC721,Pausable {
         _mint(to, tokenId);
     }
 
-    function transferFrom(address from, address to, uint256 tokenId) public onlyActive whenNotPaused {
+    function transferFrom(address from, address to, uint256 tokenId) public whenNotPaused {
         require(!isRegistered(to), 'already registered');
         super.transferFrom(from, to, tokenId);
 
