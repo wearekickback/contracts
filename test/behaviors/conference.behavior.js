@@ -2,6 +2,7 @@ const { toBN, toWei } = require('web3-utils')
 const EthVal = require('ethval')
 const { mulBN, outputBNs } = require('./../utils')
 const { wait, waitUntilBlock } = require('@digix/tempo')(web3);
+const Deployer = artifacts.require("Deployer.sol")
 
 const emptyAddress = '0x0000000000000000000000000000000000000000'
 
@@ -185,6 +186,27 @@ function shouldBehaveLikeConference () {
       beforeContractBalance = await getBalance(conference.address)
       beforeOwnerBalance = await getBalance(owner);
       await register({conference, deposit, user:owner});
+
+      await conference.paused().should.eventually.eq(true)
+      await conference.unpause({from:owner})
+      await conference.paused().should.eventually.eq(false)
+    })
+
+    it('cannot transfer if paused', async function(){
+      await conference.pause({from:owner})
+      await conference.paused().should.eventually.eq(true)
+
+      let expectedRegistered = 1
+      await conference.registered().should.eventually.eq(expectedRegistered)
+      await conference.isRegistered(owner).should.eventually.eq(true)
+      await conference.ownerOf(expectedRegistered).should.eventually.eq(owner)
+
+      await conference.safeTransferFrom(owner, recipient, expectedRegistered).should.be.rejected
+
+      await conference.registered().should.eventually.eq(expectedRegistered)
+      await conference.isRegistered(owner).should.eventually.eq(true)
+      await conference.isRegistered(recipient).should.eventually.eq(false)
+      await conference.ownerOf(expectedRegistered).should.eventually.eq(owner)
     })
 
     it('transfers the ticket to the new recipient', async function(){

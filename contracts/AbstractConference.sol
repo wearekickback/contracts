@@ -5,9 +5,10 @@ import './Conference.sol';
 import './Deployer.sol';
 import { Utils } from './Utils.sol';
 import 'openzeppelin-solidity/contracts/math/SafeMath.sol';
+import './zeppelin/security/Pausable.sol';
 import 'openzeppelin-solidity/contracts/token/ERC721/ERC721.sol';
 
-contract AbstractConference is Conference, GroupAdmin, ERC721 {
+contract AbstractConference is Conference, GroupAdmin, ERC721,Pausable {
     using SafeMath for uint256;
 
     string public name;
@@ -95,6 +96,9 @@ contract AbstractConference is Conference, GroupAdmin, ERC721 {
         coolingPeriod = _coolingPeriod;
         clearFee = _clearFee;
         deployer = Deployer(_deployerAddress);
+        if(deployer.isPausable()){
+            pause();
+        }
     }
 
 
@@ -359,7 +363,7 @@ contract AbstractConference is Conference, GroupAdmin, ERC721 {
         _mint(to, tokenId);
     }
 
-    function transferFrom(address from, address to, uint256 tokenId) public onlyActive {
+    function transferFrom(address from, address to, uint256 tokenId) public onlyActive whenNotPaused {
         require(!isRegistered(to), 'already registered');
         super.transferFrom(from, to, tokenId);
 
@@ -372,6 +376,21 @@ contract AbstractConference is Conference, GroupAdmin, ERC721 {
     function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory _data) public {
         transferFrom(from, to, tokenId);
         require(super._checkOnERC721Received(from, to, tokenId, _data), 'ERC721: transfer to non ERC721Receiver implementer');
+    }
+
+    function pause() public onlyAdmin {
+        _pause();
+    }
+
+    /**
+     * @dev Returns to normal state.
+     *
+     * Requirements:
+     *
+     * - The contract must be paused.
+     */
+    function unpause() public onlyAdmin {
+        _unpause();
     }
 
     /* ERC721 implementation end */

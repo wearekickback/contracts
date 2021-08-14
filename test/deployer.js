@@ -54,6 +54,12 @@ contract('Deployer', accounts => {
     await deployer.baseTokenUri().should.eventually.eq(newBaseTokenUri)
   })
 
+  it('can set isPausable', async() => {
+    await deployer.isPausable().should.eventually.eq(true)
+    await deployer.changeIsPausable(false, { from: accounts[0]})
+    await deployer.isPausable().should.eventually.eq(false)
+  })
+
   it('can set admins', async() => {
     await deployer.changeClearFee(newFee, { from: accounts[1]}).should.be.rejected
     await deployer.clearFee().should.eventually.eq(clearFee)
