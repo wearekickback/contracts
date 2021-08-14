@@ -62,4 +62,7 @@ interface Conference {
     function setLimitOfParticipants(uint256 _limitOfParticipants) external;
     function finalize(uint256[] calldata _maps) external;
     function tokenAddress() external view returns (address);
+
+    // ERC721
+    function tokenURI(uint256 tokenId) view external returns (string memory);
 }

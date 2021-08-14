@@ -12,10 +12,12 @@ contract Deployer is Destructible, GroupAdmin {
     DeployerInterface ethDeployer;
     DeployerInterface erc20Deployer;
     uint public clearFee;
-    constructor(address _ethDeployer, address _erc20Deployer, uint _clearFee) public {
+    string public baseTokenUri;
+    constructor(address _ethDeployer, address _erc20Deployer, uint _clearFee, string memory _baseTokenUri) public {
         ethDeployer = DeployerInterface(_ethDeployer);
         erc20Deployer = DeployerInterface(_erc20Deployer);
         clearFee = _clearFee;
+        baseTokenUri = _baseTokenUri;
     }
     /**
      * Notify that a new party has been deployed.
@@ -29,9 +31,18 @@ contract Deployer is Destructible, GroupAdmin {
         uint indexed clearFee
     );
 
+    event BaseTokenUriChanged(
+        string indexed uri
+    );
+
     function changeClearFee(uint _clearFee) external onlyAdmin {
         clearFee = _clearFee;
         emit ClearFeeChanged(clearFee);
+    }
+
+    function changeBaseTokenUri(string calldata _baseTokenUri) external onlyAdmin{
+        baseTokenUri = _baseTokenUri;
+        emit BaseTokenUriChanged(baseTokenUri);
     }
 
     /**
@@ -58,7 +69,8 @@ contract Deployer is Destructible, GroupAdmin {
                 _coolingPeriod,
                 msg.sender,
                 _tokenAddress,
-                clearFee
+                clearFee,
+                address(this)
             );
         }else{
             c = ethDeployer.deploy(
@@ -68,7 +80,8 @@ contract Deployer is Destructible, GroupAdmin {
                 _coolingPeriod,
                 msg.sender,
                 address(0),
-                clearFee
+                clearFee,
+                address(this)
             );
         }
         emit NewParty(address(c), msg.sender);

@@ -220,11 +220,8 @@ Usage: deployNewParty [options]
 
 Options:
 
-  -i, --id <id>            Id of party (obtain from UI /create page)
-  --ropsten                Use Ropsten instead of local development network
-  --rinkeby                Use Rinkeby instead of local development network
-  --kovan                  Use Rinkeby instead of local development network
-  --mainnet                Use Mainnet instead of local development network
+  -a, --address <address>  Address of party (obtain from UI /create page)
+  -n, --network <network>  Name of the network (e.g. ropsten, mainnet, etc.)
   --admins <n>             Number of additional party admins to have
   -c, --cancelled          Whether to mark the party as cancelled
   -t, --coolingPeriod [n]  How long the cooling period is in seconds (default: 604800)

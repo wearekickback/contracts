@@ -18,6 +18,7 @@ let limitOfParticipants = 0; // 0 falls back to the contract default
 let clearFee = 10; // 1%
 let admins
 const emptyAddress = '0x0000000000000000000000000000000000000000';
+const baseTokenUri = 'https://kickback.events/ticket/'
 // eg: truffle migrate --config '{"name":"CodeUp No..", "limitOfParticipants":15}'
 if (yargs.argv.config) {
   config = JSON.parse(yargs.argv.config);
@@ -49,7 +50,7 @@ module.exports = function(deployer) {
     await deployer.deploy(ERC20Deployer);
     const ethDeployer   = await EthDeployer.deployed();
     const erc20Deployer = await ERC20Deployer.deployed();
-    await deployer.deploy(Deployer, ethDeployer.address, erc20Deployer.address, clearFee);
+    await deployer.deploy(Deployer, ethDeployer.address, erc20Deployer.address, clearFee, baseTokenUri);
     const mainDeployer = await Deployer.deployed();
     console.log([name, deposit,limitOfParticipants, coolingPeriod, clearFee].join(','));
     if(admins){

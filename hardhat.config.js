@@ -9,7 +9,8 @@ module.exports = {
         accounts:{
           count: 500,
           accountsBalance: '2000000000000000000000000'
-        }      
+        },
+        allowUnlimitedContractSize: true
       },
       localhost: {
         url: "http://127.0.0.1:8545"

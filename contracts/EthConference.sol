@@ -9,9 +9,10 @@ contract EthConference is AbstractConference {
         uint256 _limitOfParticipants,
         uint256 _coolingPeriod,
         address payable _owner,
-        uint256 _clearFee
+        uint256 _clearFee,
+        address _deployerAddress
     )
-        AbstractConference(_name, _deposit, _limitOfParticipants, _coolingPeriod, _owner, _clearFee)
+        AbstractConference(_name, _deposit, _limitOfParticipants, _coolingPeriod, _owner, _clearFee, _deployerAddress)
         public
     {
     }

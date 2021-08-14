@@ -29,10 +29,7 @@ async function init() {
   program
     .usage('[options]')
     .option('-a, --address <address>', 'Address of party (obtain from UI /create page)')
-    .option('--ropsten', 'Use Ropsten instead of local development network')
-    .option('--rinkeby', 'Use Rinkeby instead of local development network')
-    .option('--kovan',   'Use Kovan instead of local development network')
-    .option('--mainnet', 'Use Mainnet instead of local development network')
+    .option('-n, --network <network>', 'Name of the network (e.g. ropsten, mainnet, etc.)')
     .option(
       '--admins <n>',
       'Number of additional party admins to have',
@@ -65,6 +62,7 @@ async function init() {
     throw new Error('Address not given')
   }
 
+  const network = program.network
   const cancelled = !!program.cancelled
   const numAdmins = program.admins || 0
   const maxParticipants = program.participants || 2
@@ -73,16 +71,11 @@ async function init() {
   const numWithdrawals = program.withdraw || 0
   const deposit = new EthVal(program.deposit, 'eth')
   const coolingPeriod = program.coolingPeriod
-  const ropsten = program.ropsten
-  const rinkeby = program.rinkeby
-  const kovan = program.kovan
-  const mainnet = program.mainnet
-
   console.log(
     `
 Config
 ------
-Network:                ${ropsten ? 'ropsten' : (mainnet ? 'mainnet' : (rinkeby ? 'rinkeby' : (kovan ? 'kovan' : 'development')))}
+Network:                ${network}
 Party address:          ${address}
 Deposit level:          ${deposit.toFixed(3)} ETH
 Cooling Period:         ${coolingPeriod} seconds
@@ -97,26 +90,10 @@ Payout withdrawals:     ${numWithdrawals}
 
   const maxAccountsNeeded = parseInt(Math.max(numRegistrations || numFinalized || numWithdrawals , numAdmins + 1), 10)
 
-  let provider = new Web3.providers.HttpProvider(
-    `http://${networks.development.host}:${networks.development.port}`
-  )
-
-  if (ropsten) {
-    provider = networks.ropsten.provider(maxAccountsNeeded)
-  }
-  else if (rinkeby) {
-    provider = networks.rinkeby.provider(maxAccountsNeeded)
-  }
-  else if (kovan) {
-    provider = networks.kovan.provider(maxAccountsNeeded)
-  }
-  else if (mainnet) {
-    provider = networks.mainnet.provider(maxAccountsNeeded)
-  }
-
+  const provider = getProvider(network, maxAccountsNeeded)
   const web3 = new Web3(provider)
-
   const networkId = await web3.eth.net.getId()
+  console.log('networkId', networkId)
 
   const accounts = await web3.eth.getAccounts()
 
