@@ -97,7 +97,7 @@ contract AbstractConference is Conference, GroupAdmin, ERC721,Pausable {
         clearFee = _clearFee;
         deployer = Deployer(_deployerAddress);
         if(deployer.isPausable()){
-            pause();
+            _pause();
         }
     }
 

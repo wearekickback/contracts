@@ -525,6 +525,8 @@ function shouldBehaveLikeConference () {
     })
 
     it('new recipient can withdraw after transfer', async function(){
+      await conference.unpause();
+
       await conference.safeTransferFrom(registered, recipient, 2, { from: registered }).should.be.fulfilled
       await conference.finalize([3], { from: owner });
       await conference.withdraw({from:registered}).should.be.rejected;
@@ -836,6 +838,8 @@ function shouldBehaveLikeConference () {
 
     beforeEach(async function(){
       conference = await createConference({coolingPeriod:0})
+      await conference.unpause()
+
       deposit = await conference.deposit()
 
       let numRegistered = 4;
