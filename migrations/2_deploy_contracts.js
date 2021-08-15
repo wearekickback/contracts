@@ -18,7 +18,6 @@ let limitOfParticipants = 0; // 0 falls back to the contract default
 let clearFee = 10; // 1%
 let admins
 const emptyAddress = '0x0000000000000000000000000000000000000000';
-const baseTokenUri = 'https://kickback.events/ticket/'
 // eg: truffle migrate --config '{"name":"CodeUp No..", "limitOfParticipants":15}'
 if (yargs.argv.config) {
   config = JSON.parse(yargs.argv.config);
@@ -33,6 +32,21 @@ module.exports = function(deployer) {
     console.log(`No admin addreses set on ${adminFile}`)
   }
 
+  let baseTokenUri
+  switch(deployer.network) {
+    case 'development':
+    case 'test':
+    case 'coverage':
+      baseTokenUri = `http://localhost:3001/tokens/`
+    break;
+    case 'mainnet':
+      baseTokenUri = `https://live.kickback.events/tokens/`
+      break;
+    default:
+      baseTokenUri = `https://kickback-${deployer.network}.herokuapp.com/tokens/`
+  }
+  console.log({network:deployer.network, baseTokenUri})
+  
   if (deployer.network == 'test' || deployer.network == 'coverage') return 'no need to deploy contract';
   if (config.name){
     name = config.name;
