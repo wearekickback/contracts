@@ -51,7 +51,7 @@ module.exports = {
       network_id: 100
     },
     polygon: {
-      provider: (num_addresses = 1) => new HDWalletProvider(mnemonic, `https://rpc-mainnet.maticvigil.com/v1/${maticKey}`, 0, num_addresses),
+      provider: (num_addresses = 1) => new HDWalletProvider(mnemonic, `https://polygon-mainnet.infura.io/v3/${infuraKey}`, 0, num_addresses),
       gasPrice: 1000000000, // 1 gwei
       network_id: 137
     },
