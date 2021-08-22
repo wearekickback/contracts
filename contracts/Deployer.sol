@@ -13,11 +13,13 @@ contract Deployer is Destructible, GroupAdmin {
     DeployerInterface erc20Deployer;
     uint public clearFee;
     string public baseTokenUri;
+    bool public isPausable;
     constructor(address _ethDeployer, address _erc20Deployer, uint _clearFee, string memory _baseTokenUri) public {
         ethDeployer = DeployerInterface(_ethDeployer);
         erc20Deployer = DeployerInterface(_erc20Deployer);
         clearFee = _clearFee;
         baseTokenUri = _baseTokenUri;
+        isPausable = true;
     }
     /**
      * Notify that a new party has been deployed.
@@ -35,6 +37,10 @@ contract Deployer is Destructible, GroupAdmin {
         string indexed uri
     );
 
+    event IsPausableChanged(
+        bool indexed pausable
+    );
+
     function changeClearFee(uint _clearFee) external onlyAdmin {
         clearFee = _clearFee;
         emit ClearFeeChanged(clearFee);
@@ -43,6 +49,11 @@ contract Deployer is Destructible, GroupAdmin {
     function changeBaseTokenUri(string calldata _baseTokenUri) external onlyAdmin{
         baseTokenUri = _baseTokenUri;
         emit BaseTokenUriChanged(baseTokenUri);
+    }
+
+    function changeIsPausable(bool _isPausable) external onlyAdmin {
+        isPausable = _isPausable;
+        emit IsPausableChanged(isPausable);
     }
 
     /**

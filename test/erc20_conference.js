@@ -1,16 +1,25 @@
 const { toWei } = require('web3-utils')
 const Conference = artifacts.require("ERC20Conference.sol");
 const Token = artifacts.require("MyToken.sol");
+const Deployer = artifacts.require("Deployer.sol");
 const EthVal = require('ethval')
 
 web3.currentProvider.sendAsync = web3.currentProvider.send
 
 const { shouldBehaveLikeConference } = require('./behaviors/conference.behavior');
+const EMPTY_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 contract('ERC20 Conference', function(accounts) {
   let token;
 
   beforeEach(async function(){
+    deployer = await Deployer.new(
+      EMPTY_ADDRESS,
+      EMPTY_ADDRESS,
+      0,
+      ''
+    )
+
     token = await Token.new();
     this.accounts = accounts
     this.createConference = ({
@@ -21,7 +30,7 @@ contract('ERC20 Conference', function(accounts) {
       ownerAddress = accounts[0],
       tokenAdderss = token.address,
       clearFee = 10,
-      deployerAddress = '0x0000000000000000000000000000000000000000',
+      deployerAddress = deployer.address,
       gasPrice = toWei('1', 'gwei')
     }) => {
       return Conference.new(

@@ -4,17 +4,18 @@ require("solidity-coverage")
 
 module.exports = {
   networks: {
-      hardhat: {
-        gasPrice:1,
-        accounts:{
-          count: 500,
-          accountsBalance: '2000000000000000000000000'
-        },
-        allowUnlimitedContractSize: true
+    hardhat: {
+      gasPrice:2,
+      initialBaseFeePerGas:1,
+      accounts:{
+        count: 500,
+        accountsBalance: '2000000000000000000000000'
       },
-      localhost: {
-        url: "http://127.0.0.1:8545"
-      }
+      allowUnlimitedContractSize: true
+    },
+    localhost: {
+      url: "http://127.0.0.1:8545"
+    }
   },
   mocha: {
   },

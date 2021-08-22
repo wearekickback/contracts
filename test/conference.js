@@ -1,15 +1,22 @@
 const { toWei } = require('web3-utils')
 const EthVal = require('ethval')
 const Conference = artifacts.require("./EthConference.sol");
-
+const Deployer = artifacts.require("Deployer.sol");
 const { getBalance } = require('./utils')
 const { shouldBehaveLikeConference } = require('./behaviors/conference.behavior');
 
 web3.currentProvider.sendAsync = web3.currentProvider.send
-
+const EMPTY_ADDRESS = '0x0000000000000000000000000000000000000000'
 contract('ETH Conference', function(accounts) {
 
   beforeEach(async function(){
+    deployer = await Deployer.new(
+      EMPTY_ADDRESS,
+      EMPTY_ADDRESS,
+      0,
+      ''
+    )
+
     this.accounts = accounts
     this.createConference = ({
       name = '',
@@ -18,7 +25,7 @@ contract('ETH Conference', function(accounts) {
       coolingPeriod = 0,
       ownerAddress = accounts[0],
       clearFee = 10,
-      deployerAddress = '0x0000000000000000000000000000000000000000',
+      deployerAddress = deployer.address,
       gasPrice = toWei('1', 'gwei')
     }) => {
       return Conference.new(
