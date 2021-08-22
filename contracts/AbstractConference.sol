@@ -365,12 +365,12 @@ contract AbstractConference is Conference, GroupAdmin, ERC721,Pausable {
 
     function transferFrom(address from, address to, uint256 tokenId) public whenNotPaused {
         require(!isRegistered(to), 'already registered');
-        super.transferFrom(from, to, tokenId);
 
         Participant memory participant = participants[from];
         participantsIndex[participant.index] = to;
         participants[from] = Participant(0, address(0), false);
         participants[to] = Participant(participant.index, address(uint160(to)), participant.paid);
+        super.transferFrom(from, to, tokenId);
     }
 
     function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory _data) public {
