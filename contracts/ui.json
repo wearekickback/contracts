@@ -1,0 +1,542 @@
+{
+  "version": 1,
+  "title": "Kickback",
+  "description": "For managing Kickback events.",
+  "aboutUrl": "https://kickback.events",
+  "production": true,
+  "panels": [
+    {
+      "id": "register",
+      "title": "Register for event",
+      "description": "Use this to register yourself for an event.",
+      "inputs": [
+        {
+          "name": "contractAddress",
+          "title": "Event contract address",
+          "type": "address",
+          "validation": [
+            {
+              "type": "allowedTypes",
+              "contract": true
+            }
+          ]
+        }
+      ],
+      "execs": [
+        {
+          "type": "send",
+          "address": "@input[contractAddress]",
+          "contract": "AbstractConference",
+          "method": "register",
+          "successMessage": "You are now registered to attend this event"
+        }
+      ]
+    },
+    {
+      "id": "finalize",
+      "title": "Finalize an  event",
+      "description": "Only event admins can call this.",
+      "inputs": [
+        {
+          "name": "contractAddress",
+          "title": "Event contract address",
+          "type": "address",
+          "validation": [
+            {
+              "type": "allowedTypes",
+              "contract": true
+            }
+          ]
+        },
+        {
+          "name": "maps",
+          "title": "Attendance maps",
+          "type": "int[]",
+          "validation": [
+            {
+              "type": "listSize",
+              "min": "1"
+            },
+            {
+              "type": "range",
+              "min": "0"
+            }
+          ]
+        }
+      ],
+      "execs": [
+        {
+          "type": "send",
+          "address": "@input[contractAddress]",
+          "contract": "AbstractConference",
+          "method": "finalize",
+          "args": {
+            "_maps": "maps"
+          },
+          "successMessage": "Users may now withdraw their payouts."
+        }
+      ]
+    },
+    {
+      "id": "clear",
+      "title": "Clear remaining event balance",
+      "description": "Only event admins can call this.",
+      "inputs": [
+        {
+          "name": "contractAddress",
+          "title": "Event contract address",
+          "type": "address",
+          "validation": [
+            {
+              "type": "allowedTypes",
+              "contract": true
+            }
+          ]
+        }
+      ],
+      "execs": [
+        {
+          "type": "send",
+          "address": "@input[contractAddress]",
+          "contract": "AbstractConference",
+          "method": "clear",
+          "successMessage": "Outstanding balance has been sent to the event owner."
+        }
+      ]
+    },
+    {
+      "id": "cancel",
+      "title": "Cancel an  event",
+      "description": "Only event admins can call this.",
+      "inputs": [
+        {
+          "name": "contractAddress",
+          "title": "Event contract address",
+          "type": "address",
+          "validation": [
+            {
+              "type": "allowedTypes",
+              "contract": true
+            }
+          ]
+        }
+      ],
+      "execs": [
+        {
+          "type": "send",
+          "address": "@input[contractAddress]",
+          "contract": "AbstractConference",
+          "method": "cancel",
+          "successMessage": "Users may now withdraw their commitments."
+        }
+      ]
+    },
+    {
+      "id": "setDeposit",
+      "title": "Set deposit amount",
+      "description": "Change the amount people have to deposit in order to register.",
+      "inputs": [
+        {
+          "name": "contractAddress",
+          "title": "Event contract address",
+          "type": "address",
+          "validation": [
+            {
+              "type": "allowedTypes",
+              "contract": true
+            }
+          ]
+        },
+        {
+          "name": "amount",
+          "title": "New deposit amount",
+          "type": "int",
+          "validation": [
+            {
+              "type": "range",
+              "min": "1"
+            }
+          ]
+        }
+      ],
+      "execs": [
+        {
+          "type": "send",
+          "address": "@input[contractAddress]",
+          "contract": "AbstractConference",
+          "method": "changeDeposit",
+          "args": {
+            "_deposit": "amount"
+          }
+        }
+      ]
+    },
+    {
+      "id": "setParticipantLimit",
+      "title": "Set participant limit",
+      "description": "Change the max no. of people who can register.",
+      "inputs": [
+        {
+          "name": "contractAddress",
+          "title": "Event contract address",
+          "type": "address",
+          "validation": [
+            {
+              "type": "allowedTypes",
+              "contract": true
+            }
+          ]
+        },
+        {
+          "name": "limit",
+          "title": "New participant limit",
+          "type": "int",
+          "validation": [
+            {
+              "type": "range",
+              "min": "1"
+            }
+          ]
+        }
+      ],
+      "execs": [
+        {
+          "type": "send",
+          "address": "@input[contractAddress]",
+          "contract": "AbstractConference",
+          "method": "setLimitOfParticipants",
+          "args": {
+            "_limitOfParticipants": "limit"
+          }
+        }
+      ]
+    },
+    {
+      "id": "getLimit",
+      "title": "Get participant limit",
+      "description": "The max no. of people who can register for the event.",
+      "inputs": [
+        {
+          "name": "contractAddress",
+          "title": "Event contract address",
+          "type": "address",
+          "validation": [
+            {
+              "type": "allowedTypes",
+              "contract": true
+            }
+          ]
+        }
+      ],
+      "execs": [
+        {
+          "type": "call",
+          "address": "@input[contractAddress]",
+          "contract": "AbstractConference",
+          "method": "limitOfParticipants",
+          "saveResultAsInput": "limit"
+        }
+      ],
+      "outputs": [
+        {
+          "title": "Current limit",
+          "type": "int",
+          "value": "@input[limit]"
+        }
+      ]
+    },
+    {
+      "id": "totalBalance",
+      "title": "Get current balance",
+      "description": "Get the current eth/token balance of the event contract.",
+      "inputs": [
+        {
+          "name": "contractAddress",
+          "title": "Event contract address",
+          "type": "address",
+          "validation": [
+            {
+              "type": "allowedTypes",
+              "contract": true
+            }
+          ]
+        }
+      ],
+      "execs": [
+        {
+          "type": "call",
+          "address": "@input[contractAddress]",
+          "contract": "AbstractConference",
+          "method": "totalBalance",
+          "saveResultAsInput": "balance"
+        }
+      ],
+      "outputs": [
+        {
+          "title": "Balance",
+          "type": "int",
+          "value": "@input[balance]",
+          "transform": [
+            {
+              "type": "intToScaledIntString",
+              "scale": "-18"
+            },
+            {
+              "type": "stringToSpacedSuffixedString",
+              "suffix": "eth/token"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ended",
+      "title": "Has event ended?",
+      "description": "Chec whether the event has ended.",
+      "inputs": [
+        {
+          "name": "contractAddress",
+          "title": "Event contract address",
+          "type": "address",
+          "validation": [
+            {
+              "type": "allowedTypes",
+              "contract": true
+            }
+          ]
+        }
+      ],
+      "execs": [
+        {
+          "type": "call",
+          "address": "@input[contractAddress]",
+          "contract": "AbstractConference",
+          "method": "ended",
+          "saveResultAsInput": "isEnded"
+        }
+      ],
+      "outputs": [
+        {
+          "title": "Event has ended?",
+          "type": "bool",
+          "value": "@input[isEnded]"
+        }
+      ]
+    },
+    {
+      "id": "isRegistered",
+      "title": "Has person registered?",
+      "description": "Chec whether a given person has registered.",
+      "inputs": [
+        {
+          "name": "contractAddress",
+          "title": "Event contract address",
+          "type": "address",
+          "validation": [
+            {
+              "type": "allowedTypes",
+              "contract": true
+            }
+          ]
+        },
+        {
+          "name": "user",
+          "title": "User",
+          "type": "address",
+          "validation": [
+            {
+              "type": "allowedTypes",
+              "contract": true,
+              "eoa": true
+            }
+          ]
+        }
+      ],
+      "execs": [
+        {
+          "type": "call",
+          "address": "@input[contractAddress]",
+          "contract": "AbstractConference",
+          "method": "isRegistered",
+          "args": {
+            "_addr": "@input[user]"
+          },
+          "saveResultAsInput": "isRegistered"
+        }
+      ],
+      "outputs": [
+        {
+          "title": "Is person registered?",
+          "type": "bool",
+          "value": "@input[isRegistered]"
+        }
+      ]
+    },
+    {
+      "id": "isAttended",
+      "title": "Has person attended?",
+      "description": "Get whether a given person has attended.",
+      "inputs": [
+        {
+          "name": "contractAddress",
+          "title": "Event contract address",
+          "type": "address",
+          "validation": [
+            {
+              "type": "allowedTypes",
+              "contract": true
+            }
+          ]
+        },
+        {
+          "name": "user",
+          "title": "User",
+          "type": "address",
+          "validation": [
+            {
+              "type": "allowedTypes",
+              "contract": true,
+              "eoa": true
+            }
+          ]
+        }
+      ],
+      "execs": [
+        {
+          "type": "call",
+          "address": "@input[contractAddress]",
+          "contract": "AbstractConference",
+          "method": "isAttended",
+          "args": {
+            "_addr": "@input[user]"
+          },
+          "saveResultAsInput": "isAttended"
+        }
+      ],
+      "outputs": [
+        {
+          "title": "Has person attended?",
+          "type": "bool",
+          "value": "@input[isAttended]"
+        }
+      ]
+    },
+    {
+      "id": "isPaid",
+      "title": "Has person withdrawn their payout?",
+      "description": "Check whether a given person has withdrawn their payout.",
+      "inputs": [
+        {
+          "name": "contractAddress",
+          "title": "Event contract address",
+          "type": "address",
+          "validation": [
+            {
+              "type": "allowedTypes",
+              "contract": true
+            }
+          ]
+        },
+        {
+          "name": "user",
+          "title": "User",
+          "type": "address",
+          "validation": [
+            {
+              "type": "allowedTypes",
+              "contract": true,
+              "eoa": true
+            }
+          ]
+        }
+      ],
+      "execs": [
+        {
+          "type": "call",
+          "address": "@input[contractAddress]",
+          "contract": "AbstractConference",
+          "method": "isPaid",
+          "args": {
+            "_addr": "@input[user]"
+          },
+          "saveResultAsInput": "isPaid"
+        }
+      ],
+      "outputs": [
+        {
+          "title": "Has person withdrawn their payout?",
+          "type": "bool",
+          "value": "@input[isPaid]"
+        }
+      ]
+    },
+    {
+      "id": "getMap",
+      "title": "Get finalized attendance maps",
+      "description": "Get attendance maps submitted in the finalization phase.",
+      "inputs": [
+        {
+          "name": "contractAddress",
+          "title": "Event contract address",
+          "type": "address",
+          "validation": [
+            {
+              "type": "allowedTypes",
+              "contract": true
+            }
+          ]
+        },
+        {
+          "name": "mapIndex",
+          "title": "Map index",
+          "type": "int",
+          "validation": [
+            {
+              "type": "range",
+              "min": "0"
+            }
+          ]
+        }
+      ],
+      "execs": [
+        {
+          "type": "call",
+          "address": "@input[contractAddress]",
+          "contract": "AbstractConference",
+          "method": "attendanceMaps",
+          "args": {
+            "": "@input[mapIndex]"
+          },
+          "saveResultAsInput": "mapValue"
+        }
+      ],
+      "outputs": [
+        {
+          "title": "Map (decimal)",
+          "type": "int",
+          "value": "@input[mapValue]"
+        },
+        {
+          "title": "Map (hex)",
+          "type": "string",
+          "value": "@input[mapValue]",
+          "transform": [
+            {
+              "type": "intToHexString"
+            }
+          ]
+        },
+        {
+          "title": "Map (binary)",
+          "type": "string",
+          "value": "@input[mapValue]",
+          "transform": [
+            {
+              "type": "intToBinaryString"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
