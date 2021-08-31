@@ -50,9 +50,12 @@ module.exports = {
       gasPrice: 0x01, // <-- Use this low gas price
       network_id: 100
     },
-    polygon: {
-      provider: (num_addresses = 1) => new HDWalletProvider(mnemonic, `https://polygon-mainnet.infura.io/v3/${infuraKey}`, 0, num_addresses),
-      gasPrice: 1000000000, // 1 gwei
+    polygon: {      
+      provider: (num_addresses = 1) => new HDWalletProvider(mnemonic, 'https://polygon-rpc.com', 0, num_addresses),
+      // provider: (num_addresses = 1) => new HDWalletProvider(mnemonic, `https://polygon-mainnet.infura.io/v3/${infuraKey}`, 0, num_addresses),
+      // provider: (num_addresses = 1) => new HDWalletProvider(mnemonic, `https://rpc-mainnet.maticvigil.com/v1/${maticKey}`, 0, num_addresses),
+      gasPrice: 5000000000, // 5 gwei
+      gas: 15000000,
       network_id: 137
     },
     mumbai:{

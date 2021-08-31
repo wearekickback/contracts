@@ -402,4 +402,5 @@ For all the latest deployed deployer contracts, see refer to `deployedAddresses.
 
 ### Polygon deployer contract versions
 
-- "0xc1d24FB1a9c6b5051c28b0e963473D3cE3EB3491"
+- npm version "1.4.6 "0xC5ddF439194f84AF79db7d7cd534aD01cC58910d"
+- npm version "1.5.0 "0x206adBE01B6f85B60B5dc9B0FF91173375A953Fd"
